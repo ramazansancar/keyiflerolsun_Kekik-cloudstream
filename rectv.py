@@ -287,11 +287,7 @@ class RecTV:
         import aiohttp
         from current_url import get_api_url
         
-        # Güncelleme kontrolü
-        if await check_and_update():
-            print("Program yeniden başlatılacak...")
-            os.execv(sys.executable, ['python'] + sys.argv)
-        
+        # Güncelleme kontrolünü kaldır - artık sadece interactive_menu'de yapılacak
         self.session = aiohttp.ClientSession()
         
         # Çalışan URL ve sw_key'i al
@@ -569,7 +565,7 @@ async def check_and_update():
         response = requests.get(current_config["config_url"])
         if response.status_code != 200:
             logging.error("Güncel config dosyasına erişilemedi!")
-            return
+            return False
         
         remote_config = response.json()
         remote_version = remote_config.get("version", "0.0")
@@ -577,7 +573,7 @@ async def check_and_update():
         # Versiyon kontrolü
         if remote_version <= current_version:
             print(f"Program güncel! (Versiyon: {current_version})")
-            return
+            return False
             
         # Güncelleme gerekli
         print(f"Yeni versiyon bulundu! ({current_version} -> {remote_version})")
@@ -591,7 +587,7 @@ async def check_and_update():
             
             if update_response.status_code != 200:
                 logging.error("Güncelleme dosyası indirilemedi!")
-                return
+                return False
                 
             # Zip dosyasını kaydet
             with open(zip_path, 'wb') as f:
@@ -611,7 +607,7 @@ async def check_and_update():
                 
                 if not extracted_dir:
                     logging.error("Güncelleme dosyası geçerli değil!")
-                    return
+                    return False
                 
                 # Dosyaları güncelle
                 current_dir = os.path.dirname(__file__)
@@ -631,14 +627,14 @@ async def check_and_update():
                         dst_file = os.path.join(target_dir, file)
                         shutil.copy2(src_file, dst_file)
         
-        print(f"Güncelleme tamamlandı! Yeni versiyon: {remote_version}")
-        
-        # Config'i güncelle
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(remote_config, f, indent=4, ensure_ascii=False)
+            print(f"Güncelleme tamamlandı! Yeni versiyon: {remote_version}")
             
-        return True
-        
+            # Config'i güncelle
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(remote_config, f, indent=4, ensure_ascii=False)
+            
+            return True
+            
     except Exception as e:
         logging.error(f"Güncelleme hatası: {e}")
         logging.debug("Hata detayı:", exc_info=True)
@@ -654,6 +650,12 @@ if __name__ == "__main__":
     )
     
     async def interactive_menu():
+        # Güncelleme kontrolü - sadece burada yapılacak
+        if await check_and_update():
+            print("\nProgram yeniden başlatılacak...")
+            print("Lütfen programı manuel olarak yeniden başlatın.")
+            sys.exit(0)  # Programı temiz bir şekilde sonlandır
+        
         rectv = await RecTV().initialize()
         
         try:

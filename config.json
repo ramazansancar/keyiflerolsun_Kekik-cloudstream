@@ -9,5 +9,5 @@
     "config_url": "https://raw.githubusercontent.com/muhammetaliaydin/rectv-windows/refs/heads/master/config.json",
     "update_code": "https://github.com/muhammetaliaydin/rectv-windows/archive/refs/heads/master.zip",
 	"update_app": "",
-    "version": "1.0"
+    "version": "1.1"
 }
