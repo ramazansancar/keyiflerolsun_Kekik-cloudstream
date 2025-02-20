@@ -2,8 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
-tum_canli_yayinlar.m3u
-spor_canli_yayinlar.m3u
+
+# M3U extentions
+*.m3u
 
 # C extensions
 *.so

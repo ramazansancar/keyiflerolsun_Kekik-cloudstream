@@ -5,6 +5,12 @@ from typing import List, Dict, Optional, Set
 from dataclasses import dataclass
 from enum import Enum
 from current_url import get_api_url
+import requests
+import zipfile
+import shutil
+import tempfile
+import os
+import sys
 
 class TvType(Enum):
     Movie = "movie"
@@ -277,9 +283,14 @@ class RecTV:
         return interceptor
 
     async def initialize(self):
-        """Session'ı başlat ve çalışan URL ile sw_key'i al"""
+        """Session'ı başlat ve gerekli kontrolleri yap"""
         import aiohttp
         from current_url import get_api_url
+        
+        # Güncelleme kontrolü
+        if await check_and_update():
+            print("Program yeniden başlatılacak...")
+            os.execv(sys.executable, ['python'] + sys.argv)
         
         self.session = aiohttp.ClientSession()
         
@@ -288,7 +299,7 @@ class RecTV:
         if not result:
             raise Exception("Çalışan API URL'si bulunamadı!")
         
-        self.main_url, self.sw_key = result  # tuple olarak dönen değerleri ayır
+        self.main_url, self.sw_key = result
         
         # Kategorileri güncelle
         self.categories = {
@@ -450,6 +461,80 @@ class RecTV:
             logging.error(f"M3U oluşturma hatası: {e}")
             logging.debug(f"Content data: {content_data}")
 
+    async def export_sports_m3u(self, filename: str = "spor_canli_yayinlar.m3u"):
+        """Spor canlı yayın linklerini m3u formatında dışa aktar"""
+        m3u_content = "#EXTM3U\n"
+        processed_channels = set()  # Tekrar eden kanalları önlemek için
+        
+        # Spor kanallarını belirlemek için anahtar kelimeler
+        sports_keywords = [
+            "spor", "sport", "futbol", "football", "basketball", "basketbol",
+            "beinsports", "s sport", "tivibu spor", "nba", "uefa", "şampiyonlar ligi",
+            "champions league", "premier", "laliga", "bundesliga", "serie a"
+        ]
+        
+        try:
+            print("\n=== Spor Canlı Yayınları İçin M3U Oluşturuluyor ===")
+            
+            # Canlı yayın kategorisi URL'si
+            canli_url = f"{self.main_url}/api/channel/by/filtres/0/0/SAYFA/{self.sw_key}/"
+            page = 1
+            
+            while True:
+                url = canli_url.replace("SAYFA", str(page-1))
+                results = await self.get_main_page(
+                    page=page,
+                    request=DummyRequest(data=url, name="Canlı")
+                )
+                
+                if not results["results"]:
+                    break
+                    
+                for item in results["results"]:
+                    try:
+                        channel_name = item.get('name', '').lower()
+                        
+                        # Spor kanalı kontrolü
+                        is_sports_channel = any(keyword.lower() in channel_name for keyword in sports_keywords)
+                        if not is_sports_channel:
+                            continue
+                        
+                        # Tekrar eden kanalları atla
+                        if channel_name in processed_channels:
+                            continue
+                        
+                        links = await self.load_links(item["url"], False)
+                        
+                        if links:
+                            for link in links:
+                                if not "otolinkaff.com" in link.url:
+                                    original_name = item.get('name', '')
+                                    print(f"Ekleniyor: {original_name}")
+                                    m3u_content += f'#EXTINF:-1 tvg-name="{original_name}" tvg-language="Turkish" tvg-country="TR" tvg-logo="{item.get("poster_url", "")}" group-title="Spor",{original_name}\n'
+                                    m3u_content += '#EXTVLCOPT:http-user-agent=googleusercontent\n'
+                                    m3u_content += '#EXTVLCOPT:http-referrer=https://twitter.com/\n'
+                                    m3u_content += f'{link.url}\n\n'
+                                    
+                                    processed_channels.add(channel_name)
+                                    
+                    except Exception as e:
+                        channel_name = item.get('name', 'Bilinmeyen Kanal')
+                        logging.error(f"Kanal işleme hatası ({channel_name}): {e}")
+                        continue
+                
+                page += 1
+                
+            if processed_channels:
+                # Dosyayı kaydet
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(m3u_content)
+                print(f"\nToplam {len(processed_channels)} spor kanalı kaydedildi: {filename}")
+            else:
+                print("Hiç spor kanalı bulunamadı.")
+                
+        except Exception as e:
+            logging.error(f"M3U oluşturma hatası: {e}")
+
 def sanitize_filename(filename: str) -> str:
     """Dosya adını düzenle"""
     # Dosya adından .m3u uzantısını kaldır
@@ -469,6 +554,95 @@ def sanitize_filename(filename: str) -> str:
     
     # .m3u uzantısını geri ekle
     return f"{filename}.m3u"
+
+async def check_and_update():
+    """Config ve kod güncellemelerini kontrol et ve uygula"""
+    try:
+        # Mevcut config'i oku
+        config_path = os.path.join(os.path.dirname(__file__), "config.json")
+        with open(config_path, 'r', encoding='utf-8') as f:
+            current_config = json.load(f)
+            current_version = current_config.get("version", "0.0")
+        
+        # GitHub'daki güncel config'i kontrol et
+        print("Güncellemeler kontrol ediliyor...")
+        response = requests.get(current_config["config_url"])
+        if response.status_code != 200:
+            logging.error("Güncel config dosyasına erişilemedi!")
+            return
+        
+        remote_config = response.json()
+        remote_version = remote_config.get("version", "0.0")
+        
+        # Versiyon kontrolü
+        if remote_version <= current_version:
+            print(f"Program güncel! (Versiyon: {current_version})")
+            return
+            
+        # Güncelleme gerekli
+        print(f"Yeni versiyon bulundu! ({current_version} -> {remote_version})")
+        print("Güncelleme indiriliyor...")
+        
+        # Geçici dizin oluştur
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Zip dosyasını indir
+            zip_path = os.path.join(temp_dir, "update.zip")
+            update_response = requests.get(current_config["update_code"])
+            
+            if update_response.status_code != 200:
+                logging.error("Güncelleme dosyası indirilemedi!")
+                return
+                
+            # Zip dosyasını kaydet
+            with open(zip_path, 'wb') as f:
+                f.write(update_response.content)
+            
+            # Zip dosyasını aç
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                # Zip içeriğini geçici dizine çıkart
+                zip_ref.extractall(temp_dir)
+                
+                # Çıkartılan dizini bul (genelde zip içinde tek bir ana dizin olur)
+                extracted_dir = None
+                for item in os.listdir(temp_dir):
+                    if os.path.isdir(os.path.join(temp_dir, item)):
+                        extracted_dir = os.path.join(temp_dir, item)
+                        break
+                
+                if not extracted_dir:
+                    logging.error("Güncelleme dosyası geçerli değil!")
+                    return
+                
+                # Dosyaları güncelle
+                current_dir = os.path.dirname(__file__)
+                
+                print("Dosyalar güncelleniyor...")
+                for root, dirs, files in os.walk(extracted_dir):
+                    # Klasör yapısını koru
+                    relative_path = os.path.relpath(root, extracted_dir)
+                    target_dir = os.path.join(current_dir, relative_path)
+                    
+                    # Hedef dizini oluştur
+                    os.makedirs(target_dir, exist_ok=True)
+                    
+                    # Dosyaları kopyala
+                    for file in files:
+                        src_file = os.path.join(root, file)
+                        dst_file = os.path.join(target_dir, file)
+                        shutil.copy2(src_file, dst_file)
+        
+        print(f"Güncelleme tamamlandı! Yeni versiyon: {remote_version}")
+        
+        # Config'i güncelle
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(remote_config, f, indent=4, ensure_ascii=False)
+            
+        return True
+        
+    except Exception as e:
+        logging.error(f"Güncelleme hatası: {e}")
+        logging.debug("Hata detayı:", exc_info=True)
+        return False
 
 if __name__ == "__main__":
     import asyncio
@@ -587,7 +761,7 @@ if __name__ == "__main__":
                 
                 elif choice == 3:
                     # Spor canlı yayınlarını listele
-                    await rectv.export_m3u("spor_canli_yayinlar.m3u")
+                    await rectv.export_sports_m3u()
                 
                 elif choice == 4:
                     # Tüm canlı yayınları listele
