@@ -6,8 +6,6 @@ from dataclasses import dataclass
 from enum import Enum
 from current_url import get_api_url
 import requests
-import zipfile
-import shutil
 import tempfile
 import os
 import sys
@@ -552,16 +550,24 @@ def sanitize_filename(filename: str) -> str:
     return f"{filename}.m3u"
 
 async def check_and_update():
-    """Config ve kod güncellemelerini kontrol et ve uygula"""
+    """Config ve uygulama güncellemelerini kontrol et ve uygula"""
     try:
+        # Programın .exe olarak çalışıp çalışmadığını kontrol et
+        is_exe = getattr(sys, 'frozen', False)
+        
+        # Config dosyasının yolunu belirle
+        if is_exe:
+            config_path = os.path.join(os.path.dirname(sys.executable), "config.json")
+        else:
+            config_path = os.path.join(os.path.dirname(__file__), "config.json")
+        
         # Mevcut config'i oku
-        config_path = os.path.join(os.path.dirname(__file__), "config.json")
         with open(config_path, 'r', encoding='utf-8') as f:
             current_config = json.load(f)
             current_version = current_config.get("version", "0.0")
         
-        # GitHub'daki güncel config'i kontrol et
-        print("Güncellemeler kontrol ediliyor...")
+        # Her durumda önce config'i güncelle
+        print("Config dosyası güncelleniyor...")
         response = requests.get(current_config["config_url"])
         if response.status_code != 200:
             logging.error("Güncel config dosyasına erişilemedi!")
@@ -570,6 +576,14 @@ async def check_and_update():
         remote_config = response.json()
         remote_version = remote_config.get("version", "0.0")
         
+        # Remote config'i mevcut versiyon ile güncelle
+        remote_config["version"] = current_version
+        
+        # Yeni config'i kaydet
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(remote_config, f, indent=4, ensure_ascii=False)
+            print("Config dosyası güncellendi!")
+        
         # Versiyon kontrolü
         if remote_version <= current_version:
             print(f"Program güncel! (Versiyon: {current_version})")
@@ -577,63 +591,48 @@ async def check_and_update():
             
         # Güncelleme gerekli
         print(f"Yeni versiyon bulundu! ({current_version} -> {remote_version})")
-        print("Güncelleme indiriliyor...")
         
-        # Geçici dizin oluştur
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Zip dosyasını indir
-            zip_path = os.path.join(temp_dir, "update.zip")
-            update_response = requests.get(current_config["update_code"])
-            
-            if update_response.status_code != 200:
-                logging.error("Güncelleme dosyası indirilemedi!")
+        if not is_exe:
+            print("Not: Program .py olarak çalıştığı için otomatik güncelleme yapılmayacak.")
+            print("Güncel sürümü indirmek için: https://github.com/muhammetaliaydin/rectv-windows/releases")
+            return False
+        
+        # .exe güncellemesi varsa
+        if remote_config.get("update_app"):
+            try:
+                print("Uygulama güncellemesi indiriliyor...")
+                exe_response = requests.get(remote_config["update_app"], stream=True)
+                if exe_response.status_code == 200:
+                    with tempfile.TemporaryDirectory() as temp_dir:
+                        exe_path = os.path.join(temp_dir, "rectv_update.exe")
+                        with open(exe_path, 'wb') as f:
+                            for chunk in exe_response.iter_content(chunk_size=8192):
+                                f.write(chunk)
+                        
+                        # Mevcut .exe'nin yolunu al
+                        current_exe = sys.executable
+                        if os.path.exists(current_exe):
+                            # Yeni .exe'yi mevcut konuma kopyala
+                            print("Uygulama dosyası güncelleniyor...")
+                            # Geçici bir .bat dosyası oluştur
+                            bat_path = os.path.join(temp_dir, "update.bat")
+                            with open(bat_path, 'w') as f:
+                                f.write('@echo off\n')
+                                f.write('timeout /t 1 /nobreak >nul\n')  # 1 saniye bekle
+                                f.write(f'copy /y "{exe_path}" "{current_exe}"\n')
+                                f.write(f'start "" "{current_exe}"\n')
+                                f.write('del "%~f0"\n')  # Bat dosyasını sil
+                            
+                            # Güncelleme .bat dosyasını çalıştır ve programı kapat
+                            os.startfile(bat_path)
+                            sys.exit(0)
+                
+            except Exception as e:
+                logging.error(f"Exe güncelleme hatası: {e}")
                 return False
-                
-            # Zip dosyasını kaydet
-            with open(zip_path, 'wb') as f:
-                f.write(update_response.content)
-            
-            # Zip dosyasını aç
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                # Zip içeriğini geçici dizine çıkart
-                zip_ref.extractall(temp_dir)
-                
-                # Çıkartılan dizini bul (genelde zip içinde tek bir ana dizin olur)
-                extracted_dir = None
-                for item in os.listdir(temp_dir):
-                    if os.path.isdir(os.path.join(temp_dir, item)):
-                        extracted_dir = os.path.join(temp_dir, item)
-                        break
-                
-                if not extracted_dir:
-                    logging.error("Güncelleme dosyası geçerli değil!")
-                    return False
-                
-                # Dosyaları güncelle
-                current_dir = os.path.dirname(__file__)
-                
-                print("Dosyalar güncelleniyor...")
-                for root, dirs, files in os.walk(extracted_dir):
-                    # Klasör yapısını koru
-                    relative_path = os.path.relpath(root, extracted_dir)
-                    target_dir = os.path.join(current_dir, relative_path)
-                    
-                    # Hedef dizini oluştur
-                    os.makedirs(target_dir, exist_ok=True)
-                    
-                    # Dosyaları kopyala
-                    for file in files:
-                        src_file = os.path.join(root, file)
-                        dst_file = os.path.join(target_dir, file)
-                        shutil.copy2(src_file, dst_file)
         
-            print(f"Güncelleme tamamlandı! Yeni versiyon: {remote_version}")
-            
-            # Config'i güncelle
-            with open(config_path, 'w', encoding='utf-8') as f:
-                json.dump(remote_config, f, indent=4, ensure_ascii=False)
-            
-            return True
+        print(f"Güncelleme tamamlandı! Yeni versiyon: {remote_version}")
+        return True
             
     except Exception as e:
         logging.error(f"Güncelleme hatası: {e}")
@@ -644,17 +643,17 @@ if __name__ == "__main__":
     import asyncio
     import os
     
+    # Debug log ayarlarını kaldır
     logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(levelname)s - %(message)s'
+        level=logging.ERROR,  # Sadece hataları göster
+        format='%(message)s'  # Sadece mesajı göster, tarih ve seviye bilgisini kaldır
     )
     
     async def interactive_menu():
         # Güncelleme kontrolü - sadece burada yapılacak
         if await check_and_update():
             print("\nProgram yeniden başlatılacak...")
-            print("Lütfen programı manuel olarak yeniden başlatın.")
-            sys.exit(0)  # Programı temiz bir şekilde sonlandır
+            sys.exit(1)  # Güncelleme durumunda exit code 1 ile çık
         
         rectv = await RecTV().initialize()
         
@@ -778,7 +777,7 @@ if __name__ == "__main__":
                 
         except Exception as e:
             logging.error(f"Program hatası: {e}")
-            logging.debug("Hata detayı:", exc_info=True)  # Hata stack trace'ini logla
+            logging.debug("Hata detayı:", exc_info=True)
         finally:
             await rectv.close()
     

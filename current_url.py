@@ -4,6 +4,8 @@ import logging
 import os
 import asyncio
 from typing import Optional
+import sys
+import requests
 
 class CurrentURL:
     def __init__(self):
@@ -14,36 +16,62 @@ class CurrentURL:
     def _load_config(self) -> dict:
         """config.json dosyasını yükle"""
         try:
-            # Dosya yolunu doğru şekilde belirle
-            config_path = os.path.join(os.path.dirname(__file__), self.config_path)
+            is_exe = getattr(sys, 'frozen', False)
             
+            if is_exe:
+                config_path = os.path.join(os.path.dirname(sys.executable), self.config_path)
+            else:
+                config_path = os.path.join(os.path.dirname(__file__), self.config_path)
+            
+            # Config dosyası yoksa internetten indir
+            if not os.path.exists(config_path):
+                print("Config dosyası bulunamadı, internetten indiriliyor...")
+                try:
+                    response = requests.get("https://raw.githubusercontent.com/muhammetaliaydin/rectv-windows/refs/heads/master/config.json")
+                    if response.status_code == 200:
+                        with open(config_path, 'w', encoding='utf-8') as f:
+                            json.dump(response.json(), f, indent=4, ensure_ascii=False)
+                        print("Config dosyası indirildi!")
+                    else:
+                        print("Config dosyası indirilemedi!")
+                        return {}
+                except Exception as e:
+                    print("Config dosyası indirme hatası!")
+                    return {}
+            
+            # Config dosyasını oku
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                logging.debug(f"Yüklenen config: {config}")  # Config içeriğini logla
                 
-                # main_urls listesinin varlığını kontrol et
                 if not config.get("main_urls"):
-                    logging.error("Config dosyasında 'main_urls' bulunamadı!")
+                    print("Config dosyasında 'main_urls' bulunamadı!")
                     return {}
                     
                 return config
         except FileNotFoundError:
-            logging.error(f"Config dosyası bulunamadı: {self.config_path}")
+            print(f"Config dosyası bulunamadı: {self.config_path}")
             return {}
         except json.JSONDecodeError as e:
-            logging.error(f"Config dosyası JSON formatında değil: {e}")
+            print(f"Config dosyası JSON formatında değil!")
             return {}
         except Exception as e:
-            logging.error(f"Config dosyası yüklenirken hata oluştu: {e}")
+            print(f"Config dosyası yüklenirken hata oluştu!")
             return {}
 
     def _save_config(self, config: dict):
         """config.json dosyasını kaydet"""
         try:
-            with open(self.config_path, 'w') as f:
-                json.dump(config, indent=4, ensure_ascii=False)
+            is_exe = getattr(sys, 'frozen', False)
+            
+            if is_exe:
+                config_path = os.path.join(os.path.dirname(sys.executable), self.config_path)
+            else:
+                config_path = os.path.join(os.path.dirname(__file__), self.config_path)
+            
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4, ensure_ascii=False)
         except Exception as e:
-            logging.error(f"Config dosyası kaydedilemedi: {e}")
+            print(f"Config dosyası kaydedilemedi!")
 
     async def initialize(self):
         """Session'ı başlat"""
@@ -58,7 +86,6 @@ class CurrentURL:
     async def test_url(self, url: str) -> bool:
         """Belirtilen URL'nin çalışıp çalışmadığını test et"""
         try:
-            # Test için örnek bir API endpoint'i
             test_url = f"{url}/api/channel/by/filtres/0/0/0/{self.config['sw_key']}/"
             
             async with self.session.get(
@@ -67,7 +94,6 @@ class CurrentURL:
                 timeout=5
             ) as response:
                 if response.status == 200:
-                    # API yanıtının geçerli JSON olduğunu kontrol et
                     text = await response.text()
                     try:
                         json.loads(text)
@@ -75,8 +101,7 @@ class CurrentURL:
                     except json.JSONDecodeError:
                         return False
                 return False
-        except Exception as e:
-            logging.debug(f"URL test hatası ({url}): {e}")
+        except Exception:
             return False
 
     async def update_config(self) -> bool:
@@ -93,34 +118,27 @@ class CurrentURL:
                     return True
                 return False
         except Exception as e:
-            logging.error(f"Config güncelleme hatası: {e}")
+            print(f"Config güncelleme hatası: {e}")
             return False
 
     async def get_working_url(self) -> Optional[tuple[str, str]]:
         """Çalışan bir URL ve sw_key değerini tuple olarak döndür"""
-        # sw_key kontrolü
         sw_key = self.config.get("sw_key")
         if not sw_key:
-            logging.error("Config dosyasında 'sw_key' bulunamadı!")
+            print("Config dosyasında 'sw_key' bulunamadı!")
             return None
 
-        # Mevcut URL'leri test et
         for url in self.config.get("main_urls", []):
             if await self.test_url(url):
-                logging.info(f"Çalışan URL bulundu: {url}")
-                return (url, sw_key)  # URL ve sw_key'i tuple olarak döndür
+                return (url, sw_key)
 
-        # Hiçbir URL çalışmıyorsa config'i güncelle
         if await self.update_config():
-            # Yeni sw_key değerini al
             sw_key = self.config.get("sw_key")
-            # Yeni URL'leri test et
             for url in self.config.get("main_urls", []):
                 if await self.test_url(url):
-                    logging.info(f"Güncelleme sonrası çalışan URL bulundu: {url}")
-                    return (url, sw_key)  # URL ve sw_key'i tuple olarak döndür
+                    return (url, sw_key)
 
-        logging.error("Hiçbir URL çalışmıyor!")
+        print("Hiçbir URL çalışmıyor!")
         return None
 
 async def get_api_url() -> Optional[tuple[str, str]]:
@@ -132,7 +150,7 @@ async def get_api_url() -> Optional[tuple[str, str]]:
             url, sw_key = working_url  # tuple olarak dönen değerleri ayır
             return (url, sw_key)  # URL ve sw_key'i tuple olarak döndür
         else:
-            logging.error("Çalışan API URL'si bulunamadı!")
+            print("Çalışan API URL'si bulunamadı!")
             return None
     finally:
         await current_url.close()
@@ -190,11 +208,11 @@ async def test_all_urls():
         await current_url.close()
 
 if __name__ == "__main__":
-    # Log ayarları
+    # Debug log ayarlarını kaldır
     logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(levelname)s - %(message)s'
+        level=logging.ERROR,
+        format='%(message)s'
     )
-
+    
     # Tüm URL'leri test et
     asyncio.run(test_all_urls()) 
