@@ -52,6 +52,13 @@ Program başlatıldığında aşağıdaki menü seçenekleri sunulur:
 4. **Tüm Canlı Yayınları Listele**: Tüm aktif yayınları listeler
 5. **Çıkış**: Programdan çıkış yapar
 
+## Önerilen Uygulamalar
+
+IPTV içeriklerini daha iyi deneyimlemek ve .m3u dosyalarını oynatabilmek için aşağıdaki uygulamaları kullanabilirsiniz:
+
+- [IPTVnator](https://github.com/4gray/iptvnator/releases/latest) - IPTV yayınları için özel olarak geliştirilmiş modern bir oynatıcı
+- [VLC Media Player](https://www.videolan.org/vlc/) - Açık kaynak kodlu, güçlü bir medya oynatıcı
+
 ## Otomatik Güncelleme
 
 Program her başlatıldığında:

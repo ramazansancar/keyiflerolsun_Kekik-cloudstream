@@ -561,10 +561,13 @@ async def check_and_update():
         else:
             config_path = os.path.join(os.path.dirname(__file__), "config.json")
         
-        # Mevcut config'i oku
-        with open(config_path, 'r', encoding='utf-8') as f:
-            current_config = json.load(f)
-            current_version = current_config.get("version", "0.0")
+        # Mevcut config'i oku - dosya yoksa sessizce devam et
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                current_config = json.load(f)
+                current_version = current_config.get("version", "0.0")
+        except FileNotFoundError:
+            return False  # Config dosyası yoksa sessizce çık
         
         # Her durumda önce config'i güncelle
         print("Config dosyası güncelleniyor...")
