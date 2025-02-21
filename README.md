@@ -2,6 +2,10 @@
 
 RecTV Windows, IPTV içeriklerini görüntülemek ve .m3u dosyaları oluşturmak için geliştirilmiş bir Python uygulamasıdır.
 
+## İndirme
+
+Windows için son sürümü indirmek için [tıklayın](https://github.com/muhammetaliaydin/rectv-windows/releases/latest/download/rectv-windows.exe).
+
 ## Özellikler
 
 - Canlı TV yayınlarını izleme
@@ -27,7 +31,7 @@ pip install -r requirements.txt
 
 ### Çalıştırma
 
-1. Programı başlatmak için:
+Programı başlatmak için:
 
 ```bash
 python rectv.py
