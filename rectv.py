@@ -570,22 +570,20 @@ async def check_and_update():
         print("Config dosyası güncelleniyor...")
         response = requests.get(current_config["config_url"])
         if response.status_code != 200:
-            logging.error("Güncel config dosyasına erişilemedi!")
+            print("Güncel config dosyasına erişilemedi!")
             return False
         
         remote_config = response.json()
         remote_version = remote_config.get("version", "0.0")
         
-        # Remote config'i mevcut versiyon ile güncelle
+        # Yeni config'i kaydet (versiyon hariç)
         remote_config["version"] = current_version
-        
-        # Yeni config'i kaydet
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(remote_config, f, indent=4, ensure_ascii=False)
             print("Config dosyası güncellendi!")
         
         # Versiyon kontrolü
-        if remote_version <= current_version:
+        if float(remote_version) <= float(current_version):
             print(f"Program güncel! (Versiyon: {current_version})")
             return False
             
@@ -594,49 +592,60 @@ async def check_and_update():
         
         if not is_exe:
             print("Not: Program .py olarak çalıştığı için otomatik güncelleme yapılmayacak.")
-            print("Güncel sürümü indirmek için: https://github.com/muhammetaliaydin/rectv-windows/releases")
             return False
         
-        # .exe güncellemesi varsa
-        if remote_config.get("update_app"):
-            try:
-                print("Uygulama güncellemesi indiriliyor...")
-                exe_response = requests.get(remote_config["update_app"], stream=True)
-                if exe_response.status_code == 200:
-                    with tempfile.TemporaryDirectory() as temp_dir:
-                        exe_path = os.path.join(temp_dir, "rectv_update.exe")
-                        with open(exe_path, 'wb') as f:
-                            for chunk in exe_response.iter_content(chunk_size=8192):
-                                f.write(chunk)
-                        
-                        # Mevcut .exe'nin yolunu al
-                        current_exe = sys.executable
-                        if os.path.exists(current_exe):
-                            # Yeni .exe'yi mevcut konuma kopyala
-                            print("Uygulama dosyası güncelleniyor...")
-                            # Geçici bir .bat dosyası oluştur
-                            bat_path = os.path.join(temp_dir, "update.bat")
-                            with open(bat_path, 'w') as f:
-                                f.write('@echo off\n')
-                                f.write('timeout /t 1 /nobreak >nul\n')  # 1 saniye bekle
-                                f.write(f'copy /y "{exe_path}" "{current_exe}"\n')
-                                f.write(f'start "" "{current_exe}"\n')
-                                f.write('del "%~f0"\n')  # Bat dosyasını sil
-                            
-                            # Güncelleme .bat dosyasını çalıştır ve programı kapat
-                            os.startfile(bat_path)
-                            sys.exit(0)
-                
-            except Exception as e:
-                logging.error(f"Exe güncelleme hatası: {e}")
-                return False
+        # Yeni exe'yi indir
+        print("Yeni versiyon indiriliyor...")
+        exe_response = requests.get(remote_config["update_app"], stream=True)
+        if exe_response.status_code != 200:
+            print("Güncelleme dosyasına erişilemedi!")
+            return False
         
-        print(f"Güncelleme tamamlandı! Yeni versiyon: {remote_version}")
-        return True
+        try:
+            # Mevcut exe'nin yolunu al
+            current_exe = sys.executable
+            current_dir = os.path.dirname(current_exe)
+            update_exe = os.path.join(current_dir, "rectv_update.exe")
+            
+            # Yeni exe'yi geçici olarak indir
+            with open(update_exe, 'wb') as f:
+                for chunk in exe_response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            # Güncelleme batch dosyasını oluştur
+            updater_path = os.path.join(current_dir, "update.bat")
+            with open(updater_path, 'w', encoding='utf-8') as f:
+                f.write('@echo off\n')
+                f.write('chcp 65001 > nul\n')  # UTF-8 karakter setini kullan
+                f.write('echo Updating...\n')
+                f.write('timeout /t 5 /nobreak >nul\n')  # 5 saniye bekle
+                f.write(f'del /f "{current_exe}"\n')  # Eski exe'yi sil
+                f.write(f'move "{update_exe}" "{current_exe}"\n')  # Yeni exe'yi taşı
+                f.write('echo Update completed!\n')
+                f.write(f'start "" "{current_exe}"\n')  # Programı yeniden başlat
+                f.write('del "%~f0"\n')  # Bu batch dosyasını sil
+            
+            # Config'in versiyonunu güncelle
+            remote_config["version"] = remote_version
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(remote_config, f, indent=4, ensure_ascii=False)
+            
+            print("Program kapatiliyor ve guncelleme baslatiliyor...")
+            # Güncelleme batch dosyasını çalıştır ve programı kapat
+            os.startfile(updater_path)
+            sys.exit(0)
+            
+        except Exception as e:
+            print(f"Güncelleme hatası: {e}")
+            # Hata durumunda geçici dosyaları temizle
+            if os.path.exists(update_exe):
+                os.remove(update_exe)
+            if os.path.exists(updater_path):
+                os.remove(updater_path)
+            return False
             
     except Exception as e:
-        logging.error(f"Güncelleme hatası: {e}")
-        logging.debug("Hata detayı:", exc_info=True)
+        print(f"Güncelleme hatası: {e}")
         return False
 
 if __name__ == "__main__":
