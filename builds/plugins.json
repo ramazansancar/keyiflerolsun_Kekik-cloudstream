@@ -95,7 +95,7 @@
         "version": 3,
         "internalName": "DiziBox",
         "description": "Yabanc\u0131 Dizi izle, T\u00fcm yabanc\u0131 dizilerin yeni ve eski sezonlar\u0131n\u0131 full hd izleyebilece\u011finiz elit site.",
-        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/builds/DiziBox.cs3",
+        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/master/builds/DiziBox.cs3",
         "name": "DiziBox"
     },
     {
@@ -133,7 +133,7 @@
         "version": 14,
         "internalName": "Dizilla",
         "description": "Dizilla t\u00fcm yabanc\u0131 dizileri \u00fccretsiz olarak T\u00fcrk\u00e7e Dublaj ve altyaz\u0131l\u0131 se\u00e7enekleri ile 1080P kalite izleyebilece\u011finiz yeni nesil yabanc\u0131 dizi izleme siteniz.",
-        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/builds/Dizilla.cs3",
+        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/master/builds/Dizilla.cs3",
         "name": "Dizilla"
     },
     {
@@ -152,7 +152,7 @@
         "version": 10,
         "internalName": "DiziMom",
         "description": "Binlerce yerli yabanc\u0131 dizi ar\u015fivi, t\u00fcm sezonlar, kesintisiz b\u00f6l\u00fcmler. Sadece dizi izle, Dizimom heryerde seninle!",
-        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/builds/DiziMom.cs3",
+        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/master/builds/DiziMom.cs3",
         "name": "DiziMom"
     },
     {
@@ -173,7 +173,7 @@
         "version": 28,
         "internalName": "DiziPal",
         "description": "en yeni dizileri g\u00fcvenli ve h\u0131zl\u0131 \u015fekilde sunar.",
-        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/builds/DiziPal.cs3",
+        "url": "https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/master/builds/DiziPal.cs3",
         "name": "DiziPal"
     },
     {
