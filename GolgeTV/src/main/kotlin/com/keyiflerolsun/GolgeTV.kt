@@ -17,6 +17,7 @@ import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.loadExtractor
+import android.util.Log
 
 class GolgeTV : MainAPI() {
     override var name = "GolgeTV"
@@ -80,7 +81,12 @@ class GolgeTV : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val content = AppUtils.tryParseJson<OrmoxChnlx>(data) ?: return false
+        val content = AppUtils.tryParseJson<OrmoxChnlx>(data) ?: run {
+            Log.e("GolgeTV", "JSON parsing failed for data: $data")
+            return false
+        }
+        Log.d("GolgeTV", "Parsed content: $content")
+
         if (content.player == "iframe") {
             val golgeMatch = Regex("^(golge(?:2|3|4|5|6|7|8|9|1[0-9])://).*").find(content.link)
             if (golgeMatch != null) {
@@ -97,8 +103,14 @@ class GolgeTV : MainAPI() {
             content.h3Key to content.h3Val,
             content.h4Key to content.h4Val,
             content.h5Key to content.h5Val
-        )
-        headers = headers.filterKeys { it != "0" }
+        ).filter { (key, value) -> key != null && value != null && key != "0" }
+        Log.d("GolgeTV", "Headers: $headers")
+
+        if (content.link.isNullOrEmpty() || content.isim.isNullOrEmpty()) {
+            Log.e("GolgeTV", "Link or name is null or empty - Link: ${content.link}, Name: ${content.isim}")
+            return false
+        }
+
         callback.invoke(
             ExtractorLink(
                 source = this.name,
@@ -113,4 +125,3 @@ class GolgeTV : MainAPI() {
         return true
     }
 }
-
