@@ -1,5 +1,7 @@
 # 📺 cs-Kekik
 
+[DMCA notice](./DMCA-notice.md)
+
 Arşive alınmış projenin canlıya çekilmiş hali
 
 ## 💾 Kurulum
