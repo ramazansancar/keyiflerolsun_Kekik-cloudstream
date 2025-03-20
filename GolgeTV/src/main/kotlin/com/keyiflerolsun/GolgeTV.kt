@@ -40,7 +40,7 @@ class GolgeTV : MainAPI() {
     // JSON veri modelleri
     data class MainPageResp(
         val icerikler: List<Any>?,
-        val ormoxChnlx: List<OrmoxChnlx>?, // Doğru isim: "ormoxChnlx"
+        val ormoxChnlx: List<OrmoxChnlx>?,
         val menuPaylas: String?,
         val menuInstagram: String?,
         val menuTelegram: String?,
@@ -114,7 +114,7 @@ class GolgeTV : MainAPI() {
         channels
             .filter { channel ->
                 if (channel.kategori != request.name || channel.player == "m3u") return@filter false
-                if (channel.player == "iframe" && !channel.link.contains("golge")) return@filter false
+                if (channel.player == "iframe" && channel.link?.contains("golge") != true) return@filter false
                 true
             }
             .forEach { channel ->
