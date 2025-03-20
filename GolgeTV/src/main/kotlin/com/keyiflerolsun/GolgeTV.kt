@@ -53,7 +53,7 @@ suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
             "ormxArmegedEryxc" to "",
             "asize" to "FtpfiQA63G0Su9XCYQW9vg==", // Curl'dan gelen Base64 ham hali
             "serverurl" to "https://raw.githubusercontent.com/sevdaliyim/sevdaliyim/refs/heads/main/ssl2.key",
-            "glg1Key" to "1FbcLGctAooQU7L6LQ2YaDtpNHNryPGMde7wUd47Jc53lOikXegk4LKREvfKqZYk",
+            "glg1Key" to "1FbcLGctAooQU7L6LQ2YaDtpNHNryPGMde7wUd47Jc53lOikXegk4LKREvfKqZYk%0A",
             "kategori" to request.name // Örneğin "ULUSAL", "SPOR", "HABER"
         )
     )
