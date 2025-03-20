@@ -40,7 +40,7 @@ class GolgeTV : MainAPI() {
     // JSON veri modelleri
     data class MainPageResp(
         val icerikler: List<Any>?,
-        val ormocChnlx: List<OrmoxChnlx>?, // Curl'da "ormoxChnlx" olarak geliyor
+        val ormoxChnlx: List<OrmoxChnlx>?, // Doğru isim: "ormoxChnlx"
         val menuPaylas: String?,
         val menuInstagram: String?,
         val menuTelegram: String?,
@@ -73,40 +73,38 @@ class GolgeTV : MainAPI() {
         Log.d("GolgeTV", "getMainPage called with request: ${request.name}")
 
         val home = app.post(
-            request.data, // mainUrl kullanılıyor ("https://panel.cloudgolge.shop/appMainGetData.php")
+            request.data,
             headers = mapOf(
                 "x-requested-with" to "com.golge.golgetv2",
                 "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/79.0"
             ),
             data = mapOf(
                 "ormoxRoks" to "D8C42BC6CD20C00E85659003F62B1F4A7A882DCB",
-                "ormxArmegedEryxc" to "", // "ormxArmegedEryxc=" yerine düzeltildi
-                "asize" to "FtpfiQA63G0Su9XCYQW9vg==", // %3D%3D%0A kaldırıldı, ham hali
+                "ormxArmegedEryxc" to "",
+                "asize" to "FtpfiQA63G0Su9XCYQW9vg==",
                 "serverurl" to "https://raw.githubusercontent.com/sevdaliyim/sevdaliyim/refs/heads/main/ssl2.key",
-                "glg1Key" to "1FbcLGctAooQU7L6LQ2YaDtpNHNryPGMde7wUd47Jc53lOikXegk4LKREvfKqZYk", // %0A kaldırıldı
-                "kategori" to request.name // Kategori filtresi eklendi
+                "glg1Key" to "1FbcLGctAooQU7L6LQ2YaDtpNHNryPGMde7wUd47Jc53lOikXegk4LKREvfKqZYk",
+                "kategori" to request.name
             )
         )
         Log.d("GolgeTV", "Response from POST: ${home.text}")
 
-        // Boş yanıt kontrolü
         if (home.text.isEmpty()) {
             Log.e("GolgeTV", "Response is empty")
             throw Exception("Server returned empty response")
         }
 
-        // JSON parse işlemi için Jackson kullanıyoruz, bilinmeyen alanları yok say
         val mapper = jacksonObjectMapper().apply {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
         val jsonResponse = try {
-            mapper.readValue<MainPageResp>(home.text)
+            mapper.readValue(home.text, MainPageResp::class.java)
         } catch (e: Exception) {
             Log.e("GolgeTV", "Failed to parse JSON: ${home.text}, Error: ${e.message}")
             throw Exception("Failed to parse JSON response: ${e.message}")
         }
 
-        val channels = jsonResponse.ormocChnlx
+        val channels = jsonResponse.ormoxChnlx
         if (channels == null) {
             Log.e("GolgeTV", "ormoxChnlx is null in JSON response: ${home.text}")
             throw Exception("ormoxChnlx is null")
@@ -114,15 +112,15 @@ class GolgeTV : MainAPI() {
 
         val contents = mutableListOf<SearchResponse>()
         channels
-            .filter {
-                if (it.kategori != request.name || it.player == "m3u") return@filter false
-                if (it.player == "iframe" && !it.link.contains("golge")) return@filter false
-                return@filter true
+            .filter { channel ->
+                if (channel.kategori != request.name || channel.player == "m3u") return@filter false
+                if (channel.player == "iframe" && !channel.link.contains("golge")) return@filter false
+                true
             }
-            .forEach {
-                val toDict = jacksonObjectMapper().writeValueAsString(it)
-                contents.add(newLiveSearchResponse(it.isim ?: "Unknown", toDict, TvType.Live) {
-                    this.posterUrl = it.resim
+            .forEach { channel ->
+                val toDict = jacksonObjectMapper().writeValueAsString(channel)
+                contents.add(newLiveSearchResponse(channel.isim ?: "Unknown", toDict, TvType.Live) {
+                    this.posterUrl = channel.resim
                 })
             }
         Log.d("GolgeTV", "Contents size: ${contents.size}")
@@ -146,7 +144,7 @@ class GolgeTV : MainAPI() {
         Log.d("GolgeTV", "Parsed content: $content")
 
         if (content.player == "iframe") {
-            val golgeMatch = Regex("^(golge(?:2|3|4|5|6|7|8|9|1[0-9])://).*").find(content.link)
+            val golgeMatch = Regex("^(golge(?:2|3|4|5|6|7|8|9|1[0-9])://).*").find(content.link ?: "")
             if (golgeMatch != null) {
                 val (golgeProtocol) = golgeMatch.destructured
                 loadExtractor("$golgeProtocol||$data", subtitleCallback, callback)
@@ -162,7 +160,9 @@ class GolgeTV : MainAPI() {
             content.h4Key to content.h4Val,
             content.h5Key to content.h5Val
         ).filter { (key, value) -> key != null && value != null && key != "0" }
-        
+            .mapKeys { it.key!! }
+            .mapValues { it.value!! }
+
         if (content.link.isNullOrEmpty() || content.isim.isNullOrEmpty()) {
             Log.e("GolgeTV", "Invalid data - Link: ${content.link}, Name: ${content.isim}")
             return false
