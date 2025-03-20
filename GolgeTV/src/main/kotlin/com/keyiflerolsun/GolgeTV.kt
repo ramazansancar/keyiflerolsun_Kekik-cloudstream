@@ -37,6 +37,8 @@ class GolgeTV : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        Log.d("GolgeTV", "getMainPage called with request: ${request.name}")
+        
         val home = app.post(
             request.data,
             headers = mapOf(
@@ -51,9 +53,22 @@ class GolgeTV : MainAPI() {
                 "glg1Key" to "1FbcLGctAooQU7L6LQ2YaDtpNHNryPGMde7wUd47Jc53lOikXegk4LKREvfKqZYk"
             )
         )
+        Log.d("GolgeTV", "Response from POST: ${home.text}")
+
+        val jsonResponse = AppUtils.tryParseJson<MainPageResp>(home.text)
+        if (jsonResponse == null) {
+            Log.e("GolgeTV", "Failed to parse JSON: ${home.text}")
+            throw Exception("Failed to parse JSON response")
+        }
+        
+        val channels = jsonResponse.ormoxChnlx
+        if (channels == null) {
+            Log.e("GolgeTV", "ormoxChnlx is null in JSON response")
+            throw Exception("ormoxChnlx is null")
+        }
 
         val contents = mutableListOf<SearchResponse>()
-        AppUtils.tryParseJson<MainPageResp>(home.text)!!.ormoxChnlx
+        channels
             .filter {
                 if (it.kategori != request.name || it.player == "m3u") return@filter false
                 if (it.player == "iframe" && !it.link.contains("golge")) return@filter false
@@ -65,6 +80,7 @@ class GolgeTV : MainAPI() {
                     this.posterUrl = it.resim
                 })
             }
+        Log.d("GolgeTV", "Contents size: ${contents.size}")
         return newHomePageResponse(request.name, contents)
     }
 
@@ -81,10 +97,7 @@ class GolgeTV : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val content = AppUtils.tryParseJson<OrmoxChnlx>(data) ?: run {
-            Log.e("GolgeTV", "JSON parsing failed for data: $data")
-            return false
-        }
+        val content = AppUtils.tryParseJson<OrmoxChnlx>(data) ?: return false
         Log.d("GolgeTV", "Parsed content: $content")
 
         if (content.player == "iframe") {
@@ -97,17 +110,16 @@ class GolgeTV : MainAPI() {
             return false
         }
 
-        var headers = mapOf(
+        val headers = mapOf(
             content.h1Key to content.h1Val,
             content.h2Key to content.h2Val,
             content.h3Key to content.h3Val,
             content.h4Key to content.h4Val,
             content.h5Key to content.h5Val
         ).filter { (key, value) -> key != null && value != null && key != "0" }
-        Log.d("GolgeTV", "Headers: $headers")
-
+        
         if (content.link.isNullOrEmpty() || content.isim.isNullOrEmpty()) {
-            Log.e("GolgeTV", "Link or name is null or empty - Link: ${content.link}, Name: ${content.isim}")
+            Log.e("GolgeTV", "Invalid data - Link: ${content.link}, Name: ${content.isim}")
             return false
         }
 
