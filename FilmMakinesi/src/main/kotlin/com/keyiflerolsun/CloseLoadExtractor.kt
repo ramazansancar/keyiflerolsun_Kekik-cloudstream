@@ -37,19 +37,26 @@ open class CloseLoad : ExtractorApi() {
 
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
         val rawScript        = getAndUnpack(obfuscatedScript)
-        val (data)           = Regex("""return result\}var .*?=.*?\("(.*?)"\)""").find(rawScript)?.destructured ?: throw ErrorLoadingException("data not found")
-        val m3uLink          = getm3uLink(data)
-        Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
+        val regex = Regex("var player=this\\}\\);var(.*?);myPlayer\\.src")
+        val matchResult = regex.find(rawScript)
+        if (matchResult != null) {
+            val extractedString = matchResult.groups[1]?.value?.trim()?.substringAfter("=\"")?.substringBefore("\"")
+            val m3uLink = Base64.decode(extractedString, Base64.DEFAULT).toString(Charsets.UTF_8)
+            Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
-        callback.invoke(
-            ExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = m3uLink,
-                referer = mainUrl,
-                quality = Qualities.Unknown.value,
-                isM3u8  = true
+            callback.invoke(
+                ExtractorLink(
+                    source  = this.name,
+                    name    = this.name,
+                    url     = m3uLink,
+                    referer = mainUrl,
+                    quality = Qualities.Unknown.value,
+                    isM3u8  = true
+                )
             )
-        )
+        } else {
+            println("No match found")
+        }
+
     }
 }

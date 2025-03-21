@@ -184,7 +184,8 @@ class DiziGom : MainAPI() {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         Log.d("DZG", "data » ${data}")
         val document = app.get(data, referer = "$mainUrl/").document
-        val embed = document.body().selectFirst("script")?.data()
+        Log.d("Docum", document.toString())
+        val embed = document.selectFirst("div#content")?.selectFirst("script")?.data()
         val contentJson: Gof = objectMapper.readValue(embed!!)
         Log.d("DZG", "iframe » ${contentJson.contentUrl}")
         val iframeDocument = app.get(
@@ -207,7 +208,7 @@ class DiziGom : MainAPI() {
                 url = source.file,
                 referer = "$mainUrl/",
                 quality = getQualityFromName(source.label),
-                isM3u8 = false
+                isM3u8 = true
             )
         )
 

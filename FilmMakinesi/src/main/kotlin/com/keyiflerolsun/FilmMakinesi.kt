@@ -2,12 +2,14 @@
 
 package com.keyiflerolsun
 
+import android.util.Base64
 import android.util.Log
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+
 
 class FilmMakinesi : MainAPI() {
     override var mainUrl              = "https://filmmakinesi.de"
@@ -123,9 +125,8 @@ class FilmMakinesi : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("FLMM", "data » $data")
         val document      = app.get(data).document
-        val iframeElement = document.selectFirst("div.player-div iframe")
-        val iframe        = iframeElement?.attr("src") ?: iframeElement?.attr("data-src") ?: return false
-        Log.d("FLMM", "iframe » $iframe")
+        val iframe = document.selectFirst("iframe")?.attr("src") ?: ""
+        Log.d("FLMM", iframe)
 
         loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
 

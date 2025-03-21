@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class vavooSpor : MainAPI() {
-    override var mainUrl              = "https://raw.githubusercontent.com/ramazansancar/patr0nq_link/main/kekik-vavoo/vavoo-bein-ve-spor-kanallari.m3u"
+    override var mainUrl              = "https://raw.githubusercontent.com/patr0nq/link/refs/heads/main/kekik-vavoo/vavoo-sadecespor.m3u"
     override var name                 = "vavooSpor"
     override val hasMainPage          = true
     override var lang                 = "tr"

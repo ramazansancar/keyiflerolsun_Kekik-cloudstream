@@ -5,7 +5,7 @@ from Kekik.cli    import konsol
 from httpx        import Client as Session
 from parsel       import Selector
 
-mainUrl = "https://dizilla.nl"
+mainUrl = "https://dizilla.club"
 oturum  = Session()
 
 istek   = oturum.get(mainUrl)
