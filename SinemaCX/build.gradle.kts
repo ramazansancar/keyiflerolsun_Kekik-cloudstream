@@ -3,7 +3,7 @@ version = 1
 cloudstream {
     authors     = listOf("keyiflerolsun")
     language    = "tr"
-    description = "Her türlü filmi ister dublaj ister altyazılı, en kaliteli bir şekilde izleyebileceğiniz arşivi en geniş gerçek film izleme siteniz."
+    description = "Güncel ve en iyi yabancı filmleri yüksek görüntü kalitesinde, Türkçe dublaj ve altyazı seçenekleriyle filmleri full izleyin."
 
     /**
      * Status int as the following:
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie")
-    iconUrl = "https://www.google.com/s2/favicons?domain=webteizle2.com&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=www.sinema.cx&sz=%size%"
 }

@@ -20,7 +20,7 @@ class PrimeVideoMirror : MainAPI() {
     override var mainUrl              = "https://iosmirror.cc"
     override var name                 = "PrimeVideoMirror"
     override val hasMainPage          = true
-    override var lang                 = "hi"
+    override var lang                 = "en"
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
 
