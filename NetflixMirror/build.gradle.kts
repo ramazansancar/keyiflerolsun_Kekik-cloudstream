@@ -2,7 +2,7 @@ version = 1
 
 cloudstream {
     authors     = listOf("Horis, megix", "keyiflerolsun")
-    language    = "hi"
+    language    = "en"
     description = "Netflix, PrimeVideo Content in Multiple Languages"
 
     /**
