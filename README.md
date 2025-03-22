@@ -18,9 +18,7 @@ _Kullanabilmek için kendiniz derlemelisiniz.._
 ## 💾 Kurulum
 
 1. **[cloudstream/pre-release](https://github.com/recloudstream/cloudstream/releases/tag/pre-release)** _Adresinden güncel APK dosyasını indirip kurun._
-2. **Uygulamanın yüklü olduğu cihazda** _[depoyu otomatik yüklemek için tıklayın](https://keyiflerolsun.me/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/keyiflerolsun/Kekik-cloudstream/master/repo.json)_
-   - **veya**
-   - `Depo ekle` _butonuyla **manuel** ekleme yapmak isteyen arkadaşlar için_ `KekikAkademi` _**kısa kod**u mevcuttur._ `Depo ismi` _kısmını boş bırakarak_ `Depo URL'si` _kısmına_ `KekikAkademi` yazarak `Depo ekle` _demeniz yeterli.._
+2. **Uygulamanın yüklü olduğu cihazda** _[depoyu otomatik yüklemek için tıklayın](https://keyiflerolsun.me/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/feroxx/Kekik-cloudstream/master/repo.json)_
 
 ## 📼 Video Anlatım
 
