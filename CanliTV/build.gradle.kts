@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("Adippe", "keyiflerolsun")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Canlı TV"
 
