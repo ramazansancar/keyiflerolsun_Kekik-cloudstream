@@ -46,11 +46,7 @@ class IzleAI : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data).document
-        val home     = if (request.data.contains("/film-izle")) { 
-            document.select("div.grid-cols-2 a").mapNotNull { it.diziler() }
-        } else {
-            document.select("div.grid a").mapNotNull { it.sonBolumler() }
-        }
+        val home     = document.select("div.grid-cols-3 a").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
