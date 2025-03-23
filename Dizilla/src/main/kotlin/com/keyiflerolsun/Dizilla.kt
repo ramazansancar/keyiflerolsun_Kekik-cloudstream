@@ -34,7 +34,7 @@ class Dizilla : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data).document
-        val home     = if (request.data.contains("dizi-turu")) { 
+        val home     = if (request.data.contains("/tum-bolumler")) { 
             document.select("div.grid-cols-3 a").mapNotNull { it.diziler() }
         } else {
             document.select("div.grid a").mapNotNull { it.sonBolumler() }
