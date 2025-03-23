@@ -19,8 +19,8 @@ class IzleAI : MainAPI() {
 
     // ! CloudFlare bypass
     override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 50L  // ? 0.05 saniye
-    override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
+    override var sequentialMainPageDelay       = 250L  // ? 0.05 saniye
+    override var sequentialMainPageScrollDelay = 250L  // ? 0.05 saniye
 
     override val mainPage = mainPageOf(
         "${mainUrl}/film-kategori/aile"        to "Aile",
@@ -46,8 +46,9 @@ class IzleAI : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data).document
-        val home     = document.select("div.grid-cols-3 a").mapNotNull { it.toSearchResult() }
-
+        val home     = if (request.data.contains("/film-izle")) {
+		document.select("div.grid-cols-2 a").mapNotNull { it.toSearchResult() }
+        }
         return newHomePageResponse(request.name, home)
     }
 

@@ -22,7 +22,6 @@ class Dizilla : MainAPI() {
     // override var sequentialMainPageScrollDelay = 250L // ? 0.25 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/tum-bolumler"          to "Altyazılı Bölümler",
         "${mainUrl}/dublaj-bolumler"       to "Dublaj Bölümler",
         "${mainUrl}/dizi-turu/aile"        to "Aile",
         "${mainUrl}/dizi-turu/aksiyon"     to "Aksiyon",
@@ -34,10 +33,10 @@ class Dizilla : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data).document
-        val home     = if (request.data.contains("/tum-bolumler")) { 
-            document.select("div.grid-cols-3 a").mapNotNull { it.diziler() }
+        val home     = if (request.data.contains("/dizi-izle")) { 
+            document.select("div.grid-cols-2 a").mapNotNull { it.diziler() }
         } else {
-            document.select("div.grid a").mapNotNull { it.sonBolumler() }
+            document.select("div.grid-cols-3 a").mapNotNull { it.sonBolumler() }
         }
 
         return newHomePageResponse(request.name, home)
