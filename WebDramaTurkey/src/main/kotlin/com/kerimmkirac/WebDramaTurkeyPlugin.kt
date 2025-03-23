@@ -1,12 +1,12 @@
-package com.nikyokki
+package com.kerimmkirac
 
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
 import android.content.Context
 
 @CloudstreamPlugin
-class DiziGomPlugin: Plugin() {
+class WebDramaTurkeyPlugin: Plugin() {
     override fun load(context: Context) {
-        registerMainAPI(WebDramaTurkey())
+        registerMainAPI(WdtProvider())
     }
 }
