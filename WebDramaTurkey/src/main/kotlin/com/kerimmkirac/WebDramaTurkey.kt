@@ -126,7 +126,7 @@ class WebDramaTurkey : MainAPI() {
             }
         }
     
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries) {
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries,episodes) {
             this.posterUrl = poster
             this.year = year
             this.plot = description
