@@ -7,6 +7,6 @@ import android.content.Context
 @CloudstreamPlugin
 class WebDramaTurkeyPlugin: Plugin() {
     override fun load(context: Context) {
-        registerMainAPI(WdtProvider())
+        registerMainAPI(WebDramaTurkey())
     }
 }

@@ -37,36 +37,33 @@ class WebDramaTurkey : MainAPI() {
     override val hasQuickSearch = false
     override val hasChromecastSupport = true
     override val hasDownloadSupport = true
-    override val supportedTypes = setOf(TvType.TvSeries,TvType.Movie)
+    override val supportedTypes = setOf(TvType.TvSeries, TvType.Movie)
 
     override val mainPage = mainPageOf(
         "${mainUrl}/diziler" to "Diziler",
         "${mainUrl}/filmler" to "Filmler",
         "${mainUrl}/programlar" to "Programlar",
         "${mainUrl}/animeler" to "Animeler",
-        
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}/${page}").document
-        val home = document.select("div.col sonyuklemeler").mapNotNull { it.toSearchResult() }
+        val home = document.select("div.col.sonyuklemeler").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
         val title = this.selectFirst("div.list-title")?.text() ?: return null
-    
-        val href = fixUrlNull(this.selectFirst("div.col.sonyuklemeler a")?.attr("href")) ?: return null
-    
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val style = this.selectFirst("div.media-episode")?.attr("style") ?: return null
         val posterUrl = extractBackgroundImageUrl(style)?.let { fixUrlNull(it) } ?: return null
-    
+
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
             this.posterUrl = posterUrl
         }
     }
-    
+
     private fun extractBackgroundImageUrl(style: String): String? {
         val regex = Regex("""url\(["']?(.*?)["']?\)""")
         return regex.find(style)?.groupValues?.get(1)
@@ -75,18 +72,16 @@ class WebDramaTurkey : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
         val document = app.get("${mainUrl}/?s=${encodedQuery}").document
-    
+
         return document.select("div.list-movie").mapNotNull { it.toSearchResult() }
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("a.list-title")?.text()?.trim() ?: return null
-    
         val href = fixUrlNull(this.selectFirst("a.list-title")?.attr("href")) ?: return null
-    
         val style = this.selectFirst("div.media-cover")?.attr("style") ?: return null
         val posterUrl = extractBackgroundImageUrl(style)?.let { fixUrlNull(it) } ?: return null
-    
+
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
             this.posterUrl = posterUrl
         }
@@ -96,23 +91,15 @@ class WebDramaTurkey : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
-    
+
         val title = document.selectFirst("h1")?.text()?.trim() ?: return null
-    
         val posterStyle = document.selectFirst("div.media-cover")?.attr("style") ?: return null
         val poster = extractBackgroundImageUrl(posterStyle)?.let { fixUrlNull(it) } ?: return null
-    
         val description = document.selectFirst("div.detail-attr div.text-content")?.text()?.trim()
-    
         val year = document.select("div.featured-attr").firstOrNull {
             it.selectFirst("div.attr")?.text()?.contains("Yayın yılı") == true
         }?.selectFirst("div.text")?.text()?.trim()?.toIntOrNull()
-    
         val tags = document.select("div.categories a").map { it.text().trim() }
-    
-    
-    
-    
         val episodes = document.select("div.episodes a").mapNotNull {
             val episodeNumber = it.selectFirst("div.episode")?.text()?.trim()
             val episodeUrl = fixUrlNull(it.attr("href"))
@@ -122,8 +109,8 @@ class WebDramaTurkey : MainAPI() {
                 null
             }
         }
-    
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries,episodes) {
+
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
             this.posterUrl = poster
             this.year = year
             this.plot = description
@@ -138,7 +125,13 @@ class WebDramaTurkey : MainAPI() {
         val iframe = document.selectFirst("iframe")?.attr("src") ?: ""
         Log.d("TFD", iframe)
 
-
         return true
+    }
+}
+
+@CloudstreamPlugin
+class WebDramaTurkeyPlugin : Plugin() {
+    override fun load(context: Context) {
+        registerMainAPI(WebDramaTurkey())
     }
 }
