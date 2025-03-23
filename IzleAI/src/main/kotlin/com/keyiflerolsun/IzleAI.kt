@@ -48,7 +48,9 @@ class IzleAI : MainAPI() {
         val document = app.get(request.data).document
         val home     = if (request.data.contains("/film-izle")) {
 		document.select("div.grid-cols-2 a").mapNotNull { it.toSearchResult() }
-        }
+        } else {
+		     document.select("div.grid-cols-3 a").mapNotNull { it.toSearchResult() }
+		}
         return newHomePageResponse(request.name, home)
     }
 
