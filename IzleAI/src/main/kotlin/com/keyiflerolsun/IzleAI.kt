@@ -18,30 +18,30 @@ class IzleAI : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie)
 
     // ! CloudFlare bypass
-    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
     override var sequentialMainPageDelay       = 50L  // ? 0.05 saniye
     override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/kategori/aile-filmleri"        to "Aile",
-        "${mainUrl}/kategori/aksiyon-filmleri"     to "Aksiyon",
-        "${mainUrl}/kategori/animasyon-filmleri"   to "Animasyon",
-        "${mainUrl}/kategori/belgesel-filmleri"    to "Belgesel",
-        "${mainUrl}/kategori/bilim-kurgu-filmleri" to "Bilim Kurgu",
-        "${mainUrl}/kategori/dram-filmleri"        to "Dram",
-        "${mainUrl}/kategori/fantastik-filmleri"   to "Fantastik",
-        "${mainUrl}/kategori/film-noir-filmleri"   to "Film-Noir",
-        "${mainUrl}/kategori/gerilim-filmleri"     to "Gerilim",
-        "${mainUrl}/kategori/gizem-filmleri"       to "Gizem",
-        "${mainUrl}/kategori/kisa-filmleri"        to "Kısa Film",
-        "${mainUrl}/kategori/komedi-filmleri"      to "Komedi",
-        "${mainUrl}/kategori/korku-filmleri"       to "Korku",
-        "${mainUrl}/kategori/macera-filmleri"      to "Macera",
-        "${mainUrl}/kategori/muzik-filmleri"       to "Müzik",
-        "${mainUrl}/kategori/romantik-filmleri"    to "Romantik",
-        "${mainUrl}/kategori/savas-filmleri"       to "Savaş",
-        "${mainUrl}/kategori/spor-filmleri"        to "Spor",
-        "${mainUrl}/kategori/suc-filmleri"         to "Suç",
+        "${mainUrl}/film-kategori/aile"        to "Aile",
+        "${mainUrl}/film-kategori/aksiyon"     to "Aksiyon",
+        "${mainUrl}/film-kategori/animasyon"   to "Animasyon",
+        "${mainUrl}/film-kategori/belgesel"    to "Belgesel",
+        "${mainUrl}/film-kategori/bilim-kurgu" to "Bilim Kurgu",
+        "${mainUrl}/film-kategori/dram"        to "Dram",
+        "${mainUrl}/film-kategori/fantastik"   to "Fantastik",
+        "${mainUrl}/film-kategori/film-noir"   to "Film-Noir",
+        "${mainUrl}/film-kategori/gerilim"     to "Gerilim",
+        "${mainUrl}/film-kategori/gizem"       to "Gizem",
+        "${mainUrl}/film-kategori/kisa"        to "Kısa Film",
+        "${mainUrl}/film-kategori/komedi"      to "Komedi",
+        "${mainUrl}/film-kategori/korku"       to "Korku",
+        "${mainUrl}/film-kategori/macera"      to "Macera",
+        "${mainUrl}/film-kategori/muzik"       to "Müzik",
+        "${mainUrl}/film-kategori/romantik"    to "Romantik",
+        "${mainUrl}/film-kategori/savas"       to "Savaş",
+        "${mainUrl}/film-kategori/spor"        to "Spor",
+        "${mainUrl}/film-kategori/suc"         to "Suç",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -120,7 +120,7 @@ class IzleAI : MainAPI() {
         val poster      = fixUrlNull(document.selectFirst("div.col-span-2 img")?.attr("data-src"))
         val year        = document.selectFirst("a[href*='/yil/']")?.text()?.toIntOrNull()
         val description = document.selectFirst("div.mv-det-p")?.text()?.trim() ?: document.selectFirst("div.w-full div.text-base")?.text()?.trim()
-        val tags        = document.select("[href*='kategori']").map { it.text() }
+        val tags        = document.select("[href*='film-kategori']").map { it.text() }
         val rating      = document.selectFirst("a[href*='imdb.com'] span.font-bold")?.text()?.trim().toRatingInt()
         val duration    = document.selectXpath("//span[contains(text(), ' dk.')]").text().trim().split(" ").first().toIntOrNull()
         val trailer     = document.selectFirst("iframe[data-src*='youtube.com/embed/']")?.attr("data-src")

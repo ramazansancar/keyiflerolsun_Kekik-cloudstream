@@ -17,7 +17,7 @@ class Dizilla : MainAPI() {
     override val supportedTypes       = setOf(TvType.TvSeries)
 
     // ! CloudFlare bypass
-    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
     // override var sequentialMainPageDelay       = 250L // ? 0.25 saniye
     // override var sequentialMainPageScrollDelay = 250L // ? 0.25 saniye
 
@@ -28,7 +28,8 @@ class Dizilla : MainAPI() {
         "${mainUrl}/dizi-turu/aksiyon"     to "Aksiyon",
         "${mainUrl}/dizi-turu/bilim-kurgu" to "Bilim Kurgu",
         "${mainUrl}/dizi-turu/romantik"    to "Romantik",
-        "${mainUrl}/dizi-turu/komedi"      to "Komedi"
+        "${mainUrl}/dizi-turu/komedi"      to "Komedi",
+        "${mainUrl}/dizi-turu/drama"       to "Drama",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -52,7 +53,7 @@ class Dizilla : MainAPI() {
 
     private suspend fun Element.sonBolumler(): SearchResponse? {
         val name   = this.selectFirst("h2")?.text() ?: return null
-        val epName = this.selectFirst("div.opacity-80")!!.text().replace(". Sezon ", "x").replace(". Bölüm", "")
+        val epName = this.selectFirst("div.opacity-60")!!.text().replace(". Sezon ", "x").replace(". Bölüm", "")
         val title  = "$name - $epName"
 
         val epDoc     = app.get(this.attr("href")).document
