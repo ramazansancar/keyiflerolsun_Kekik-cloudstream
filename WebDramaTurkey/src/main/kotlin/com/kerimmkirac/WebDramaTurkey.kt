@@ -110,11 +110,8 @@ class WebDramaTurkey : MainAPI() {
     
         val tags = document.select("div.categories a").map { it.text().trim() }
     
-        val rating = null
     
-        val actors = emptyList<String>()
     
-        val trailer = null
     
         val episodes = document.select("div.episodes a").mapNotNull {
             val episodeNumber = it.selectFirst("div.episode")?.text()?.trim()
@@ -131,9 +128,6 @@ class WebDramaTurkey : MainAPI() {
             this.year = year
             this.plot = description
             this.tags = tags
-            this.rating = rating
-            this.actors = actors
-            this.trailer = trailer
             this.episodes = episodes
         }
     }
@@ -144,7 +138,6 @@ class WebDramaTurkey : MainAPI() {
         val iframe = document.selectFirst("iframe")?.attr("src") ?: ""
         Log.d("TFD", iframe)
 
-        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
 
         return true
     }
