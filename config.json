@@ -1,7 +1,9 @@
 {
     "main_urls": [
         "https://a.prectv41.sbs",
-        "https://c.prectv40.sbs"
+        "https://a.prectv43.sbs",
+        "https://c.prectv40.sbs",
+        "https://m.prectv42.sbs"
     ],
     "sw_key": "4F5A9C3D9A86FA54EACEDDD635185/c3c5bd17-e37b-4b94-a944-8a3688a30452",
     "config_url": "https://raw.githubusercontent.com/muhammetaliaydin/rectv-windows/refs/heads/master/config.json",
