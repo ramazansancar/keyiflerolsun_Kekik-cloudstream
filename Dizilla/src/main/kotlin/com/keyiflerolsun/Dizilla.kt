@@ -194,7 +194,7 @@ class Dizilla : MainAPI() {
             )
 
             val response = app.get(url, headers = headers)
-            Log.d("DZL", "Response code: ${response.statusCode}")
+            Log.d("DZL", "Response code: ${response.code}")
 
             val doc = response.document
             val html = doc.html()
