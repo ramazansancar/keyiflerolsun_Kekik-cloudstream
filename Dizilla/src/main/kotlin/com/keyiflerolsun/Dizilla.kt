@@ -51,7 +51,7 @@ class Dizilla : MainAPI() {
     }
 
     private suspend fun Element.sonBolumler(): SearchResponse? {
-        val name   = this.selectFirst("img")?.attr("alt")?.text() ?: return null
+        val name   = this.selectFirst("img")?.attr("alt") ?: return null
         val title  = "$name"
 
         val epDoc     = app.get(this.attr("href")).document
@@ -136,8 +136,8 @@ class Dizilla : MainAPI() {
                 val epEpisode     = episodeElement.selectFirst("a.opacity-60")?.text()?.toIntOrNull()
         
                 val parentDiv   = episodeElement.parent()
-                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("szn") }
-                val epSeason    = seasonClass?.substringAfter("szn")?.toIntOrNull()
+                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
+                val epSeason    = seasonClass?.substringAfter("season-lists")?.toIntOrNull()
 
                 episodeList.add(newEpisode(epHref) {
                     this.name = epName
@@ -156,8 +156,8 @@ class Dizilla : MainAPI() {
                 val epEpisode     = dubEpisodeElement.selectFirst("a.opacity-60")?.text()?.toIntOrNull()
         
                 val parentDiv   = dubEpisodeElement.parent()
-                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("szn") }
-                val epSeason    = seasonClass?.substringAfter("szn")?.toIntOrNull()
+                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
+                val epSeason    = seasonClass?.substringAfter("season-lists")?.toIntOrNull()
 
                 episodeList.add(newEpisode(epHref) {
                     this.name = "$epName Dublaj"
