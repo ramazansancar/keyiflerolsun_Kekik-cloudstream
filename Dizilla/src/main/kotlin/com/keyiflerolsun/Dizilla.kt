@@ -111,6 +111,8 @@ class Dizilla : MainAPI() {
 
 override suspend fun load(url: String): LoadResponse? {
     val document = app.get(url).document
+    Log.d("DZL", "Load URL: $url")
+    Log.d("DZL", "Document HTML: ${document.html().substring(0, 500)}")
 
     val title = document.selectFirst("div.page-top h1")?.text() ?: return null
     val poster = fixUrlNull(document.selectFirst("div.page-top img")?.attr("src"))
@@ -125,43 +127,48 @@ override suspend fun load(url: String): LoadResponse? {
     val actors = document.select("[href*='oyuncu']").map { Actor(it.text()) }
 
     val episodeList = mutableListOf<Episode>()
-    document.selectXpath("//div[contains(@class, 'gap-2')]/a[contains(@href, '-sezon')]").forEach {
-        val epDoc = app.get(fixUrlNull(it.attr("href")) ?: return@forEach).document
-
-        epDoc.select("div.episodes div.cursor-pointer").forEach ep@ { episodeElement ->
-            val epLinkElement = episodeElement.selectFirst("a") ?: return@ep
-            val epHref = fixUrlNull(epLinkElement.attr("href")) ?: return@ep
-
-            // "1. Sezon 1. Bölüm" metninden sezon ve bölüm numaralarını çıkar
-            val seasonEpisodeText = epLinkElement.selectFirst("span.text-sm")?.text() ?: return@ep
-            val (epSeason, epEpisode) = Regex("(\\d+)\\. Sezon (\\d+)\\. Bölüm").find(seasonEpisodeText)?.destructured
-                ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@ep
-
-            val epName = seasonEpisodeText // "1. Sezon 1. Bölüm" direkt isim olarak kullanılabilir
-            val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim() // Tarih: "21 Mart 2025"
-            val epPoster = epDoc.selectFirst("img.object-cover")?.attr("src")
-
-            episodeList.add(newEpisode(epHref) {
-                this.name = epName
-                this.season = epSeason
-                this.episode = epEpisode
-                this.description = epDescription
-                this.posterUrl = epPoster
-            })
+    
+    // Sezonun diğer bölümleri için yeni seçici
+    document.select("ul li a[href*='-sezon'][href*='-bolum']").forEach { epLinkElement ->
+        val epHref = fixUrlNull(epLinkElement.attr("href")) ?: return@forEach
+        val seasonEpisodeText = epLinkElement.selectFirst("span.text-sm")?.text() ?: return@forEach
+        if (seasonEpisodeText.contains("Coming Soon", ignoreCase = true)) {
+            Log.d("DZL", "Skipping Coming Soon episode: $seasonEpisodeText")
+            return@forEach
         }
 
-        // Dublaj bölümleri için benzer bir düzenleme
-        epDoc.select("div.dub-episodes div.cursor-pointer").forEach epDub@ { dubEpisodeElement ->
-            val epLinkElement = dubEpisodeElement.selectFirst("a") ?: return@epDub
-            val epHref = fixUrlNull(epLinkElement.attr("href")) ?: return@epDub
+        val (epSeason, epEpisode) = Regex("(\\d+)\\. Sezon (\\d+)\\. Bölüm").find(seasonEpisodeText)?.destructured
+            ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@forEach
 
-            val seasonEpisodeText = epLinkElement.selectFirst("span.text-sm")?.text() ?: return@epDub
-            val (epSeason, epEpisode) = Regex("(\\d+)\\. Sezon (\\d+)\\. Bölüm").find(seasonEpisodeText)?.destructured
-                ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@epDub
+        val epName = seasonEpisodeText
+        val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim()
+        val epPoster = document.selectFirst("img.object-cover")?.attr("src")
+        Log.d("DZL", "Episode: $epName, Href: $epHref, Desc: $epDescription")
 
+        episodeList.add(newEpisode(epHref) {
+            this.name = epName
+            this.season = epSeason
+            this.episode = epEpisode
+            this.description = epDescription
+            this.posterUrl = epPoster
+        })
+    }
+
+    // Dublaj bölümleri için ek kontrol (varsa)
+    document.select("ul li a[href*='-sezon'][href*='-bolum']").forEach { epLinkElement ->
+        val epHref = fixUrlNull(epLinkElement.attr("href")) ?: return@forEach
+        val seasonEpisodeText = epLinkElement.selectFirst("span.text-sm")?.text() ?: return@forEach
+        if (seasonEpisodeText.contains("Coming Soon", ignoreCase = true)) return@forEach
+
+        val (epSeason, epEpisode) = Regex("(\\d+)\\. Sezon (\\d+)\\. Bölüm").find(seasonEpisodeText)?.destructured
+            ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@forEach
+
+        // Dublaj kontrolü için ek bir işaret yoksa, aynı listeden alınabilir
+        if (epLinkElement.text().contains("Dublaj", ignoreCase = true)) {
             val epName = seasonEpisodeText
             val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim()
-            val epPoster = epDoc.selectFirst("img")?.attr("src")
+            val epPoster = document.selectFirst("img")?.attr("src")
+            Log.d("DZL", "Dub Episode: $epName Dublaj, Href: $epHref")
 
             episodeList.add(newEpisode(epHref) {
                 this.name = "$epName Dublaj"
