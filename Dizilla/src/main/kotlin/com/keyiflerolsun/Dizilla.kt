@@ -199,7 +199,7 @@ class Dizilla : MainAPI() {
         val document = response.document
 
         // İframe'i seç ve URL'yi oluştur
-        val iframeSrc = document.selectFirst("div#dizillaVideoP iframe")?.attr("src")
+        val iframeSrc = document.selectFirst("div#dizillaVideoP div iframe")?.attr("src")
         val iframe = iframeSrc?.let { fixUrlNull(it)?.let { url -> "https:$url" } }
 
         if (iframe.isNullOrEmpty()) {
