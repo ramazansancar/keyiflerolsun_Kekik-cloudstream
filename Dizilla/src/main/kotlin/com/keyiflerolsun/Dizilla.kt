@@ -197,6 +197,8 @@ class Dizilla : MainAPI() {
 
         Log.d("DZL", "Response code: ${response.code}")
         val document = response.document
+		
+		Log.d("DZL", "Full HTML: ${document.html()}")
 
         // İframe'i seç ve URL'yi oluştur
         val iframeSrc = document.selectFirst("div#dizillaVideoP div iframe")?.attr("src")
