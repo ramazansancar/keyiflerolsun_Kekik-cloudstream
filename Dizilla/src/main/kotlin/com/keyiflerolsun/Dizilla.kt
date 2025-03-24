@@ -55,7 +55,7 @@ class Dizilla : MainAPI() {
         val title  = "$name - $epName"
 
         val epDoc     = app.get(this.attr("href")).document
-        val href      = fixUrlNull(epDoc.selectFirst("a.relative")?.attr("href")) ?: return null
+        val href      = fixUrlNull(epDoc.selectFirst("image.eps-t")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(epDoc.selectFirst("img")?.attr("src")?.substringAfter("= '")?.substringBefore("';"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
