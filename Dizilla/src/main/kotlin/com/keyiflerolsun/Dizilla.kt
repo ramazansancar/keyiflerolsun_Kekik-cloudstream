@@ -22,6 +22,7 @@ class Dizilla : MainAPI() {
     // override var sequentialMainPageScrollDelay = 250L // ? 0.25 saniye
 
     override val mainPage = mainPageOf(
+        "${mainUrl}/dizi-izle"             to "Yeni Eklenen Diziler",
         "${mainUrl}/dizi-turu/aile"        to "Aile",
         "${mainUrl}/dizi-turu/aksiyon"     to "Aksiyon",
         "${mainUrl}/dizi-turu/bilim-kurgu" to "Bilim Kurgu",
