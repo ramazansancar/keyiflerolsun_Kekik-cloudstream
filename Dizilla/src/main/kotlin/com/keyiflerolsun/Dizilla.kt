@@ -181,7 +181,7 @@ class Dizilla : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("DZL", "data » $data")
 
-        val document = app.get(data).document
+        val document = app.get(data, referer = data).document
 
         // İframe içindeki src değerini al ve tam URL'ye çevir
         val iframe = fixUrlNull(document.selectFirst("div#dizillaVideoP iframe")?.attr("src"))?.let { "https:$it" }
