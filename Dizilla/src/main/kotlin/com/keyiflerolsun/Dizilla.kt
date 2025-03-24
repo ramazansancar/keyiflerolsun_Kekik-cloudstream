@@ -52,6 +52,7 @@ class Dizilla : MainAPI() {
 
     private suspend fun Element.sonBolumler(): SearchResponse? {
         val name   = this.selectFirst("img")?.attr("alt")?.text() ?: return null
+        val title  = "$name
 
         val epDoc     = app.get(this.attr("href")).document
         val href      = fixUrlNull(epDoc.selectFirst("a")?.attr("href")) ?: return null
