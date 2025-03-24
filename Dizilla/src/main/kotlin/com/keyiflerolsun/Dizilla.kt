@@ -129,10 +129,10 @@ class Dizilla : MainAPI() {
         
             epDoc.select("div.episodes div.cursor-pointer").forEach ep@ { episodeElement ->
                 val epName        = episodeElement.select("a").last()?.text()?.trim() ?: return@ep
-                val epHref        = fixUrlNull(episodeElement.selectFirst("a.opacity-60")?.attr("href")) ?: return@ep
+                val epHref        = fixUrlNull(episodeElement.selectFirst("a")?.attr("href")) ?: return@ep
                 val epDescription = episodeElement.selectFirst("span.t-content")?.text()?.trim()
                 val epPoster      = epDoc.selectFirst("img.object-cover")?.attr("src")
-                val epEpisode     = episodeElement.selectFirst("a.opacity-60")?.text()?.toIntOrNull()
+                val epEpisode     = episodeElement.selectFirst("span.opacity-60")?.text()?.toIntOrNull()
         
                 val parentDiv   = episodeElement.parent()
                 val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("szn") }
