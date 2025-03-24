@@ -150,8 +150,8 @@ class Dizilla : MainAPI() {
             epDoc.select("div.dub-episodes div.cursor-pointer").forEach epDub@ { dubEpisodeElement ->
                 val epName        = dubEpisodeElement.select("a").last()?.text()?.trim() ?: return@epDub
                 val epHref        = fixUrlNull(dubEpisodeElement.selectFirst("a.opacity-50")?.attr("href")) ?: return@epDub
-                val epDescription = dubEpisodeElement.selectFirst("span.t-content")?.text()?.trim()
-                val epPoster      = epDoc.selectFirst("img.object-cover")?.attr("src")
+                val epDescription = dubEpisodeElement.selectFirst("bg-\\[\\#121215\\]")?.text()?.trim()
+                val epPoster      = epDoc.selectFirst("img")?.attr("src")
                 val epEpisode     = dubEpisodeElement.selectFirst("a.opacity-50")?.text()?.toIntOrNull()
         
                 val parentDiv   = dubEpisodeElement.parent()
