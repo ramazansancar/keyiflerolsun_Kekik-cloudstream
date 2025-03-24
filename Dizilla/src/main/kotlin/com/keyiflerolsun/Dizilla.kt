@@ -129,10 +129,10 @@ class Dizilla : MainAPI() {
         
             epDoc.select("div.episodes div.cursor-pointer").forEach ep@ { episodeElement ->
                 val epName        = episodeElement.select("a").last()?.text()?.trim() ?: return@ep
-                val epHref        = fixUrlNull(episodeElement.selectFirst("a.opacity-60")?.attr("href")) ?: return@ep
+                val epHref        = fixUrlNull(episodeElement.selectFirst("a.opacity-50")?.attr("href")) ?: return@ep
                 val epDescription = episodeElement.selectFirst("span.t-content")?.text()?.trim()
                 val epPoster      = epDoc.selectFirst("img.object-cover")?.attr("src")
-                val epEpisode     = episodeElement.selectFirst("a.opacity-60")?.text()?.toIntOrNull()
+                val epEpisode     = episodeElement.selectFirst("a.opacity-50")?.text()?.toIntOrNull()
         
                 val parentDiv   = episodeElement.parent()
                 val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
@@ -149,10 +149,10 @@ class Dizilla : MainAPI() {
         
             epDoc.select("div.dub-episodes div.cursor-pointer").forEach epDub@ { dubEpisodeElement ->
                 val epName        = dubEpisodeElement.select("a").last()?.text()?.trim() ?: return@epDub
-                val epHref        = fixUrlNull(dubEpisodeElement.selectFirst("a.opacity-60")?.attr("href")) ?: return@epDub
+                val epHref        = fixUrlNull(dubEpisodeElement.selectFirst("a.opacity-50")?.attr("href")) ?: return@epDub
                 val epDescription = dubEpisodeElement.selectFirst("span.t-content")?.text()?.trim()
                 val epPoster      = epDoc.selectFirst("img.object-cover")?.attr("src")
-                val epEpisode     = dubEpisodeElement.selectFirst("a.opacity-60")?.text()?.toIntOrNull()
+                val epEpisode     = dubEpisodeElement.selectFirst("a.opacity-50")?.text()?.toIntOrNull()
         
                 val parentDiv   = dubEpisodeElement.parent()
                 val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
