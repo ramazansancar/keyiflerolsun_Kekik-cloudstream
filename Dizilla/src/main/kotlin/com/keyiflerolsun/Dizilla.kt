@@ -141,7 +141,7 @@ override suspend fun load(url: String): LoadResponse? {
             ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@forEach
 
         val epName = seasonEpisodeText
-        val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim()
+        val epDescription = epLinkElement.selectFirst("span.opacity-60")?.text()?.trim()
         val epPoster = document.selectFirst("img.object-cover")?.attr("src")
         Log.d("DZL", "Episode: $epName, Href: $epHref, Desc: $epDescription")
 
@@ -166,7 +166,7 @@ override suspend fun load(url: String): LoadResponse? {
         // Dublaj kontrolü için ek bir işaret yoksa, aynı listeden alınabilir
         if (epLinkElement.text().contains("Dublaj", ignoreCase = true)) {
             val epName = seasonEpisodeText
-            val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim()
+            val epDescription = epLinkElement.selectFirst("span.opacity-60")?.text()?.trim()
             val epPoster = document.selectFirst("img")?.attr("src")
             Log.d("DZL", "Dub Episode: $epName Dublaj, Href: $epHref")
 
