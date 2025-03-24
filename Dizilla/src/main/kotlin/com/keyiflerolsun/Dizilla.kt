@@ -180,30 +180,23 @@ class Dizilla : MainAPI() {
     }
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("DZL", "data » $data")
+
         val document = app.get(data).document
-        val iframes  = mutableSetOf<String>()
 
-        val alternatifler = document.select("a[href*='player']")
-        if (alternatifler.isEmpty()) {
-            val iframe = fixUrlNull(document.selectFirst("div#dizillaVideoP iframe")?.attr("src")) ?: return false
+        // İframe içindeki src değerini al ve tam URL'ye çevir
+        val iframe = fixUrlNull(document.selectFirst("div#dizillaVideoP iframe")?.attr("src"))?.let { "https:$it" }
 
-            Log.d("DZL", "iframe » $iframe")
-
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-        } else {
-            alternatifler.forEach {
-                val playerDoc = app.get(fixUrlNull(it.attr("href")) ?: return@forEach).document
-                val iframe    = fixUrlNull(playerDoc.selectFirst("div#dizillaVideoP iframe")?.attr("src")) ?: return false
-
-                if (iframe in iframes) { return@forEach }
-                iframes.add(iframe)
-
-                Log.d("DZL", "iframe » $iframe")
-
-                loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-            }
+        if (iframe.isNullOrEmpty()) {
+            Log.e("DZL", "No iframe found!")
+            return false
         }
+
+        Log.d("DZL", "Found iframe URL: $iframe")
+
+        // Extractor fonksiyonunu çağırarak videoyu oynatabilir hale getiriyoruz
+        loadExtractor(iframe, mainUrl, subtitleCallback, callback)
 
         return true
     }
+
 }
