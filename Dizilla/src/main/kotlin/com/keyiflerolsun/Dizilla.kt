@@ -185,7 +185,7 @@ class Dizilla : MainAPI() {
 
         val alternatifler = document.select("a[href*='player']")
         if (alternatifler.isEmpty()) {
-            val iframe = fixUrlNull(document.selectFirst("div#playerLsDizilla iframe")?.attr("src")) ?: return false
+            val iframe = fixUrlNull(document.selectFirst("div#dizillaVideoP iframe")?.attr("src")) ?: return false
 
             Log.d("DZL", "iframe » $iframe")
 
@@ -193,7 +193,7 @@ class Dizilla : MainAPI() {
         } else {
             alternatifler.forEach {
                 val playerDoc = app.get(fixUrlNull(it.attr("href")) ?: return@forEach).document
-                val iframe    = fixUrlNull(playerDoc.selectFirst("div#playerLsDizilla iframe")?.attr("src")) ?: return false
+                val iframe    = fixUrlNull(playerDoc.selectFirst("div#dizillaVideoP iframe")?.attr("src")) ?: return false
 
                 if (iframe in iframes) { return@forEach }
                 iframes.add(iframe)
