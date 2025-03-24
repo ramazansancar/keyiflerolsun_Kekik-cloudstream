@@ -109,75 +109,80 @@ class Dizilla : MainAPI() {
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
-    override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+override suspend fun load(url: String): LoadResponse? {
+    val document = app.get(url).document
 
-        val title       = document.selectFirst("div.page-top h1")?.text() ?: return null
-        val poster      = fixUrlNull(document.selectFirst("div.page-top img")?.attr("src")) ?: fixUrlNull(document.selectFirst("div.page-top img")?.attr("data-src"))
-        val year        = document.selectXpath("//span[text()='Yayın tarihi']//following-sibling::span").text().trim().split(" ").last().toIntOrNull()
-        val description = document.selectFirst("div.mv-det-p")?.text()?.trim() ?: document.selectFirst("div.w-full div.text-base")?.text()?.trim()
-        val tags        = document.select("[href*='dizi-turu']").map { it.text() }
-        val rating      = document.selectFirst("a[href*='imdb.com'] span")?.text()?.trim().toRatingInt()
-        val duration    = Regex("(\\d+)").find(document.select("div.gap-1 span.text-sm")[1].text())?.value?.toIntOrNull()
-        val actors      = document.select("[href*='oyuncu']").map {
-            Actor(it.text())
+    val title = document.selectFirst("div.page-top h1")?.text() ?: return null
+    val poster = fixUrlNull(document.selectFirst("div.page-top img")?.attr("src"))
+        ?: fixUrlNull(document.selectFirst("div.page-top img")?.attr("data-src"))
+    val year = document.selectXpath("//span[text()='Yayın tarihi']//following-sibling::span")
+        .text().trim().split(" ").last().toIntOrNull()
+    val description = document.selectFirst("div.mv-det-p")?.text()?.trim()
+        ?: document.selectFirst("div.w-full div.text-base")?.text()?.trim()
+    val tags = document.select("[href*='dizi-turu']").map { it.text() }
+    val rating = document.selectFirst("a[href*='imdb.com'] span")?.text()?.trim().toRatingInt()
+    val duration = Regex("(\\d+)").find(document.select("div.gap-1 span.text-sm")[1].text())?.value?.toIntOrNull()
+    val actors = document.select("[href*='oyuncu']").map { Actor(it.text()) }
+
+    val episodeList = mutableListOf<Episode>()
+    document.selectXpath("//div[contains(@class, 'gap-2')]/a[contains(@href, '-sezon')]").forEach {
+        val epDoc = app.get(fixUrlNull(it.attr("href")) ?: return@forEach).document
+
+        epDoc.select("div.episodes div.cursor-pointer").forEach ep@ { episodeElement ->
+            val epLinkElement = episodeElement.selectFirst("a") ?: return@ep
+            val epHref = fixUrlNull(epLinkElement.attr("href")) ?: return@ep
+
+            // "1. Sezon 1. Bölüm" metninden sezon ve bölüm numaralarını çıkar
+            val seasonEpisodeText = epLinkElement.selectFirst("span.text-sm")?.text() ?: return@ep
+            val (epSeason, epEpisode) = Regex("(\\d+)\\. Sezon (\\d+)\\. Bölüm").find(seasonEpisodeText)?.destructured
+                ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@ep
+
+            val epName = seasonEpisodeText // "1. Sezon 1. Bölüm" direkt isim olarak kullanılabilir
+            val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim() // Tarih: "21 Mart 2025"
+            val epPoster = epDoc.selectFirst("img.object-cover")?.attr("src")
+
+            episodeList.add(newEpisode(epHref) {
+                this.name = epName
+                this.season = epSeason
+                this.episode = epEpisode
+                this.description = epDescription
+                this.posterUrl = epPoster
+            })
         }
 
-        val episodeList = mutableListOf<Episode>()
-        document.selectXpath("//div[contains(@class, 'gap-2')]/a[contains(@href, '-sezon')]").forEach {
-            val epDoc = app.get(fixUrlNull(it.attr("href")) ?: return@forEach).document
-        
-            epDoc.select("div.episodes div.cursor-pointer").forEach ep@ { episodeElement ->
-                val epName        = episodeElement.select("a").last()?.text()?.trim() ?: return@ep
-                val epHref        = fixUrlNull(episodeElement.selectFirst("a.opacity-60")?.attr("href")) ?: return@ep
-                val epDescription = episodeElement.selectFirst("span.t-content")?.text()?.trim()
-                val epPoster      = epDoc.selectFirst("img.object-cover")?.attr("src")
-                val epEpisode     = episodeElement.selectFirst("a.opacity-60")?.text()?.toIntOrNull()
-        
-                val parentDiv   = episodeElement.parent()
-                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
-                val epSeason    = seasonClass?.substringAfter("season-lists")?.toIntOrNull()
+        // Dublaj bölümleri için benzer bir düzenleme
+        epDoc.select("div.dub-episodes div.cursor-pointer").forEach epDub@ { dubEpisodeElement ->
+            val epLinkElement = dubEpisodeElement.selectFirst("a") ?: return@epDub
+            val epHref = fixUrlNull(epLinkElement.attr("href")) ?: return@epDub
 
-                episodeList.add(newEpisode(epHref) {
-                    this.name = epName
-                    this.season = epSeason
-                    this.episode = epEpisode
-                    this.description = epDescription
-                    this.posterUrl = epPoster
-                })
-            }
-        
-            epDoc.select("div.dub-episodes div.cursor-pointer").forEach epDub@ { dubEpisodeElement ->
-                val epName        = dubEpisodeElement.select("a").last()?.text()?.trim() ?: return@epDub
-                val epHref        = fixUrlNull(dubEpisodeElement.selectFirst("a.opacity-50")?.attr("href")) ?: return@epDub
-                val epDescription = dubEpisodeElement.selectFirst("bg-\\[\\#121215\\]")?.text()?.trim()
-                val epPoster      = epDoc.selectFirst("img")?.attr("src")
-                val epEpisode     = dubEpisodeElement.selectFirst("a.opacity-50")?.text()?.toIntOrNull()
-        
-                val parentDiv   = dubEpisodeElement.parent()
-                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
-                val epSeason    = seasonClass?.substringAfter("season-lists")?.toIntOrNull()
+            val seasonEpisodeText = epLinkElement.selectFirst("span.text-sm")?.text() ?: return@epDub
+            val (epSeason, epEpisode) = Regex("(\\d+)\\. Sezon (\\d+)\\. Bölüm").find(seasonEpisodeText)?.destructured
+                ?.let { it.component1().toIntOrNull() to it.component2().toIntOrNull() } ?: return@epDub
 
-                episodeList.add(newEpisode(epHref) {
-                    this.name = "$epName Dublaj"
-                    this.season = epSeason
-                    this.episode = epEpisode
-                    this.description = epDescription
-                    this.posterUrl = epPoster
-                })
-            }
-        }
+            val epName = seasonEpisodeText
+            val epDescription = epLinkElement.selectFirst("span.opacity-50")?.text()?.trim()
+            val epPoster = epDoc.selectFirst("img")?.attr("src")
 
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeList) {
-            this.posterUrl = poster
-            this.year      = year
-            this.plot      = description
-            this.tags      = tags
-            this.rating    = rating
-            this.duration  = duration
-            addActors(actors)
+            episodeList.add(newEpisode(epHref) {
+                this.name = "$epName Dublaj"
+                this.season = epSeason
+                this.episode = epEpisode
+                this.description = epDescription
+                this.posterUrl = epPoster
+            })
         }
     }
+
+    return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeList) {
+        this.posterUrl = poster
+        this.year = year
+        this.plot = description
+        this.tags = tags
+        this.rating = rating
+        this.duration = duration
+        addActors(actors)
+    }
+}
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("DZL", "data » $data")
