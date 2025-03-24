@@ -23,6 +23,7 @@ class IzleAI : MainAPI() {
     override var sequentialMainPageScrollDelay = 250L  // ? 0.05 saniye
 
     override val mainPage = mainPageOf(
+        "${mainUrl}/film-izle"                 to "Yeni Eklenen Filmler",
         "${mainUrl}/film-kategori/aile"        to "Aile",
         "${mainUrl}/film-kategori/aksiyon"     to "Aksiyon",
         "${mainUrl}/film-kategori/animasyon"   to "Animasyon",

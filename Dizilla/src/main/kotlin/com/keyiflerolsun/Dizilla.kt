@@ -36,7 +36,7 @@ class Dizilla : MainAPI() {
         val home     = if (request.data.contains("/dizi-izle")) { 
             document.select("div.grid-cols-2 a.ambilight").mapNotNull { it.diziler() }
         } else {
-            document.select("div.grid-cols-1 a.relative").mapNotNull { it.sonBolumler() }
+            document.select("span.bg-\\[\\#232323\\]").mapNotNull { it.sonBolumler() }
         }
 
         return newHomePageResponse(request.name, home)
@@ -51,12 +51,10 @@ class Dizilla : MainAPI() {
     }
 
     private suspend fun Element.sonBolumler(): SearchResponse? {
-        val name   = this.selectFirst("h2")?.text() ?: return null
-        val epName = this.selectFirst("div.opacity-80")!!.text().replace(". Sezon ", "x").replace(". Bölüm", "")
-        val title  = "$name - $epName"
+        val name   = this.selectFirst("img")?.attr("alt")?.text() ?: return null
 
         val epDoc     = app.get(this.attr("href")).document
-        val href      = fixUrlNull(epDoc.selectFirst("div.image.eps-t")?.attr("href")) ?: return null
+        val href      = fixUrlNull(epDoc.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(epDoc.selectFirst("img")?.attr("src")?.substringAfter("= '")?.substringBefore("';"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
