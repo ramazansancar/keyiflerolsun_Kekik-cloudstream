@@ -28,7 +28,7 @@ class Dizilla : MainAPI() {
         "${mainUrl}/dizi-turu/bilim-kurgu" to "Bilim Kurgu",
         "${mainUrl}/dizi-turu/romantik"    to "Romantik",
         "${mainUrl}/dizi-turu/komedi"      to "Komedi",
-        "${mainUrl}/dizi-turu/drama"       to "Drama",
+        "${mainUrl}/dizi-turu/dram"        to "Dram",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -57,7 +57,7 @@ class Dizilla : MainAPI() {
 
         val epDoc     = app.get(this.attr("href")).document
         val href      = fixUrlNull(epDoc.selectFirst("a.relative")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(epDoc.selectFirst("img.img")?.attr("onerror")?.substringAfter("= '")?.substringBefore("';"))
+        val posterUrl = fixUrlNull(epDoc.selectFirst("img")?.attr("src")?.substringAfter("= '")?.substringBefore("';"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
