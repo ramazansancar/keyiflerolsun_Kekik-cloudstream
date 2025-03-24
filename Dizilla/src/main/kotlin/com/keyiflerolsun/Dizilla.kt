@@ -124,10 +124,10 @@ class Dizilla : MainAPI() {
         }
 
         val episodeList = mutableListOf<Episode>()
-        document.selectXpath("//div[contains(@class, 'gap-2')]/a[contains(@href, '-sezon')]").forEach {
+        document.selectXpath("//div[contains(@class, 'season-lists')]/a[contains(@href, '-sezon')]").forEach {
             val epDoc = app.get(fixUrlNull(it.attr("href")) ?: return@forEach).document
         
-            epDoc.select("div.episodes div.cursor-pointer").forEach ep@ { episodeElement ->
+            epDoc.select("div.cursor-pointer").forEach ep@ { episodeElement ->
                 val epName        = episodeElement.select("a").last()?.text()?.trim() ?: return@ep
                 val epHref        = fixUrlNull(episodeElement.selectFirst("a")?.attr("href")) ?: return@ep
                 val epDescription = episodeElement.selectFirst("span.t-content")?.text()?.trim()
@@ -135,8 +135,8 @@ class Dizilla : MainAPI() {
                 val epEpisode     = episodeElement.selectFirst("span.opacity-60")?.text()?.toIntOrNull()
         
                 val parentDiv   = episodeElement.parent()
-                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
-                val epSeason    = seasonClass?.substringAfter("season-lists")?.toIntOrNull()
+                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season") }
+                val epSeason    = seasonClass?.substringAfter("season")?.toIntOrNull()
 
                 episodeList.add(newEpisode(epHref) {
                     this.name = epName
