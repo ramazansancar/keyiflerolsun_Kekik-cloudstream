@@ -135,8 +135,8 @@ class Dizilla : MainAPI() {
                 val epEpisode     = episodeElement.selectFirst("span.opacity-60")?.text()?.toIntOrNull()
         
                 val parentDiv   = episodeElement.parent()
-                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("szn") }
-                val epSeason    = seasonClass?.substringAfter("szn")?.toIntOrNull()
+                val seasonClass = parentDiv?.className()?.split(" ")?.find { className -> className.startsWith("season-lists") }
+                val epSeason    = seasonClass?.substringAfter("season-lists")?.toIntOrNull()
 
                 episodeList.add(newEpisode(epHref) {
                     this.name = epName
