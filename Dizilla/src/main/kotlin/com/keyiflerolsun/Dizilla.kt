@@ -54,9 +54,8 @@ class Dizilla : MainAPI() {
         val name   = this.selectFirst("img")?.attr("alt") ?: return null
         val title  = "$name"
 
-        val epDoc     = app.get(this.attr("href")).document
-        val href      = fixUrlNull(epDoc.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(epDoc.selectFirst("img")?.attr("src")?.substringAfter("= '")?.substringBefore("';"))
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src")?.substringAfter("= '")?.substringBefore("';"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
