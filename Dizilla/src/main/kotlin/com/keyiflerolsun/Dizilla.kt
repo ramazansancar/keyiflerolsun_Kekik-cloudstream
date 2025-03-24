@@ -178,26 +178,40 @@ class Dizilla : MainAPI() {
             addActors(actors)
         }
     }
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit,callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("DZL", "data » $data")
 
-        val response = app.get(data, headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"))
+        // URL'nin geçerli olduğunu kontrol et
+        if (!data.startsWith("http")) {
+            Log.e("DZL", "Invalid URL format!")
+            return false
+        }
+
+        // HTTP isteği yap ve yanıtı kontrol et
+        val response = try {
+            app.get(data, headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"))
+        } catch (e: Exception) {
+            Log.e("DZL", "Failed to fetch data: ${e.message}")
+            return false
+        }
+
+        Log.d("DZL", "Response code: ${response.code}")
         val document = response.document
 
-        // İframe içindeki src değerini al ve tam URL'ye çevir
-        val iframe = fixUrlNull(document.selectFirst("div#dizillaVideoP iframe")?.attr("src"))?.let { "https:$it" } else null
+        // İframe'i seç ve URL'yi oluştur
+        val iframeSrc = document.selectFirst("div#dizillaVideoP iframe")?.attr("src")
+        val iframe = iframeSrc?.let { fixUrlNull(it)?.let { url -> "https:$url" } }
 
         if (iframe.isNullOrEmpty()) {
-            Log.e("DZL", "No iframe found!")
+            Log.e("DZL", "No iframe found! HTML: ${document.html().substring(0, 500)}") // İlk 500 karakteri logla
             return false
         }
 
         Log.d("DZL", "Found iframe URL: $iframe")
 
-        // Extractor fonksiyonunu çağırarak videoyu oynatabilir hale getiriyoruz
+        // Extractor fonksiyonunu çağır
         loadExtractor(iframe, mainUrl, subtitleCallback, callback)
 
         return true
     }
-
 }
