@@ -233,15 +233,6 @@ class Dizilla : MainAPI() {
             }
 
             Log.d("DZL", "Extracted iframe URL: $iframeUrl")
-        
-            // 5. Video tag kontrolü (fallback)
-            if (iframeUrl.contains("dizilla.nl")) {
-                val videoSrc = doc.selectFirst("video source")?.attr("src")
-                if (!videoSrc.isNullOrBlank()) {
-                    callback(ExtractorLink(videoSrc, Qualities.Unknown.value, false))
-                    return true
-                }
-            }
 
             loadExtractor(iframeUrl, url, subtitleCallback, callback)
             return true
