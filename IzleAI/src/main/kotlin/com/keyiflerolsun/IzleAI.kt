@@ -134,7 +134,6 @@ class IzleAI : MainAPI() {
         val description = document.selectFirst("div.my-10")?.text()?.trim() ?: document.selectFirst("text-lg text-gray-300")?.text()?.trim()
         val tags        = document.select("[href*='film-kategori']").map { it.text() }
         val rating      = document.selectFirst("a[href*='imdb.com'] span.font-bold")?.text()?.trim().toRatingInt()
-        val duration    = document.selectFirst("div.col-span-7 .text-gray-400 span:contains( dk.)")?.text()?.trim()?.split(" ")?.first()?.toIntOrNull()
         val trailer     = document.selectFirst("iframe[src*='youtube.com/embed/']")?.attr("src")
         val actors      = document.select("div.overflow-auto span[title]").map {
             Actor(it.selectFirst("span span")!!.text(), it.selectFirst("img")?.attr("src")?.split(" ")?.first())
@@ -146,7 +145,6 @@ class IzleAI : MainAPI() {
             this.plot      = description
             this.tags      = tags
             this.rating    = rating
-            this.duration  = Regex("\\d+").find(duration)?.value?.toIntOrNull()
             addTrailer(trailer)
             addActors(actors)
         }
