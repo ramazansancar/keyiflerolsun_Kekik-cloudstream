@@ -622,7 +622,7 @@ async def check_and_update():
                 f.write('chcp 65001 > nul\n')  # UTF-8 karakter setini kullan
                 f.write('echo Updating...\n')
                 f.write('timeout /t 5 /nobreak >nul\n')  # 5 saniye bekle
-                f.write(f'del /f "{current_exe}"\n')  # Eski exe'yi sil
+                #f.write(f'del /f "{current_exe}"\n')  # Eski exe'yi sil
                 f.write(f'move "{update_exe}" "{current_exe}"\n')  # Yeni exe'yi taşı
                 f.write('echo Update completed!\n')
                 f.write(f'start "" "{current_exe}"\n')  # Programı yeniden başlat
