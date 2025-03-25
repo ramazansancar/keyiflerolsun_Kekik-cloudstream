@@ -178,68 +178,27 @@ class Dizilla : MainAPI() {
             addActors(actors)
         }
     }
-    override suspend fun loadLinks(data: String, isCasting: Boolean, 
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit): Boolean {
+    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        Log.d("DZL", "data » $data")
+        val response = app.get(
+            data,
+            headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+        )
+        val finalUrl = response.url.toString()
+        Log.d("DZL", "finalUrl » $finalUrl")
+        val document = response.document
+ 
 
-        val url = if (data.startsWith("http")) data else "https://$data"
-        Log.d("DZL", "Processing URL: $url")
-
-        try {
-            // Dizilla için optimize edilmiş header'lar
-            val headers = mapOf(
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-                "Referer" to "https://dizilla.nl/",
-                "Accept-Language" to "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"
-            )
-
-            val response = app.get(url, headers = headers)
-            Log.d("DZL", "Response code: ${response.code}")
-
-            val doc = response.document
-            val html = doc.html()
-
-            // 1. Öncelikle dizillaVideoP div'indeki iframe'i ara
-            var iframeUrl = doc.selectFirst("div#dizillaVideoP iframe")?.attr("src")?.let { src ->
-                when {
-                    src.startsWith("http") -> src
-                    src.startsWith("//") -> "https:$src"
-                    src.startsWith("/") -> "https://dizilla.nl$src"
-                    else -> "https://dizilla.nl/$src"
-                }
-            }
-
-            // 2. Eğer bulunamazsa diğer iframe'leri kontrol et
-            if (iframeUrl.isNullOrBlank()) {
-                iframeUrl = doc.selectFirst("iframe#video-player, iframe[src*='player'], iframe[src*='embed']")?.attr("src")
-            }
-
-            // 3. data-src attribute'üne bak
-            if (iframeUrl.isNullOrBlank()) {
-                iframeUrl = doc.selectFirst("div#dizillaVideoP [data-src], [data-src*='video']")?.attr("data-src")
-            }
-
-            // 4. JavaScript verisinde arama
-            if (iframeUrl.isNullOrBlank()) {
-                val scriptPattern = Regex("""(?:src|file|url):\s*["'](https?[^"']+)["']""")
-                val match = scriptPattern.find(html)
-                iframeUrl = match?.groupValues?.get(1)
-            }
-
-            if (iframeUrl.isNullOrBlank()) {
-                Log.e("DZL", "No iframe found in HTML content")
-                Log.d("DZL", "HTML snippet: ${html.substring(0, 1000)}...")
-                return false
-            }
-
-            Log.d("DZL", "Extracted iframe URL: $iframeUrl")
-
-            loadExtractor(iframeUrl, url, subtitleCallback, callback)
-            return true
-
-        } catch (e: Exception) {
-            Log.e("DZL", "Error processing $url: ${e.message}")
+        val iframeSrc = document.selectFirst("div[class*=bg-[#232323]] iframe")?.attr("src")?.let { fixUrlNull(it) }
+        if (iframeSrc == null) {
+            Log.d("DZL", "Iframe bulunamadı")
             return false
         }
+        Log.d("DZL", "iframeSrc » $iframeSrc")
+
+        loadExtractor(iframeSrc, "${mainUrl}/", subtitleCallback, callback)
+
+        return true
     }
 }
