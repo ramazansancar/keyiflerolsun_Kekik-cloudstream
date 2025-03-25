@@ -75,7 +75,7 @@ Program her başlatıldığında:
 
 ## Notlar
 
-- M3U dosyaları program ile aynı dizinde oluşturulur
+- M3U dosyaları program ile aynı dizinde oluşturulur.
 
 ## Lisans
 
