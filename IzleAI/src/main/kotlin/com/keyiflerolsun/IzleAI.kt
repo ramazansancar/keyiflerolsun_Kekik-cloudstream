@@ -152,7 +152,11 @@ class IzleAI : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("IAI", "data » $data")
-        val document = app.get(data).document
+        val response = app.get(data)
+        val finalUrl = response.url.toString()
+        Log.d("ACX", "finalUrl » $finalUrl")
+        val document = response.document
+        Log.d("ACX", "Document HTML » ${document.html()}")
 
         val iframeSrc = document.selectFirst("div[class*=bg-[#272727]] iframe")?.attr("src")?.let { fixUrlNull(it) }
         if (iframeSrc == null) {
