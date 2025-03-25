@@ -128,7 +128,7 @@ class IzleAI : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
 
-        val title       = document.selectFirst("dh1")?.text() ?: return null
+        val title       = document.selectFirst("h1")?.text() ?: return null
         val poster      = fixUrlNull(document.selectFirst("gird-cols-1 img")?.attr("src"))
         val year        = document.selectFirst("a[href*='/yil/']")?.text()?.toIntOrNull()
         val description = document.selectFirst("div.mv-det-p")?.text()?.trim() ?: document.selectFirst("div.w-full div.text-base")?.text()?.trim()
