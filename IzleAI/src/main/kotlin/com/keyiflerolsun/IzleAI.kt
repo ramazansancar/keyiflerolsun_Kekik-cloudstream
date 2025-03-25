@@ -50,7 +50,7 @@ class IzleAI : MainAPI() {
         val home     = if (request.data.contains("/film-izle")) {
 		document.select("div.grid-cols-2 a").mapNotNull { it.toSearchResult() }
         } else {
-		     document.select("div.grid-cols-3 a").mapNotNull { it.toSearchResult() }
+		     document.select("div.grid-cols-2 a").mapNotNull { it.toSearchResult() }
 		}
         return newHomePageResponse(request.name, home)
     }
@@ -58,7 +58,7 @@ class IzleAI : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title     = this.selectFirst("h2")?.text() ?: return null
         val href      = fixUrlNull(this.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
@@ -147,7 +147,7 @@ class IzleAI : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("IAI", "data » $data")
         val document = app.get(data).document
-        val iframe   = fixUrlNull(document.selectFirst("div.player iframe")?.attr("src")) ?: return false
+        val iframe   = fixUrlNull(document.selectFirst("div.Player iframe")?.attr("src")) ?: return false
         Log.d("IAI", "iframe » $iframe")
 
         loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
