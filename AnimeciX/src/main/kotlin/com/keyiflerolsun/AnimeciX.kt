@@ -116,7 +116,7 @@ class AnimeciX : MainAPI() {
         val iframe   = fixUrlNull(document.selectFirst("div.iframe-container#plyrFrame")?.attr("src")) ?: return false
         Log.d("ACX", "iframe » $iframe")
 
-        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+        loadExtractor(data, "${mainUrl}/", subtitleCallback, callback)
 
         return true
     }
