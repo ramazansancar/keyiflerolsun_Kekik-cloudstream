@@ -112,11 +112,11 @@ class AnimeciX : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("ACX", "data » $data")
-        val document = app.get(data).document
-        val iframe   = fixUrlNull(document.selectFirst("div.iframe-container#plyrFrame")?.attr("src")) ?: return false
-        Log.d("ACX", "iframe » $iframe")
+        val response = app.get(data, followRedirects = true)
+        val finalUrl = response.url.toString() // Nihai URL'yi al
+        Log.d("ACX", "finalUrl » $finalUrl")
 
-        loadExtractor(data, "${mainUrl}/", subtitleCallback, callback)
+        loadExtractor(finalUrl, "${mainUrl}/", subtitleCallback, callback)
 
         return true
     }
