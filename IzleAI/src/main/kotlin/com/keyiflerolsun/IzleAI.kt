@@ -129,15 +129,15 @@ class IzleAI : MainAPI() {
         val document = app.get(url).document
 
         val title       = document.selectFirst("h1")?.text() ?: return null
-        val poster      = fixUrlNull(document.selectFirst("gird-cols-1 img")?.attr("src"))
-        val year        = document.selectFirst("a[href*='/yil/']")?.text()?.toIntOrNull()
-        val description = document.selectFirst("div.mv-det-p")?.text()?.trim() ?: document.selectFirst("div.w-full div.text-base")?.text()?.trim()
+        val poster      = fixUrlNull(document.selectFirst("div.col-span-7 img")?.attr("src"))
+        val year        = document.selectFirst("div.col-span-7 .text-gray-400 span:matches(\\b\\d{4}\\b)")?.text()?.toIntOrNull()
+        val description = document.selectFirst("div.my-10")?.text()?.trim() ?: document.selectFirst("text-lg text-gray-300")?.text()?.trim()
         val tags        = document.select("[href*='film-kategori']").map { it.text() }
         val rating      = document.selectFirst("a[href*='imdb.com'] span.font-bold")?.text()?.trim().toRatingInt()
-        val duration    = document.selectXpath("//span[contains(text(), ' dk.')]").text().trim().split(" ").first().toIntOrNull()
-        val trailer     = document.selectFirst("iframe[data-src*='youtube.com/embed/']")?.attr("data-src")
-        val actors      = document.select("div.flex.overflow-auto [href*='oyuncu']").map {
-            Actor(it.selectFirst("span span")!!.text(), it.selectFirst("img")?.attr("data-srcset")?.split(" ")?.first())
+        val duration    = document.selectXpath("div.col-span-7 .text-gray-400 span[contains(text(), ' dk.')]").text().trim().split(" ").first().toIntOrNull()
+        val trailer     = document.selectFirst("iframe[src*='youtube.com/embed/']")?.attr("src")
+        val actors      = document.select("div.overflow-auto span[title]").map {
+            Actor(it.selectFirst("span span")!!.text(), it.selectFirst("img")?.attr("src")?.split(" ")?.first())
         }
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
