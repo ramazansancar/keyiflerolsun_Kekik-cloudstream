@@ -1,5 +1,3 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
-
 package com.keyiflerolsun
 
 import android.util.Log
@@ -36,7 +34,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 
 class WebteIzle : MainAPI() {
-    override var mainUrl              = "https://webteizle.info"
+    override var mainUrl              = "https://webteizle1.xyz"
     override var name                 = "WebteIzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
