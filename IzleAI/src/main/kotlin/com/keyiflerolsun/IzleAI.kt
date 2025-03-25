@@ -154,12 +154,14 @@ class IzleAI : MainAPI() {
         Log.d("IAI", "data » $data")
         val document = app.get(data).document
 
-        document.select("div.bg-\\[\\#272727\\] iframe").forEach {
-            val iframe = fixUrlNull(it.attr("src")) ?: return@forEach
-            Log.d("IAI", "iframe » $iframe")
-
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+        val iframeSrc = document.selectFirst("div[class*=bg-[#272727]] iframe")?.attr("src")?.let { fixUrlNull(it) }
+        if (iframeSrc == null) {
+            Log.d("IAI", "Iframe bulunamadı")
+            return false
         }
+        Log.d("IAI", "iframeSrc » $iframeSrc")
+
+        loadExtractor(iframeSrc, "${mainUrl}/", subtitleCallback, callback)
 
         return true
     }
