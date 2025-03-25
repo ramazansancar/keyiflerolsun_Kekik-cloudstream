@@ -47,16 +47,24 @@ class IzleAI : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data).document
-        val home     = if (request.data.contains("/film-izle")) {
+        val home     = if (request.data.contains("/film-izle") || request.data.contains("/film-kategori")) {
 		document.select("div.grid-cols-2 a").mapNotNull { it.toSearchResult() }
         } else {
-		     document.select("div.grid-cols-2 a").mapNotNull { it.toSearchResult() }
+		     document.select("div.grid-cols-1").mapNotNull { it.Result() }
 		}
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title     = this.selectFirst("h2")?.text()?.trim() ?: return null
+        val href      = fixUrlNull(this.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+
+        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+    }
+	
+	    private fun Element.Result(): SearchResponse? {
+        val title     = this.selectFirst("h1")?.text()?.trim() ?: return null
         val href      = fixUrlNull(this.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
