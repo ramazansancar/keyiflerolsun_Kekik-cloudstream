@@ -56,7 +56,7 @@ class IzleAI : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("title")?.text() ?: return null
+        val title     = fixUrlNull(this.selectFirst("img")?.attr("alt"))
         val href      = fixUrlNull(this.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
