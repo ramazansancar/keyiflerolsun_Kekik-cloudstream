@@ -112,7 +112,7 @@ class AnimeciX : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("ACX", "data » $data")
-        val response = app.get(data, followRedirects = true)
+        val response = app.get(data)
         val finalUrl = response.url.toString() // Nihai URL'yi al
         Log.d("ACX", "finalUrl » $finalUrl")
 
