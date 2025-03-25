@@ -30,7 +30,7 @@ class DiziKorea : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.poster-long-image").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.poster-long").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
@@ -38,7 +38,7 @@ class DiziKorea : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title     = this.selectFirst("h2")?.text()?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) { this.posterUrl = posterUrl }
     }
