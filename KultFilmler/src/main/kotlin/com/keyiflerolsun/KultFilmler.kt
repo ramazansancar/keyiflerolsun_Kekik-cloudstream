@@ -75,15 +75,14 @@ class KultFilmler : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
 
-        val title           = document.selectFirst("div.film-bilgileri img")?.text()?.trim() ?: document.selectFirst("alt")?.text()?.trim() ?: return null
+        val title           = document.selectFirst("div.film-bilgileri img")?.attr("alt")?.trim() ?: document.selectFirst("[property='og:title']")?.attr("content")?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description     = document.selectFirst("div.description")?.text()?.trim()
         var tags            = document.select("ul.post-categories a").map { it.text() }
         val rating          = document.selectFirst("div.imdb-count")?.text()?.trim()?.split(" ")?.first()?.toRatingInt()
         val year            = Regex("""(\d+)""").find(document.selectFirst("li.release")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
         val duration        = Regex("""(\d+)""").find(document.selectFirst("li.time")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
-        val recommendations = document.select("div.movie-box").mapNotNull { it.toSearchResult() }
-        val actors          = document.select("[href*='oyuncular']").map {
+        val actors          = document.select("div.actors a").map {
             Actor(it.text())
         }
 
@@ -112,7 +111,6 @@ class KultFilmler : MainAPI() {
                 this.tags            = tags
                 this.rating          = rating
                 this.duration        = duration
-                this.recommendations = recommendations
                 addActors(actors)
             }
         }
@@ -124,7 +122,6 @@ class KultFilmler : MainAPI() {
             this.tags            = tags
             this.rating          = rating
             this.duration        = duration
-            this.recommendations = recommendations
             addActors(actors)
         }
     }
