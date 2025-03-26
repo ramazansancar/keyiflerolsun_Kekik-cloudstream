@@ -19,31 +19,30 @@ class KultFilmler : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/page/"                                      to "Son Filmler",
-        "${mainUrl}/category/aile-filmleri-izle/page/"		    to "Aile",
-        "${mainUrl}/category/aksiyon-filmleri-izle/page/"	    to "Aksiyon",
-        "${mainUrl}/category/animasyon-filmleri-izle/page/"	    to "Animasyon",
-        "${mainUrl}/category/belgesel-izle/page/"			    to "Belgesel",
-        "${mainUrl}/category/bilim-kurgu-filmleri-izle/page/"   to "Bilim Kurgu",
-        "${mainUrl}/category/biyografi-filmleri-izle/page/"	    to "Biyografi",
-        "${mainUrl}/category/dram-filmleri-izle/page/"		    to "Dram",
-        "${mainUrl}/category/fantastik-filmleri-izle/page/"	    to "Fantastik",
-        "${mainUrl}/category/gerilim-filmleri-izle/page/"	    to "Gerilim",
-        "${mainUrl}/category/gizem-filmleri-izle/page/"		    to "Gizem",
-        "${mainUrl}/category/kara-filmleri-izle/page/"		    to "Kara",
-        "${mainUrl}/category/kisa-film-izle/page/"			    to "Kısa Metrajlı",
-        "${mainUrl}/category/komedi-filmleri-izle/page/"		to "Komedi",
-        "${mainUrl}/category/korku-filmleri-izle/page/"		    to "Korku",
-        "${mainUrl}/category/macera-filmleri-izle/page/"		to "Macera",
-        "${mainUrl}/category/muzik-filmleri-izle/page/"		    to "Müzik",
-        "${mainUrl}/category/polisiye-filmleri-izle/page/"	    to "Polisiye",
-        "${mainUrl}/category/politik-filmleri-izle/page/"	    to "Politik",
-        "${mainUrl}/category/romantik-filmleri-izle/page/"	    to "Romantik",
-        "${mainUrl}/category/savas-filmleri-izle/page/"		    to "Savaş",
-        "${mainUrl}/category/spor-filmleri-izle/page/"		    to "Spor",
-        "${mainUrl}/category/suc-filmleri-izle/page/"		    to "Suç",
-        "${mainUrl}/category/tarih-filmleri-izle/page/"		    to "Tarih",
-        "${mainUrl}/category/yerli-filmleri-izle/page/"		    to "Yerli"
+        "${mainUrl}/category/aile-filmleri-izle"		    to "Aile",
+        "${mainUrl}/category/aksiyon-filmleri-izle"	        to "Aksiyon",
+        "${mainUrl}/category/animasyon-filmleri-izle"	    to "Animasyon",
+        "${mainUrl}/category/belgesel-izle"			        to "Belgesel",
+        "${mainUrl}/category/bilim-kurgu-filmleri-izle"     to "Bilim Kurgu",
+        "${mainUrl}/category/biyografi-filmleri-izle"	    to "Biyografi",
+        "${mainUrl}/category/dram-filmleri-izle"		    to "Dram",
+        "${mainUrl}/category/fantastik-filmleri-izle"	    to "Fantastik",
+        "${mainUrl}/category/gerilim-filmleri-izle"	        to "Gerilim",
+        "${mainUrl}/category/gizem-filmleri-izle"		    to "Gizem",
+        "${mainUrl}/category/kara-filmleri-izle"		    to "Kara",
+        "${mainUrl}/category/kisa-film-izle"			    to "Kısa Metrajlı",
+        "${mainUrl}/category/komedi-filmleri-izle"		    to "Komedi",
+        "${mainUrl}/category/korku-filmleri-izle"		    to "Korku",
+        "${mainUrl}/category/macera-filmleri-izle"		    to "Macera",
+        "${mainUrl}/category/muzik-filmleri-izle"		    to "Müzik",
+        "${mainUrl}/category/polisiye-filmleri-izle"	    to "Polisiye",
+        "${mainUrl}/category/politik-filmleri-izle"	        to "Politik",
+        "${mainUrl}/category/romantik-filmleri-izle"	    to "Romantik",
+        "${mainUrl}/category/savas-filmleri-izle"		    to "Savaş",
+        "${mainUrl}/category/spor-filmleri-izle"		    to "Spor",
+        "${mainUrl}/category/suc-filmleri-izle"		        to "Suç",
+        "${mainUrl}/category/tarih-filmleri-izle"		    to "Tarih",
+        "${mainUrl}/category/yerli-filmleri-izle"		    to "Yerli"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -153,8 +152,8 @@ class KultFilmler : MainAPI() {
         val mainFrame = getIframe(document.html())
         iframes.add(mainFrame)
 
-        document.select("div.parts-middle").forEach {
-            val alternatif = it.selectFirst("a")?.attr("href")
+        document.select("div.container#player").forEach {
+            val alternatif = it.selectFirst("iframe")?.attr("src")
             if (alternatif != null) {
                 val alternatifDocument = app.get(alternatif).document
                 val alternatifFrame    = getIframe(alternatifDocument.html())
