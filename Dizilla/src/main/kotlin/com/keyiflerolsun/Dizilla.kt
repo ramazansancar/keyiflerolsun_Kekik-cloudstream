@@ -178,31 +178,23 @@ class Dizilla : MainAPI() {
             addActors(actors)
         }
     }
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("DZL", "data » $data")
-        val response = app.get(
-            data,
-            headers = mapOf(
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-        )
-        val finalUrl = response.url.toString()
-        Log.d("DZL", "finalUrl » $finalUrl")
-        val document = response.document
- 
-
-        val iframeSrc = document.selectFirst("div#dizillaVideoP iframe")?.attr("src")?.let { fixUrlNull(it) }
-        val element = document.selectFirst("div#dizillaVideoP div.w-full iframe")
-        Log.d("DZL", "Selected element: $element") // Elementin null olup olmadığını kontrol et
-        val src = element?.attr("src")
-        Log.d("DZL", "Extracted src: $src") // src'nin değerini logla
-        if (iframeSrc == null) {
-            Log.d("DZL", "Iframe bulunamadı")
-            return false
-        }
-        Log.d("DZL", "iframeSrc » $iframeSrc")
-
-        loadExtractor(iframeSrc, "${mainUrl}/", subtitleCallback, callback)
-
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val document = app.get(data).document
+        val script = document.selectFirst("script#__NEXT_DATA__")?.data()
+        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        val secureData = objectMapper.readTree(script).get("props").get("pageProps").get("secureData")
+        val decodedData = Base64.decode(secureData.toString().replace("\"", ""), Base64.DEFAULT).toString(Charsets.UTF_8)
+        val source = objectMapper.readTree(decodedData).get("RelatedResults")
+            .get("getEpisodeSources").get("result").get(0).get("source_content").toString()
+            .replace("\"", "").replace("\\", "")
+        val iframe = fixUrlNull(Jsoup.parse(source).select("iframe").attr("src")) ?: return false
+        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
         return true
     }
 }
