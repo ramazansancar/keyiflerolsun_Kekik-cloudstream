@@ -75,7 +75,7 @@ class KultFilmler : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
 
-        val title           = document.selectFirst("div.film h1")?.text()?.trim() ?: document.selectFirst("h1.film")?.text()?.trim() ?: return null
+        val title           = document.selectFirst("div.film-bilgileri img")?.text()?.trim() ?: document.selectFirst("alt")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description     = document.selectFirst("div.description")?.text()?.trim()
         var tags            = document.select("ul.post-categories a").map { it.text() }
