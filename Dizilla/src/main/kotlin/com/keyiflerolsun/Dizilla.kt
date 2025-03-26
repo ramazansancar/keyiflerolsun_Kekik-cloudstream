@@ -190,7 +190,11 @@ class Dizilla : MainAPI() {
         val document = response.document
  
 
-        val iframeSrc = document.selectFirst("div[class*=bg-[#121215]] iframe")?.attr("src")?.let { fixUrlNull(it) }
+        val iframeSrc = document.selectFirst("div#playerLsDizilla div.w-full iframe")?.attr("src")?.let { fixUrlNull(it) }
+        val element = document.selectFirst("div#playerLsDizilla div.w-full iframe")
+        Log.d(DZL, "Selected element: $element") // Elementin null olup olmadığını kontrol et
+        val src = element?.attr("src")
+        Log.d(DZL, "Extracted src: $src") // src'nin değerini logla
         if (iframeSrc == null) {
             Log.d("DZL", "Iframe bulunamadı")
             return false
