@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.*
 
 open class SetPrime : ExtractorApi() {
     override val name            = "SetPrime"
-    override val mainUrl         = "https://setplay.site"
+    override val mainUrl         = "https://setplay.cfd"
     override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
