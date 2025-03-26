@@ -184,42 +184,9 @@ override suspend fun loadLinks(
     subtitleCallback: (SubtitleFile) -> Unit,
     callback: (ExtractorLink) -> Unit
 ): Boolean {
-    Log.d("DZL", "data » $data")
-    val headers = mapOf(
-        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Referer" to "https://dizilla.nl/",
-        "Accept-Language" to "tr,en-GB;q=0.9,en;q=0.8,en-US;q=0.7",
-        "Sec-Fetch-Dest" to "iframe",
-        "Sec-Fetch-Mode" to "navigate",
-        "Sec-Fetch-Site" to "cross-site"
-    )
-    val response = app.get(data, headers = headers)
-    val finalUrl = response.url.toString()
-    val document = response.document
-    Log.d("DZL", "finalUrl » $finalUrl")
-    Log.d("DZL", "Document HTML » ${document.html()}")
-
-    // Doğrudan iframe kontrolü
-    val iframeSrc = document.selectFirst("iframe")?.attr("src")?.let { fixUrlNull(it) }
-    if (iframeSrc != null) {
-        Log.d("DZL", "iframeSrc » $iframeSrc")
-        loadExtractor(iframeSrc, "${mainUrl}/", subtitleCallback, callback)
-        return true
-    }
-
-    // Script içeriğinden iframe URL'sini ara
-    val scriptContent = document.select("script").map { it.html() }.joinToString()
-    val iframeRegex = Regex("https?://four\\.pichive\\.online/iframe\\.php\\?v=[a-f0-9]{32}")
-    val scriptIframeSrc = iframeRegex.find(scriptContent)?.value?.let { fixUrlNull(it) }
-
-    if (scriptIframeSrc == null) {
-        Log.d("DZL", "Iframe bulunamadı - Script içinde URL yok")
-        return false
-    }
-
-    Log.d("DZL", "scriptIframeSrc » $scriptIframeSrc")
-    loadExtractor(scriptIframeSrc, "${mainUrl}/", subtitleCallback, callback)
+    val iframeSrc = "https://four.pichive.online/iframe.php?v=7ec2c43879c8a51e004d9ba750944461"
+    Log.d("ACX", "Sabit iframeSrc » $iframeSrc")
+    loadExtractor(iframeSrc, "${mainUrl}/", subtitleCallback, callback)
     return true
-    }
+}
 }
