@@ -214,7 +214,7 @@ class SetFilmIzle : MainAPI() {
             val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
             Log.d("STF", "iframe » $sourceIframe")
 
-            if (sourceIframe.contains("explay.store") || sourceIframe.contains("setplay.cfd")) {
+            if (sourceIframe.contains("setprime") || sourceIframe.contains("setplay.cfd") || sourceIframe.contains("setplus")) {
                 loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
             } else {
                 loadExtractor(sourceIframe, "${mainUrl}/", subtitleCallback, callback)
