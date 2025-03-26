@@ -221,4 +221,5 @@ override suspend fun loadLinks(
     Log.d("DZL", "scriptIframeSrc » $scriptIframeSrc")
     loadExtractor(scriptIframeSrc, "${mainUrl}/", subtitleCallback, callback)
     return true
+    }
 }
