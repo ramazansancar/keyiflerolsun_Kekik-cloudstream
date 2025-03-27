@@ -73,24 +73,39 @@ class KultFilmler : MainAPI() {
         "${mainUrl}/category/yerli-filmleri-izle"		    to "Yerli"
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data).document
-        val home     = document.select("div.movie-box div.name").mapNotNull { it.toSearchResult() }
+import android.util.Log
 
-        return newHomePageResponse(request.name, home)
+override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+    val document = app.get(request.data).document
+    Log.d("getMainPage", "Sayfa yüklendi: ${request.data}")
+
+    val home = document.select("div.movie-box div.name").mapNotNull { 
+        Log.d("getMainPage", "Bulunan öğe: ${it.text()}")
+        it.toSearchResult() 
     }
 
-    private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("a")?.let { a -> a.attr("title").ifEmpty { a.text() } } ?: return null
-        val href      = this.selectFirst("a")?.attr("href")?.let { fixUrlNull(it) } ?: return null
-        val posterUrl = this.selectFirst("div.img img")?.attr("src")?.let { fixUrlNull(it) }
+    return newHomePageResponse(request.name, home)
+}
 
-        return if (href.contains("/dizi/")) {
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
-        } else {
-            newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
-        }
+private fun Element.toSearchResult(): SearchResponse? {
+    val title = this.selectFirst("a")?.let { a ->
+        a.attr("title").ifEmpty { a.text() }
+    } ?: return null
+    Log.d("toSearchResult", "Title: $title")
+
+    val href = this.selectFirst("a")?.attr("href")?.let { fixUrlNull(it) } ?: return null
+    Log.d("toSearchResult", "Href: $href")
+
+    val posterUrl = this.selectFirst("div.img img")?.attr("src")?.let { fixUrlNull(it) }
+    Log.d("toSearchResult", "Poster URL: $posterUrl")
+
+    return if (href.contains("/dizi/")) {
+        newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+    } else {
+        newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
+}
+
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}?s=${query}").document
