@@ -74,10 +74,10 @@ class KultFilmler : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data).document
+        val document = app.get("${request.data.trimEnd('/')}/page/${page}/").document
         Log.d("getMainPage", "Sayfa yüklendi: ${request.data}")
 
-        val movieBoxes = document.select("div.col-lg-8 div.row div.film-box div.movie-box")
+        val movieBoxes = document.select("div.movie-box")
         Log.d("getMainPage", "Bulunan movie-box sayısı: ${movieBoxes.size}")
 
         val home = movieBoxes.mapNotNull { 
