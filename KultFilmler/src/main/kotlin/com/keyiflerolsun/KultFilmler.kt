@@ -75,13 +75,8 @@ class KultFilmler : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data).document
-        Log.d("getMainPage", "Sayfa yüklendi: ${request.data}")
-
         val movieBoxes = document.select("div.col-md-12 div.movie-box")
-        Log.d("getMainPage", "Bulunan movie-box sayısı: ${movieBoxes.size}")
-
         val home = movieBoxes.mapNotNull { 
-        Log.d("getMainPage", "Bulunan öğe: ${it.html()}") // `text()` yerine `html()` kullan
         it.toSearchResult() 
     }
 
@@ -93,10 +88,7 @@ class KultFilmler : MainAPI() {
         Log.d("toSearchResult", "Title: $title")
 
         val href = this.selectFirst("a")?.attr("href")?.let { fixUrlNull(it) } ?: return null
-        Log.d("toSearchResult", "Href: $href")
-
         val posterUrl = this.selectFirst("div.img img")?.attr("src")?.let { fixUrlNull(it) }
-        Log.d("toSearchResult", "Poster URL: $posterUrl")
 
         return if (href.contains("/dizi/")) {
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
