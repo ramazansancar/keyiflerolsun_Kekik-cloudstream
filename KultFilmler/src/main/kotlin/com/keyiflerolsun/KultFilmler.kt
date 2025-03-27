@@ -81,9 +81,9 @@ class KultFilmler : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("title")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.movie-box div.img img")?.attr("src"))
+        val title     = it.selectFirst("a")?.let { a -> a.attr("title").ifEmpty { a.text() } } ?: return@mapNotNull null
+        val href      = it.selectFirst("a")?.attr("href")?.let { fixUrlNull(it) } ?: return@mapNotNull null
+        val posterUrl = it.parents().selectFirst("div.img img")?.attr("src")?.let { fixUrlNull(it) }
 
         return if (href.contains("/dizi/")) {
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
