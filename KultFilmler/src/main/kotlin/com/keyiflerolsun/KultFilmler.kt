@@ -89,7 +89,7 @@ class KultFilmler : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("a")?.let { a ->a.attr("title").ifEmpty { a.text() }} ?: return null
+        val title = this.selectFirst("div.img img")?.attr("title")?.let { fixUrlNull(it) }
         Log.d("toSearchResult", "Title: $title")
 
         val href = this.selectFirst("a")?.attr("href")?.let { fixUrlNull(it) } ?: return null
