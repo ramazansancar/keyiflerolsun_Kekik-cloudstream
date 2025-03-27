@@ -77,7 +77,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     val document = app.get(request.data).document
     Log.d("getMainPage", "Sayfa yüklendi: ${request.data}")
 
-    val home = document.select("div.movie-box div.name").mapNotNull { 
+    val home = document.select("div.col-lg-8 div.movie-box").mapNotNull { 
         Log.d("getMainPage", "Bulunan öğe: ${it.text()}")
         it.toSearchResult() 
     }
