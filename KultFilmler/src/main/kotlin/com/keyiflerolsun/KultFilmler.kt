@@ -73,8 +73,6 @@ class KultFilmler : MainAPI() {
         "${mainUrl}/category/yerli-filmleri-izle"		    to "Yerli"
     )
 
-import android.util.Log
-
 override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
     val document = app.get(request.data).document
     Log.d("getMainPage", "Sayfa yüklendi: ${request.data}")
