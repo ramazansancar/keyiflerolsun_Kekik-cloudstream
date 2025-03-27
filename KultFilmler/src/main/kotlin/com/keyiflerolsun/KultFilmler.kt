@@ -75,13 +75,13 @@ class KultFilmler : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.movie-box alt").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.movie-box name").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("div.name a")?.let { it.attr("title").ifEmpty { it.text() } } ?: return null
+        val title     = this.selectFirst("title")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("div.name a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("div.movie-box div.img img")?.attr("src"))
 
