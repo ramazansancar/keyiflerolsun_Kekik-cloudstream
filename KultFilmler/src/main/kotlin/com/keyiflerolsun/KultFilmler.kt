@@ -77,7 +77,7 @@ class KultFilmler : MainAPI() {
         val document = app.get(request.data).document
         Log.d("getMainPage", "Sayfa yüklendi: ${request.data}")
 
-        val movieBoxes = document.select("div[class=movie-box]")
+        val movieBoxes = document.select("div.film-box div.movie-box")
         Log.d("getMainPage", "Bulunan movie-box sayısı: ${movieBoxes.size}")
 
         val home = movieBoxes.mapNotNull { 
