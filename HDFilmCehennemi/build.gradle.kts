@@ -1,7 +1,7 @@
 version = 1
 
 cloudstream {
-    authors     = listOf("hexated", "keyiflerolsun")
+    authors     = listOf("hexated", "keyiflerolsun", "nikyokki")
     language    = "tr"
     description = "Türkiye'nin en hızlı hd film izleme sitesi"
 

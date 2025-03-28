@@ -48,7 +48,7 @@ class FullHDFilmizlesene : MainAPI() {
         "${mainUrl}/filmizle/savas-filmleri-izle-2/"            to "Savaş Filmleri",
         "${mainUrl}/filmizle/suc-filmleri-izle-3/"              to "Suç Filmleri",
         "${mainUrl}/filmizle/tarih-filmleri-izle/"              to "Tarih Filmleri",
-        "${mainUrl}/filmizle/western-filmleri-izle/"            to "Western Filmler",
+        "${mainUrl}/filmizle/western-filmler-hd-izle-2/"            to "Western Filmler",
         "${mainUrl}/filmizle/yerli-filmler-izle-3/"             to "Yerli Filmler",
     )
 

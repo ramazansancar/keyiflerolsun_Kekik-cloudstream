@@ -196,6 +196,7 @@ class SetFilmIzle : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("STF", "data » $data")
+        println("STF data » $data")
         val document = app.get(data).document
 
         document.select("nav.player a").map { element ->
@@ -206,13 +207,16 @@ class SetFilmIzle : MainAPI() {
             Triple(name, sourceId, partKey)
         }.forEach { (name, sourceId, partKey) ->
             if (sourceId.contains("event")) return@forEach
-            if (partKey == "" || sourceId == "") return@forEach
+            if (sourceId == "") return@forEach
+            var setKey= "SetPlay"
 
             val nonce        = Regex("""nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
+
             val multiPart    = sendMultipartRequest(nonce, sourceId, name, partKey, data)
             val sourceBody   = multiPart.body.string()
             val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
             Log.d("STF", "iframe » $sourceIframe")
+            println("STF iframe » $sourceIframe")
 
             if (sourceIframe.contains("explay.store") || sourceIframe.contains("setplay.site")) {
                 loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
