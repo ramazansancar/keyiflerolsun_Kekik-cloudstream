@@ -74,7 +74,7 @@ suspend fun bypassVerification(mainUrl: String): String {
     val addHash          = homePageDocument.select("body").attr("data-addhash")
 	Log.d("NFX", "Extracted data-addhash: $addHash")
 
-    var verificationUrl  = "https://userverify.netmirror.app/verify?fr3=###&a=y"
+    var verificationUrl  = "https://raw.githubusercontent.com/SaurabhKaperwan/Utils/refs/heads/main/NF.json"
     // 
 
     verificationUrl      = httpClient.get(verificationUrl).parsed<VerifyUrl>().url.replace("###", addHash)
