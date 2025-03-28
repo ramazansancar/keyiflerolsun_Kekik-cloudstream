@@ -78,9 +78,9 @@ suspend fun bypassVerification(mainUrl: String): String {
 
     verificationUrl      = httpClient.get(verificationUrl).parsed<VerifyUrl>().url.replace("###", addHash)
     val hashDigits       = addHash.filter { it.isDigit() }
-    val first16Digits    = hashDigits.take(16)
-    Log.d("NFX", "Verification URL: ${verificationUrl}&t=0.${first16Digits}")
-    httpClient.get("${verificationUrl}&t=0.${first16Digits}")
+    val first10Digits    = hashDigits.take(10)
+    Log.d("NFX", "Verification URL: ${verificationUrl}&t=0.${first10Digits}")
+    httpClient.get("${verificationUrl}&t=0.${first10Digits}")
 
     var verifyCheck: String
     var verifyResponse: NiceResponse
