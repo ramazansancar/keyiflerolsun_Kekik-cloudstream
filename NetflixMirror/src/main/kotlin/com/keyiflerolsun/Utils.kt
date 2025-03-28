@@ -74,14 +74,14 @@ suspend fun bypassVerification(mainUrl: String): String {
     val addHash          = homePageDocument.select("body").attr("data-addhash")
 	Log.d("NFX", "Extracted data-addhash: $addHash")
 
-    var verificationUrl  = "https://userverify.netmirror.app/verify?fr3=###&a=y&t="
+    var verificationUrl  = "https://userverify.netmirror.app/verify?fr3=###&a=y"
     // 
 
     verificationUrl      = httpClient.get(verificationUrl).parsed<VerifyUrl>().url.replace("###", addHash)
     val hashDigits       = addHash.filter { it.isDigit() }
-    val first10Digits    = hashDigits.take(10)
-    Log.d("NFX", "Verification URL: ${verificationUrl}&t=0.${first10Digits}")
-    httpClient.get("${verificationUrl}&t=0.${first10Digits}")
+    val first16Digits    = hashDigits.take(16)
+    Log.d("NFX", "Verification URL: ${verificationUrl}&t=0.${first16Digits}")
+    httpClient.get("${verificationUrl}&t=0.${first16Digits}")
 
     var verifyCheck: String
     var verifyResponse: NiceResponse
