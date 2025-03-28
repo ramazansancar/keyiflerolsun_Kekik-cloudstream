@@ -236,6 +236,7 @@ class NetflixMirror : MainAPI() {
             override fun intercept(chain: Interceptor.Chain): Response {
                 val request = chain.request()
                 if (request.url.toString().contains(".m3u8")) {
+                    urlString = urlString.replace("mobile/mobile/", "mobile/")
                     val newRequest = request.newBuilder().header("Cookie", "hd=on").build()
 
                     return chain.proceed(newRequest)
