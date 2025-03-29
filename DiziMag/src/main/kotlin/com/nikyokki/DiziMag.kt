@@ -200,21 +200,28 @@ class DiziMag : MainAPI() {
             actors.add(Actor(name, img))
         }
         if (url.contains("/dizi/")) {
-            val episodes = document.select("div.series-profile-episode-list li").mapNotNull {
-                val epName = it.selectFirst("h6.truncate a")?.text()?.trim() ?: return@mapNotNull null
-                val epHref = fixUrlNull(it.selectFirst("h6.truncate a")?.attr("href")) ?: return@mapNotNull null
-                val epEpisode = Regex("""(\d+)\.Bölüm""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
-                val seasonName = it.closest("div.series-profile-episode-list")?.selectFirst("h5")?.text()?.trim() ?: ""
-                val epSeason = Regex("""(\d+)\.Sezon""").find(seasonName)?.groupValues?.get(1)?.toIntOrNull() ?: 1
-
-                newEpisode(epHref) {
-                    this.name = epName
-                    this.season = epSeason
-                    this.episode = epEpisode
+            val episodeses = mutableListOf<Episode>()
+            var szn = 1
+            for (sezon in document.select("div.series-profile-episode-list")) {
+                var blm = 1
+                for (bolum in sezon.select("li")) {
+                    val epName = bolum.selectFirst("h6.truncate a")?.text() ?: continue
+                    val epHref = fixUrlNull(bolum.select("h6.truncate a").attr("href")) ?: continue
+                    val epEpisode = blm++
+                    val epSeason = szn
+                    episodeses.add(
+                        Episode(
+                            data = epHref,
+                            name = epName,
+                            season = epSeason,
+                            episode = epEpisode
+                        )
+                    )
                 }
+                szn++
             }
 
-            return newTvSeriesLoadResponse(tit, url, TvType.TvSeries, episodes) {
+            return newTvSeriesLoadResponse(tit, url, TvType.TvSeries, episodeses) {
                 this.posterUrl = poster
                 this.year = year
                 this.plot = description
