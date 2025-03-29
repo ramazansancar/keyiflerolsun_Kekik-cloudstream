@@ -440,9 +440,8 @@ class InatBox : MainAPI() {
         if (response.isSuccessful) {
             // val encryptedResponse = response.text
             // Log.d("InatBox", "Encrypted response: ${encryptedResponse}")
-            val responseBody = response.body()
-            val source = responseBody?.source()  // Akış başlatılır
-            val encryptedResponse = source?.buffer?.readByteArray()  // Akışı parçalara ayırarak okur
+            val source = response.body()?.source()  // Akış başlatılır
+            val encryptedResponse = source?.readByteArray()  // Akışı parçalara ayırarak okur
 
             return getJsonFromEncryptedInatResponse(encryptedResponse)
         } else {
