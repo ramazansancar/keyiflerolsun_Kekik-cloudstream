@@ -61,13 +61,13 @@ class Dizilla : MainAPI() {
         "${mainUrl}/dizi-turu/fantastik"   to "Fantastik",
         "${mainUrl}/dizi-turu/gerilim"     to "Gerilim",
         "${mainUrl}/dizi-turu/gizem"       to "Gizem",
-        "${mainUrl}/dizi-turu/komedi"      to "Komedi"
+        "${mainUrl}/dizi-turu/komedi"      to "Komedi",
         "${mainUrl}/dizi-turu/korku"       to "Korku",
         "${mainUrl}/dizi-turu/macera"      to "Macera",
         "${mainUrl}/dizi-turu/romantik"    to "Romantik",
         "${mainUrl}/dizi-turu/savas"       to "Savaş",
         "${mainUrl}/dizi-turu/suc"         to "Suç",
-        "${mainUrl}/dizi-turu/western"     to "Western",
+        "${mainUrl}/dizi-turu/western"     to "Western"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

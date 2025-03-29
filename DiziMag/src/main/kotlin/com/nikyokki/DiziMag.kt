@@ -48,8 +48,9 @@ class DiziMag : MainAPI() {
     override var sequentialMainPageDelay = 250L  // ? 0.05 saniye
     override var sequentialMainPageScrollDelay = 250L  // ? 0.05 saniye
 
+    // ! Haber kısmını boşuna eklemeyin, hata veriyor
+    // ! "${mainUrl}/dizi/tur/haber" to "Dizi - Haber", // İçerik yok
     override val mainPage = mainPageOf(
-        // ! Haber kısmını boşuna eklemeyin, hata veriyor
         "${mainUrl}/diziler" to "Diziler - Tümü",
         "${mainUrl}/dizi/tur/aile" to "Dizi - Aile",
         "${mainUrl}/dizi/tur/aksiyon-macera" to "Dizi - Aksiyon & Macera",
@@ -60,7 +61,7 @@ class DiziMag : MainAPI() {
         "${mainUrl}/dizi/tur/dram" to "Dizi - Dram",
         "${mainUrl}/dizi/tur/gerceklik" to "Dizi - Gerçeklik",
         "${mainUrl}/dizi/tur/gizem" to "Dizi - Gizem",
-        // ! "${mainUrl}/dizi/tur/haber" to "Dizi - Haber", // İçerik yok
+        
         "${mainUrl}/dizi/tur/komedi" to "Dizi - Komedi",
         "${mainUrl}/dizi/tur/pembe-dizi" to "Dizi - Pembe Dizi",
         "${mainUrl}/dizi/tur/savas-politik" to "Dizi - Savaş Politik",
@@ -87,8 +88,7 @@ class DiziMag : MainAPI() {
         "${mainUrl}/film/tur/suc" to "Film - Suç",
         "${mainUrl}/film/tur/tarih" to "Film - Tarih",
         "${mainUrl}/film/tur/tv-film" to "Film - TV Film",
-        "${mainUrl}/film/tur/vahsi-bati" to "Film - Vahşi Batı",
-
+        "${mainUrl}/film/tur/vahsi-bati" to "Film - Vahşi Batı"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
