@@ -93,7 +93,7 @@ class DiziBox : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("h3 a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("h3 a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
@@ -109,7 +109,7 @@ class DiziBox : MainAPI() {
             interceptor = interceptor
         ).document
 
-        return document.select("article.detailed-article").mapNotNull { it.toMainPageResult() }
+        return document.select("article.article").mapNotNull { it.toMainPageResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
