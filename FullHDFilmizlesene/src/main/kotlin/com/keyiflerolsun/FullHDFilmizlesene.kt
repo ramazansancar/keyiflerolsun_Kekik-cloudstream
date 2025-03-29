@@ -20,36 +20,41 @@ class FullHDFilmizlesene : MainAPI() {
     override var name                 = "FullHDFilmizlesene"
     override val hasMainPage          = true
     override var lang                 = "tr"
-    override val hasQuickSearch       = false
+    override val hasQuickSearch       = true
     override val supportedTypes       = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
         "${mainUrl}/en-cok-izlenen-filmler-izle-hd/"            to "En Çok izlenen Filmler",
         "${mainUrl}/filmizle/imdb-puani-yuksek-filmler-izle-1/" to "IMDB Puanı Yüksek Filmler",
-        "${mainUrl}/filmizle/aile-filmleri-izle-2/"             to "Aile Filmleri",
-        "${mainUrl}/filmizle/aksiyon-filmler-izle-1/"           to "Aksiyon Filmleri",
-        "${mainUrl}/filmizle/animasyon-filmleri-izle-4/"        to "Animasyon Filmleri",
-        "${mainUrl}/filmizle/belgesel-filmleri-izle-2/"         to "Belgeseller",
-        "${mainUrl}/filmizle/bilim-kurgu-filmleri-izle-1/"      to "Bilim Kurgu Filmleri",
-        "${mainUrl}/filmizle/bluray-filmler-izle-1/"            to "Blu Ray Filmler",
-        "${mainUrl}/filmizle/cizgi-filmler-izle-1/"             to "Çizgi Filmler",
+        "${mainUrl}/filmizle/turkce-dublaj-filmler-izle/"       to "Türkçe Dublaj Filmler",
+        "${mainUrl}/filmizle/turkce-altyazili-filmler-izle/"    to "Türkçe Altyazılı Filmler",
+        "${mainUrl}/filmizle/dual-filmler-izle/"                to "Dual Filmler",
+
+        "${mainUrl}/filmizle/aile-filmleri-izle/"               to "Aile Filmleri",
+        "${mainUrl}/filmizle/aksiyon-filmleri-izle/"            to "Aksiyon Filmleri",
+        "${mainUrl}/filmizle/animasyon-filmleri-izle/"          to "Animasyon Filmleri",
+        "${mainUrl}/filmizle/belgesel-filmleri-izle/"           to "Belgeseller",
+        "${mainUrl}/filmizle/bilim-kurgu-filmleri-izle/"        to "Bilim Kurgu Filmleri",
+        "${mainUrl}/filmizle/bluray-filmler-izle/"              to "Blu Ray Filmler",
+        "${mainUrl}/filmizle/cizgi-filmler-izle/"               to "Çizgi Filmler",
         "${mainUrl}/filmizle/dram-filmleri-izle/"               to "Dram Filmleri",
-        "${mainUrl}/filmizle/fantastik-filmleri-izle-2/"        to "Fantastik Filmler",
-        "${mainUrl}/filmizle/gerilim-filmleri-izle-3/"          to "Gerilim Filmleri",
+        "${mainUrl}/filmizle/fantastik-filmleri-izle/"          to "Fantastik Filmler",
+        "${mainUrl}/filmizle/gerilim-filmleri-izle/"            to "Gerilim Filmleri",
         "${mainUrl}/filmizle/gizem-filmleri-izle/"              to "Gizem Filmleri",
-        "${mainUrl}/filmizle/hint-filmler-fh-hd-izle/"          to "Hint Filmleri",
-        "${mainUrl}/filmizle/komedi-filmleri-izle-2/"           to "Komedi Filmleri",
-        "${mainUrl}/filmizle/korku-filmleri-izle-2/"            to "Korku Filmleri",
-        "${mainUrl}/filmizle/macera-filmleri-izle-1/"           to "Macera Filmleri",
+        "${mainUrl}/filmizle/hint-filmleri-izle/"               to "Hint Filmleri",
+        "${mainUrl}/filmizle/komedi-filmleri-izle/"             to "Komedi Filmleri",
+        "${mainUrl}/filmizle/korku-filmleri-izle/"              to "Korku Filmleri",
+        "${mainUrl}/filmizle/macera-filmleri-izle/"             to "Macera Filmleri",
         "${mainUrl}/filmizle/muzikal-filmleri-izle/"            to "Müzikal Filmler",
-        "${mainUrl}/filmizle/polisiye-filmleri-izle-1/"         to "Polisiye Filmleri",
-        "${mainUrl}/filmizle/psikolojik-filmleri-izle/"         to "Psikolojik Filmler",
-        "${mainUrl}/filmizle/romantik-filmler-izle-1/"          to "Romantik Filmler",
-        "${mainUrl}/filmizle/savas-filmleri-izle-2/"            to "Savaş Filmleri",
-        "${mainUrl}/filmizle/suc-filmleri-izle-3/"              to "Suç Filmleri",
+        "${mainUrl}/filmizle/polisiye-filmleri-izle/"           to "Polisiye Filmleri",
+        "${mainUrl}/filmizle/psikolojik-filmler-izle/"          to "Psikolojik Filmler",
+        "${mainUrl}/filmizle/romantik-filmler-izle/"            to "Romantik Filmler",
+        "${mainUrl}/filmizle/savas-filmleri-izle/"              to "Savaş Filmleri",
+        "${mainUrl}/filmizle/suc-filmleri-izle/"                to "Suç Filmleri",
         "${mainUrl}/filmizle/tarih-filmleri-izle/"              to "Tarih Filmleri",
-        "${mainUrl}/filmizle/western-filmleri-izle/"            to "Western Filmler",
-        "${mainUrl}/filmizle/yerli-filmler-izle-3/"             to "Yerli Filmler",
+        "${mainUrl}/filmizle/western-filmler-izle/"             to "Western Filmler",
+        "${mainUrl}/filmizle/yerli-film-izle/"                  to "Yerli Filmler",
+
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

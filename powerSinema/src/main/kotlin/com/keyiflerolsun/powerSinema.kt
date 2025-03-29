@@ -8,12 +8,12 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class powerSinema : MainAPI() {
-    override var mainUrl              = "https://raw.githubusercontent.com/GitLatte/patr0n/site/lists/power-sinema.m3u"
+    override var mainUrl              = "https://raw.githubusercontent.com/ramazansancar/GitLatte_patr0n/site/lists/power-sinema.m3u"
     override var name                 = "powerSinema"
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = true
-    override val hasDownloadSupport   = false
+    override val hasDownloadSupport   = true
     override val supportedTypes       = setOf(TvType.Movie)
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

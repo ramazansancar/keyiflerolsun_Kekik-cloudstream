@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class UgurFilm : MainAPI() {
-    override var mainUrl              = "https://ugurfilm8.com"
+    override var mainUrl              = "https://ugurfilm9.com"
     override var name                 = "UgurFilm"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -20,13 +20,30 @@ class UgurFilm : MainAPI() {
         "${mainUrl}/turkce-altyazili-filmler/page/" to "Türkçe Altyazılı Filmler",
         "${mainUrl}/yerli-filmler/page/"            to "Yerli Filmler",
         "${mainUrl}/en-cok-izlenen-filmler/page/"   to "En Çok İzlenen Filmler",
-        "${mainUrl}/category/kisa-film/page/"       to "Kısa Film",
+
+        "${mainUrl}/category/aile/page/"            to "Aile",
         "${mainUrl}/category/aksiyon/page/"         to "Aksiyon",
-        "${mainUrl}/category/bilim-kurgu/page/"     to "Bilim Kurgu",
+        "${mainUrl}/category/animasyon/page/"       to "Animasyon",
         "${mainUrl}/category/belgesel/page/"        to "Belgesel",
-        "${mainUrl}/category/komedi/page/"          to "Komedi",
-        "${mainUrl}/category/kara-film/page/"       to "Kara Film",
+        "${mainUrl}/category/bilim-kurgu/page/"     to "Bilim Kurgu",
+        "${mainUrl}/category/biyografi/page/"       to "Biyografi",
+        "${mainUrl}/category/dram/page/"            to "Dram",
         "${mainUrl}/category/erotik/page/"          to "Erotik",
+        "${mainUrl}/category/fantastik/page/"       to "Fantastik",
+        "${mainUrl}/category/gerilim/page/"         to "Gerilim",
+        "${mainUrl}/category/gizem/page/"           to "Gizem",
+        "${mainUrl}/category/kara-film/page/"       to "Kara Film",
+        "${mainUrl}/category/kisa-film/page/"       to "Kısa Film",
+        "${mainUrl}/category/komedi/page/"          to "Komedi",
+        "${mainUrl}/category/korku/page/"           to "Korku",
+        "${mainUrl}/category/macera/page/"          to "Macera",
+        "${mainUrl}/category/muzik/page/"           to "Müzik",
+        "${mainUrl}/category/romantik/page/"        to "Romantik",
+        "${mainUrl}/category/savas/page/"           to "Savaş",
+        "${mainUrl}/category/spor/page/"            to "Spor",
+        "${mainUrl}/category/suc/page/"             to "Suç",
+        "${mainUrl}/category/tarih/page/"           to "Tarih",
+        "${mainUrl}/category/western/page/"         to "Western"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

@@ -2,6 +2,7 @@ package com.nikyokki
 
 import CryptoJS
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.Episode
 import com.lagradost.cloudstream3.ErrorLoadingException
@@ -48,24 +49,53 @@ class DiziMag : MainAPI() {
     override var sequentialMainPageScrollDelay = 250L  // ? 0.05 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/dizi/tur/aile" to "Aile",
-        "${mainUrl}/dizi/tur/aksiyon-macera" to "Aksiyon-Macera",
-        "${mainUrl}/dizi/tur/animasyon" to "Animasyon",
-        "${mainUrl}/dizi/tur/belgesel" to "Belgesel",
-        "${mainUrl}/dizi/tur/bilim-kurgu-fantazi" to "Bilim Kurgu",
-        "${mainUrl}/dizi/tur/dram" to "Dram",
-        "${mainUrl}/dizi/tur/gizem" to "Gizem",
-        "${mainUrl}/dizi/tur/komedi" to "Komedi",
-        "${mainUrl}/dizi/tur/savas-politik" to "Savaş Politik",
-        "${mainUrl}/dizi/tur/suc" to "Suç",
+        // ! Haber kısmını boşuna eklemeyin, hata veriyor
+        "${mainUrl}/diziler" to "Diziler - Tümü",
+        "${mainUrl}/dizi/tur/aile" to "Dizi - Aile",
+        "${mainUrl}/dizi/tur/aksiyon-macera" to "Dizi - Aksiyon & Macera",
+        "${mainUrl}/dizi/tur/animasyon" to "Dizi - Animasyon",
+        "${mainUrl}/dizi/tur/belgesel" to "Dizi - Belgesel",
+        "${mainUrl}/dizi/tur/bilim-kurgu-fantazi" to "Dizi - Bilim Kurgu & Fantazi",
+        "${mainUrl}/dizi/tur/cocuk" to "Dizi - Çocuklar",
+        "${mainUrl}/dizi/tur/dram" to "Dizi - Dram",
+        "${mainUrl}/dizi/tur/gerceklik" to "Dizi - Gerçeklik",
+        "${mainUrl}/dizi/tur/gizem" to "Dizi - Gizem",
+        // ! "${mainUrl}/dizi/tur/haber" to "Dizi - Haber", // İçerik yok
+        "${mainUrl}/dizi/tur/komedi" to "Dizi - Komedi",
+        "${mainUrl}/dizi/tur/pembe-dizi" to "Dizi - Pembe Dizi",
+        "${mainUrl}/dizi/tur/savas-politik" to "Dizi - Savaş Politik",
+        "${mainUrl}/dizi/tur/suc" to "Dizi - Suç",
+        "${mainUrl}/dizi/tur/talk" to "Dizi - Talk",
+        "${mainUrl}/dizi/tur/vahsi-bati" to "Dizi - Vahşi Batı",
 
-    
+        "${mainUrl}/filmler" to "Filmler - Tümü",
+        "${mainUrl}/film/tur/aile" to "Film - Aile",
+        "${mainUrl}/film/tur/aksiyon" to "Film - Aksiyon",
+        "${mainUrl}/film/tur/animasyon" to "Film - Animasyon",
+        "${mainUrl}/film/tur/belgesel" to "Film - Belgesel",
+        "${mainUrl}/film/tur/bilim-kurgu" to "Film - Bilim-Kurgu",
+        "${mainUrl}/film/tur/dram" to "Film - Dram",
+        "${mainUrl}/film/tur/fantastik" to "Film - Fantastik",
+        "${mainUrl}/film/tur/gerilim" to "Film - Gerilim",
+        "${mainUrl}/film/tur/gizem" to "Film - Gizem",
+        "${mainUrl}/film/tur/komedi" to "Film - Komedi",
+        "${mainUrl}/film/tur/korku" to "Film - Korku",
+        "${mainUrl}/film/tur/macera" to "Film - Macera",
+        "${mainUrl}/film/tur/muzik" to "Film - Müzik",
+        "${mainUrl}/film/tur/romantik" to "Film - Romantik",
+        "${mainUrl}/film/tur/savas" to "Film - Savaş",
+        "${mainUrl}/film/tur/suc" to "Film - Suç",
+        "${mainUrl}/film/tur/tarih" to "Film - Tarih",
+        "${mainUrl}/film/tur/tv-film" to "Film - TV Film",
+        "${mainUrl}/film/tur/vahsi-bati" to "Film - Vahşi Batı",
+
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val mainReq = app.get("${request.data}/${page}")
 
-        val document = mainReq.document
+        //val document = mainReq.document.body()
+        val document = Jsoup.parse(mainReq.body.string())
         val home = document.select("div.poster-long").mapNotNull { it.diziler() }
 
         return newHomePageResponse(request.name, home)

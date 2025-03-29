@@ -29,13 +29,22 @@ class SinemaCX : MainAPI() {
         "${mainUrl}/izle/belgesel/page/"				 to		"Belgesel Filmleri",
         "${mainUrl}/izle/bilim-kurgu-filmleri/page/"	 to		"Bilim Kurgu Filmler",
         "${mainUrl}/izle/biyografi/page/"				 to		"Biyografi Filmleri",
+        "${mainUrl}/izle/dram-filmleri/page/"			 to		"Dram Filmleri",
+        "${mainUrl}/izle/erotik-filmler/page/"			 to		"Erotik Filmler",
         "${mainUrl}/izle/fantastik-filmler/page/"		 to		"Fantastik Filmler",
+        "${mainUrl}/izle/gerilim-filmleri/page/"		 to		"Gerilim Filmleri",
         "${mainUrl}/izle/gizem-filmleri/page/"			 to		"Gizem Filmleri",
         "${mainUrl}/izle/komedi-filmleri/page/"			 to		"Komedi Filmleri",
         "${mainUrl}/izle/korku-filmleri/page/"			 to		"Korku Filmleri",
         "${mainUrl}/izle/macera-filmleri/page/"			 to		"Macera Filmleri",
+        "${mainUrl}/izle/muzikal-filmler/page/"			 to		"Müzikal Filmler",
         "${mainUrl}/izle/romantik-filmler/page/"		 to		"Romantik Filmler",
-        "${mainUrl}/izle/erotik-filmler/page/"			 to		"Erotik Film izle",
+        "${mainUrl}/izle/savas-filmleri/page/"			 to		"Savaş Filmleri",
+        "${mainUrl}/izle/seri-filmler/page/"			 to		"Seri Filmler",
+        "${mainUrl}/izle/spor-filmleri/page/"			 to		"Spor Filmleri",
+        "${mainUrl}/izle/suc-filmleri/page/"			 to		"Suç Filmleri",
+        "${mainUrl}/izle/tarihi-filmler/page/"			 to		"Tarih Filmler",
+        "${mainUrl}/izle/western-filmleri/page/"		 to		"Western Filmler",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

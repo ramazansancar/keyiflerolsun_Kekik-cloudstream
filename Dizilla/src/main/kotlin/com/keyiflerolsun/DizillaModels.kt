@@ -4,9 +4,8 @@ package com.keyiflerolsun
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-
 data class SearchResult(
-    @JsonProperty("data") val data: SearchData?
+    @JsonProperty("response") val response: String?
 )
 
 data class SearchData(
