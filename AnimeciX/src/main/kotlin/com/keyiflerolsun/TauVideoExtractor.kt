@@ -18,7 +18,7 @@ open class TauVideo : ExtractorApi() {
         val videoUrl = "${mainUrl}/api/video/${videoKey}"
         Log.d("Kekik_${this.name}", "videoUrl » $videoUrl")
 
-        val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: ErrorLoadingException("TauVideo")
+        val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: throw ErrorLoadingException("TauVideo")
 
         for (video in api.urls) {
             callback.invoke(
