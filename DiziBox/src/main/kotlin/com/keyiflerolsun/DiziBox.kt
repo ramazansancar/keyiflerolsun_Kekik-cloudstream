@@ -85,7 +85,7 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home     = document.select("article.article").mapNotNull { it.toMainPageResult() }
+        val home     = document.select("overlay-content").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
     }
@@ -109,7 +109,7 @@ class DiziBox : MainAPI() {
             interceptor = interceptor
         ).document
 
-        return document.select("article.article").mapNotNull { it.toMainPageResult() }
+        return document.select("overlay-content").mapNotNull { it.toMainPageResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
