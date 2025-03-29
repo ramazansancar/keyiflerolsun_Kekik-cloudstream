@@ -85,7 +85,7 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home     = document.select("article.detailed-article").mapNotNull { it.toMainPageResult() }
+        val home     = document.select("article.article").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
     }
