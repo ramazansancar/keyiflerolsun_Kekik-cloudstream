@@ -4,6 +4,7 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import okhttp3.Interceptor
+import okhttp3.ResponseBody
 import org.json.JSONArray
 import java.net.URI
 import javax.crypto.Cipher
@@ -14,6 +15,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
 import org.json.JSONObject
+import okio.BufferedSource
 
 class InatBox : MainAPI() {
     private val contentUrl  = "https://dizibox.rest"
@@ -440,10 +442,12 @@ class InatBox : MainAPI() {
         if (response.isSuccessful) {
             // val encryptedResponse = response.text
             // Log.d("InatBox", "Encrypted response: ${encryptedResponse}")
-            val source = response.body()?.source()  // Akış başlatılır
+            // Akışı başlatır
+            val source = response.body?.source()
             val encryptedResponse = source?.readByteArray()  // Akışı parçalara ayırarak okur
 
-            return getJsonFromEncryptedInatResponse(encryptedResponse)
+            // Eğer response body boş değilse, şifresiz yanıtı al
+            return encryptedResponse?.let { getJsonFromEncryptedInatResponse(it) }
         } else {
             Log.e("InatBox", "Request failed")
             return null
