@@ -14,11 +14,11 @@ open class TauVideo : ExtractorApi() {
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
-        val videoKey = url.substringAfterLast("/").substringBefore(".")
-        val videoUrl = "$mainUrl/api/video/$videoKey"
+        val videoKey = url.split("/").last()
+        val videoUrl = "${mainUrl}/api/video/${videoKey}"
         Log.d("Kekik_${this.name}", "videoUrl » $videoUrl")
 
-        val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: throw Exception("TauVideo API'den veri alınamadı.")
+        val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: throw ErrorLoadingException("TauVideo")
 
         for (video in api.urls) {
             callback.invoke(

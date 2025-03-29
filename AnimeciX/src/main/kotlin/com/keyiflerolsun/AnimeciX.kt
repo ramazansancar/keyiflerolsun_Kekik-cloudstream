@@ -21,8 +21,8 @@ class AnimeciX : MainAPI() {
     override var sequentialMainPageScrollDelay = 200L  // ? 0.20 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/secure/titles?type=series&onlyStreamable=true" to "Seriler",
-        "${mainUrl}/secure/titles?type=movie&onlyStreamable=true"  to "Filmler",
+        "${mainUrl}/secure/titles?type=series&onlyStreamable=true" to "seriler",
+        "${mainUrl}/secure/titles?type=movie&onlyStreamable=true"  to "filmler",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
