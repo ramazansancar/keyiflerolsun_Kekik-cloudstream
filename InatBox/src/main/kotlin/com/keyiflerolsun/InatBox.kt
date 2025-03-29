@@ -60,7 +60,7 @@ class InatBox : MainAPI() {
         "${contentUrl}/yabanci-dizi/index.php"                 to "Yabancı Diziler",
         "${contentUrl}/yerli-dizi/index.php"                   to "Yerli Diziler",
         "${contentUrl}/film/yerli-filmler.php"                 to "Yerli Filmler",
-        "${contentUrl}/film/4k-film-exo.php"                   to "4K Film İzle | Exo"
+        "${contentUrl}/film/4k-film-exo.php"                   to "4K Film İzle | Exo",
         "${contentUrl}/film/4k-film-web.php"                   to "4K Film İzle | Web"
     )
 
