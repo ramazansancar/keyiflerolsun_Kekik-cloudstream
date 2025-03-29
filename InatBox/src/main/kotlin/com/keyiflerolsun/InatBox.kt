@@ -446,8 +446,11 @@ class InatBox : MainAPI() {
             val source = response.body?.source()
             val encryptedResponse = source?.readByteArray()  // Akışı parçalara ayırarak okur
 
+            // Eğer byteArray varsa, onu String'e dönüştür
+            val encryptedResponseString = encryptedResponse?.let { String(it, Charsets.UTF_8) }
+
             // Eğer response body boş değilse, şifresiz yanıtı al
-            return encryptedResponse?.let { getJsonFromEncryptedInatResponse(it) }
+            return encryptedResponseString?.let { getJsonFromEncryptedInatResponse(it) }
         } else {
             Log.e("InatBox", "Request failed")
             return null
