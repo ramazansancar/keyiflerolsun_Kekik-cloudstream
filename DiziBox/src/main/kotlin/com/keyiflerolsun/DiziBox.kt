@@ -85,7 +85,7 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home = document.select("div.flex-grid-container article").mapNotNull { 
+        val home = document.select("article").mapNotNull { 
         Log.d("getMainPage", "Bulunan Article: ${it.outerHtml().take(300)}") // İlk 300 karakteri logla
         it.toMainPageResult()
     }
@@ -98,7 +98,7 @@ class DiziBox : MainAPI() {
 private fun Element.toMainPageResult(): SearchResponse? {
     val title = this.selectFirst("a")?.text()
     val href = fixUrlNull(this.selectFirst("a")?.attr("href"))
-    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
     Log.d("toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
 
