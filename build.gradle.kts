@@ -48,6 +48,7 @@ subprojects {
             minSdk = 21
             compileSdkVersion(35)
             targetSdk = 35
+            buildConfigField "String", "TMDB_SECRET_API", "\"${System.getenv("TMDB_SECRET_API") ?: "default_api_key"}\""
         }
 
         compileOptions {
