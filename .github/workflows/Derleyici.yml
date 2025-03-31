@@ -20,6 +20,8 @@ on:
 jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
+    env:
+      TMDB_SECRET_API: ${{ secrets.TMDB_SECRET_API }}  # Secret olarak tanımlanan API Key burada
     steps:
       - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
@@ -31,6 +33,9 @@ jobs:
         with:
           ref: "builds"
           path: "builds"
+
+      - name: API Key’i Gradle İçin Kaydet
+        run: echo "TMDB_SECRET_API=${{ secrets.TMDB_SECRET_API }}" >> $GITHUB_WORKSPACE/src/local.properties
 
       - name: Eski Derlemeleri Temizle
         run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
@@ -60,3 +65,4 @@ jobs:
           git add .
           git commit --amend -m "$GITHUB_SHA 'nın Derlenmesi" || exit 0   # eğer commit edilecek bir şey yoksa hata verme
           git push --force
+
