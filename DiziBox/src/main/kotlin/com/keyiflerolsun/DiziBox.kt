@@ -70,7 +70,7 @@ class DiziBox : MainAPI() {
         "${mainUrl}/tur/spor/page/SAYFA"       to "Spor",
         "${mainUrl}/tur/suc/page/SAYFA"        to "Suç",
         "${mainUrl}/tur/tarih/page/SAYFA"      to "Tarih",
-        "${mainUrl}/tur/westerb/page/SAYFA"    to "Western",
+        "${mainUrl}/tur/western/page/SAYFA"    to "Western",
         "${mainUrl}/tur/yarisma/page/SAYFA"    to "Yarışma"
     )
 
@@ -85,13 +85,9 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home = document.select("article").mapNotNull { 
-        Log.d("getMainPage", "Bulunan Article: ${it.outerHtml().take(300)}") // İlk 300 karakteri logla
+        val home = document.select("article").mapNotNull {
         it.toMainPageResult()
     }
-
-        Log.d("getMainPage", "Toplam Bulunan Article: ${home.size}")
-
         return newHomePageResponse(request.name, home)
     }
 
