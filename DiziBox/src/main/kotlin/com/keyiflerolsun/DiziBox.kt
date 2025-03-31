@@ -85,18 +85,30 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home     = document.select("div.flex-grid-container article").mapNotNull { it.toMainPageResult() }
+        val home = document.select("div.flex-grid-container article").mapNotNull { 
+        Log.d("getMainPage", "Bulunan Article: ${it.outerHtml().take(300)}") // İlk 300 karakteri logla
+        it.toMainPageResult()
+    }
+
+        Log.d("getMainPage", "Toplam Bulunan Article: ${home.size}")
 
         return newHomePageResponse(request.name, home)
     }
 
-    private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("a")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+private fun Element.toMainPageResult(): SearchResponse? {
+    val title = this.selectFirst("a")?.text()
+    val href = fixUrlNull(this.selectFirst("a")?.attr("href"))
+    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
-        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+    Log.d("toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
+
+    if (title == null || href == null) {
+        Log.w("toMainPageResult", "Article eksik veri içeriyor, atlanıyor!")
+        return null
     }
+
+    return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+}
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get(
