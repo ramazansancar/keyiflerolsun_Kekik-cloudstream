@@ -98,7 +98,7 @@ class DiziBox : MainAPI() {
 private fun Element.toMainPageResult(): SearchResponse? {
     val title = this.selectFirst("a")?.text()
     val href = fixUrlNull(this.selectFirst("a")?.attr("href"))
-    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
     Log.d("toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
 
