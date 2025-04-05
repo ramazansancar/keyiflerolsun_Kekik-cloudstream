@@ -24,7 +24,10 @@ open class SibNet : ExtractorApi() {
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
-                this.referer = url,
+                
+             ) {
+                 this.referer = url
+             }
             )
         )
     }

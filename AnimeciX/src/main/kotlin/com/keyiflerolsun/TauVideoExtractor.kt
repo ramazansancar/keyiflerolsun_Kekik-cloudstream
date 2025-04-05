@@ -26,8 +26,10 @@ open class TauVideo : ExtractorApi() {
                     source  = this.name,
                     name    = this.name,
                     url     = video.url,
-                    this.referer = extRef,
-                    this.quality = getQualityFromName(video.label),
+                 ) {
+                     this.referer = extRef
+                     this.quality = getQualityFromName(video.label)
+                 }
                 )
             )
         }
