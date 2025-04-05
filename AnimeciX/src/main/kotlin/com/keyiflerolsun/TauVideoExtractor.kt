@@ -12,7 +12,7 @@ open class TauVideo : ExtractorApi() {
     override val mainUrl         = "https://tau-video.xyz"
     override val requiresReferer = true
 
-    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (newExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
         val videoKey = url.split("/").last()
         val videoUrl = "${mainUrl}/api/video/${videoKey}"
@@ -22,7 +22,7 @@ open class TauVideo : ExtractorApi() {
 
         for (video in api.urls) {
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = video.url,

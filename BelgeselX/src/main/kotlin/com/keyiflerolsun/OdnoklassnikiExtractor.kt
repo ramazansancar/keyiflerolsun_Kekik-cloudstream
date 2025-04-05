@@ -12,7 +12,7 @@ open class Odnoklassniki : ExtractorApi() {
     override val mainUrl         = "https://odnoklassniki.ru"
     override val requiresReferer = false
 
-    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (newExtractorLink) -> Unit) {
         Log.d("Kekik_${this.name}", "url » $url")
 
         val userAgent = mapOf("User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36")
@@ -40,7 +40,7 @@ open class Odnoklassniki : ExtractorApi() {
                 .replace("ULTRA",  "4k")
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = videoUrl,
