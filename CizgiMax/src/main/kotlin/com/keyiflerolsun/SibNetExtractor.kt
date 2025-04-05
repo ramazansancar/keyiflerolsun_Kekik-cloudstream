@@ -24,9 +24,7 @@ open class SibNet : ExtractorApi() {
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
-                referer = url,
-                quality = Qualities.Unknown.value,
-                type    = INFER_TYPE
+                this.referer = url,
             )
         )
     }

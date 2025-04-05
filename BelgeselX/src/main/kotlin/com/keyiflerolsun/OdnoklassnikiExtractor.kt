@@ -44,10 +44,9 @@ open class Odnoklassniki : ExtractorApi() {
                     source  = this.name,
                     name    = this.name,
                     url     = videoUrl,
-                    referer = url,
-                    quality = getQualityFromName(quality),
-                    headers = userAgent,
-                    isM3u8  = false
+                    this.referer = url,
+                    this.quality = getQualityFromName(quality),
+                    this.headers = userAgent,
                 )
             )
         }
