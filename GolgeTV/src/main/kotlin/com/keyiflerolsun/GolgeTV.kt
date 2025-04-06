@@ -18,6 +18,8 @@ import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import android.util.Log
 
 class GolgeTV : MainAPI() {
@@ -175,8 +177,8 @@ class GolgeTV : MainAPI() {
                 url = content.link,
 				type = ExtractorLinkType.M3U8
 			) {
-                quality = Qualities.Unknown.value,
-                headers = headers,
+                quality = Qualities.Unknown.value
+                headers = headers
 				}
             )
         )
