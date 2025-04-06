@@ -21,8 +21,8 @@ class AnimeciX : MainAPI() {
     override var sequentialMainPageScrollDelay = 200L  // ? 0.20 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/secure/titles?type=series&onlyStreamable=true" to "Seriler",
-        "${mainUrl}/secure/titles?type=movie&onlyStreamable=true"  to "Filmler",
+        "${mainUrl}/secure/titles?type=series&onlyStreamable=true" to "seriler",
+        "${mainUrl}/secure/titles?type=movie&onlyStreamable=true"  to "filmler",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -112,11 +112,10 @@ class AnimeciX : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("ACX", "data » $data")
-        val response = app.get(data)
-        val finalUrl = response.url.toString() // Nihai URL'yi al
-        Log.d("ACX", "finalUrl » $finalUrl")
+        val iframeLink = app.get("${mainUrl}/${data}", referer="${mainUrl}/").url
+        Log.d("ACX", "iframeLink » $iframeLink")
 
-        loadExtractor(finalUrl, "${mainUrl}/", subtitleCallback, callback)
+        loadExtractor(iframeLink, "${mainUrl}/", subtitleCallback, callback)
 
         return true
     }

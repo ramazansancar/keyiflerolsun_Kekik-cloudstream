@@ -128,45 +128,46 @@ class BelgeselX : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("BLX", "data » $data")
-        val source = app.get(data)
+    Log.d("BLX", "data » $data")
+    val source = app.get(data)
 
-        Regex("""<iframe\s+[^>]*src=\\"([^\\"']+)\\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
-            val alternatifUrl  = alternatifUrlMatchResult.groupValues[1]
-            Log.d("BLX", "alternatifUrl » $alternatifUrl")
-            val alternatifResp = app.get(alternatifUrl, referer=data)
+    Regex("""<iframe\s+[^>]*src=\\"([^\\"']+)\\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
+        val alternatifUrl = alternatifUrlMatchResult.groupValues[1]
+        Log.d("BLX", "alternatifUrl » $alternatifUrl")
+        val alternatifResp = app.get(alternatifUrl, referer = data)
 
-            if (alternatifUrl.contains("new4.php")) {
-                Regex("""file:"([^"]+)", label: "([^"]+)""").findAll(alternatifResp.text).forEach {
-                    var thisName  = this.name
-                    val videoUrl  = it.groupValues[1]
-                    var quality   = it.groupValues[2]
-                    if (quality == "FULL") {
-                        quality   = "1080p"
-                        thisName  = "Google"
-                    }
-                    Log.d("BLX", "quality » $quality")
-                    Log.d("BLX", "videoUrl » $videoUrl")
-
-                    callback.invoke(
-                        newExtractorLink(
-                            source  = thisName,
-                            name    = thisName,
-                            url     = videoUrl,
-                            referer = data,
-                            quality = getQualityFromName(quality),
-                            type    = INFER_TYPE
-                        )
-                    )
+        if (alternatifUrl.contains("new4.php")) {
+            Regex("""file:"([^"]+)", label: "([^"]+)""").findAll(alternatifResp.text).forEach {
+                var thisName = this.name
+                val videoUrl = it.groupValues[1]
+                var quality = it.groupValues[2]
+                if (quality == "FULL") {
+                    quality = "1080p"
+                    thisName = "Google"
                 }
-            } else {
-                val iframe = fixUrlNull(alternatifResp.document.selectFirst("iframe")?.attr("src")) ?: return@forEach
-                Log.d("BLX", "iframe » $iframe")
+                Log.d("BLX", "quality » $quality")
+                Log.d("BLX", "videoUrl » $videoUrl")
 
-                loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+                callback.invoke(
+                    newExtractorLink(
+                        source = thisName,
+                        name = thisName,
+                        url = videoUrl,
+                        type = INFER_TYPE // Varsayılan olarak tür atanıyor
+                    ) {
+                        headers = mapOf("Referer" to data) // "Referer" ayarı burada yapılabilir
+                        quality = getQualityFromName(quality).toString() // Int değeri String'e dönüştürülüyor
+                    }
+                )
             }
-        }
+        } else {
+            val iframe = fixUrlNull(alternatifResp.document.selectFirst("iframe")?.attr("src")) ?: return@forEach
+            Log.d("BLX", "iframe » $iframe")
 
-        return true
+            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+        }
     }
+
+    return true
+ }
 }

@@ -205,14 +205,15 @@ private fun Element.toMainPageResult(): SearchResponse? {
             val vidUrl        = Regex("""file: '(.*)',""").find(decryptedDoc.html())?.groupValues?.get(1) ?: return false
 
             callback.invoke(
-                ExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = vidUrl,
-                    referer = vidUrl,
-                    quality = getQualityFromName("4k"),
-                    isM3u8  = true
-                )
+                newExtractorLink(
+                    source = this.name,
+                    name = this.name,
+                    url = vidUrl,
+                    type = ExtractorLinkType.M3U8 // Tür olarak M3U8 ayarlandı
+                ) {
+                    headers = mapOf("Referer" to vidUrl) // Referer başlığı ayarlandı
+                    quality = getQualityFromName("4k") // Kalite ayarlandı
+                }
             )
 
         } else if (iframe.contains("/player/moly/moly.php")) {

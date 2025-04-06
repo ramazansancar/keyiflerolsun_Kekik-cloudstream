@@ -40,18 +40,20 @@ open class Odnoklassniki : ExtractorApi() {
                 .replace("ULTRA",  "4k")
 
             callback.invoke(
-                newExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = videoUrl,
-					type    = ExtractorLinkType.M3U8
-					) {
-                    this.referer = url,
-                    this.quality = getQualityFromName(quality),
-                    this.headers = userAgent,
-					}
-                )
-            )
+              newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = videoUrl,
+                type = INFER_TYPE
+            ) {
+                headers = userAgent
+                this.quality = getQualityFromName(quality) // `Int` olarak ayarlandı
+              /**
+              * varsayılan olarak false olması gerekiyor şimdilik böyle kalsın ve ellemeyelim 
+              * isM3u8 = false
+              */
+        }
+    )
         }
     }
 
