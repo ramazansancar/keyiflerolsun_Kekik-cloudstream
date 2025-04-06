@@ -212,7 +212,6 @@ class KultFilmler : MainAPI() {
                         type    = INFER_TYPE
             ) {
                 quality = Qualities.Unknown.value
-                headers = mapOf("Referer" to "https://vidmoly.to/")
             }
                 )
             } else {

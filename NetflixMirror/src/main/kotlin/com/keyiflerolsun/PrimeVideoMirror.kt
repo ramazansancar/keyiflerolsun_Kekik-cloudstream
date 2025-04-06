@@ -5,6 +5,7 @@ package com.keyiflerolsun
 import android.util.Log
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import com.keyiflerolsun.entities.EpisodesData
 import com.keyiflerolsun.entities.PlayList
 import com.keyiflerolsun.entities.PostData
