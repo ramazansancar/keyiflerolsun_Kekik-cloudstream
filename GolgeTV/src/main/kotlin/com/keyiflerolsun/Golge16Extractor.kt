@@ -65,7 +65,6 @@ open class Golge16 : ExtractorApi() {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to "")
             }
-            )
         )
     }
 }
