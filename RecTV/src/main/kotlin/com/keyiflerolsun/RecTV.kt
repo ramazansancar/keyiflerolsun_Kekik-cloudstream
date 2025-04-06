@@ -145,14 +145,15 @@ class RecTV : MainAPI() {
         if (data.startsWith("http")) {
             Log.d("RCTV", "data » $data")
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = data,
-                    referer = "https://twitter.com/",
-                    quality = Qualities.Unknown.value,
                     type    = INFER_TYPE
-                )
+			) {
+                headers = mapOf("Referer" to "https://twitter.com/")
+                quality = Qualities.Unknown.value
+            }
             )
             return true
         }

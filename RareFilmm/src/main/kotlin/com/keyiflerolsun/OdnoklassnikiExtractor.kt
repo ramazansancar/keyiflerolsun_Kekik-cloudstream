@@ -45,7 +45,7 @@ open class Odnoklassniki : ExtractorApi() {
                     name    = this.name,
                     url     = videoUrl,
             ) {
-                headers = mapOf("Referer" to userAgent)
+                headers = mapOf("Referer" to "userAgent")
             }
             )
         }
