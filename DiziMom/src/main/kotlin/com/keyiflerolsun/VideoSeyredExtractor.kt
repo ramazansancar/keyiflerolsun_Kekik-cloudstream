@@ -36,7 +36,7 @@ open class VideoSeyred : ExtractorApi() {
 
         for (source in response.sources) {
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = source.file,

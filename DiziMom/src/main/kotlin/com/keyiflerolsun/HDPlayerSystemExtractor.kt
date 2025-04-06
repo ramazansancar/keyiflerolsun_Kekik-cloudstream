@@ -39,7 +39,7 @@ open class HDPlayerSystem : ExtractorApi() {
         val m3uLink       = videoResponse.securedLink
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
