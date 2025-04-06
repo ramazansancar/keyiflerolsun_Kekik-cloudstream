@@ -49,19 +49,20 @@ open class Golge17 : ExtractorApi() {
         val streamLink = parseHtml(resp)
         Log.d("GOLGE17", "streamLink: $streamLink")
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = this.name,
                 name = content.isim,
                 url = streamLink,
-                referer = link,
+				type = ExtractorLinkType.M3U8
+            ) {
                 quality = Qualities.Unknown.value,
-                isM3u8 = true,
                 headers = mapOf(
                     "origin" to link,
                     "Accept" to "*/*",
                     "Cache-Control" to "max-age=0",
                     "sec-ch-ua-platform" to """"Windows"""",
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+					}
                 )
             )
         )

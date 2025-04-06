@@ -38,15 +38,18 @@ open class Golge19 : ExtractorApi() {
         val resp = app.get(link, headers = headers).text
         val chUrl = getChUrl(resp)
         Log.d("GOLGE19", "chUrl: $chUrl")
-        callback.invoke(ExtractorLink(
+        callback.invoke(
+		newExtractorLink(
             source = this.name,
             name = content.isim,
             url = chUrl,
-            referer = "https://google.com",
+			type = ExtractorLinkType.M3U8
+         ) {
             quality = Qualities.Unknown.value,
-            isM3u8 = true,
             headers = mapOf("origin" to "https://google.com")
-        ))
+			}
+        )
+		)
     }
 
     private fun getChUrl(data: String): String {

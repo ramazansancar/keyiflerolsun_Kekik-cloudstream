@@ -169,14 +169,15 @@ class GolgeTV : MainAPI() {
         }
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = this.name,
                 name = content.isim,
                 url = content.link,
-                referer = headers["Referer"] ?: "",
+				type = ExtractorLinkType.M3U8
+			) {
                 quality = Qualities.Unknown.value,
                 headers = headers,
-                isM3u8 = true
+				}
             )
         )
         return true

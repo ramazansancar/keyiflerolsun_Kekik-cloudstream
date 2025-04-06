@@ -54,13 +54,15 @@ open class Golge16 : ExtractorApi() {
         val (streamLink) = Regex(""""url":"(.*?)"""").find(thirdResp)!!.destructured
         Log.d("GOLGE16", "streamLink: $streamLink")
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = this.name,
                 name = content.isim,
                 url = streamLink,
-                referer = "",
-                quality = Qualities.Unknown.value,
-                isM3u8 = true,
+				type = ExtractorLinkType.M3U8
+            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to "")
+            }
             )
         )
     }
