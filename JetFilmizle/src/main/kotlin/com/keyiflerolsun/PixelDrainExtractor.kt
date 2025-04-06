@@ -21,10 +21,11 @@ open class PixelDrain : ExtractorApi() {
                 source  = "pixeldrain - $pixelId",
                 name    = "pixeldrain - $pixelId",
                 url     = downloadLink,
-                referer = "${mainUrl}/u/${pixelId}?download",
-                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
-            )
+			) {
+                headers = mapOf("Referer" to "${mainUrl}/u/${pixelId}?download")
+                quality = Qualities.Unknown.value
+            }
         )
     }
 }
