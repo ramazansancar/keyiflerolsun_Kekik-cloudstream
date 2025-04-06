@@ -123,14 +123,15 @@ class SinemaCX : MainAPI() {
             ).parsedSafe<Panel>()?.securedLink ?: return false
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    referer = iframe,
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+				type = ExtractorLinkType.M3U8
+            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to iframe)
+            }
             )
         } else {
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)

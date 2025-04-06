@@ -129,14 +129,15 @@ class SuperFilmGeldi : MainAPI() {
             Log.d("SFG", "m3uLink » $m3uLink")
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = m3uLink,
-                    referer = iframe,
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+				type = ExtractorLinkType.M3U8
+            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to iframe)
+            }
             )
         } else {
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
