@@ -17,7 +17,7 @@ open class PixelDrain : ExtractorApi() {
         Log.d("Kekik_${this.name}", "downloadLink » $downloadLink")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = "pixeldrain - $pixelId",
                 name    = "pixeldrain - $pixelId",
                 url     = downloadLink,
