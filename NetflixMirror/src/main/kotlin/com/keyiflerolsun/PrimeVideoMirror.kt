@@ -215,10 +215,11 @@ class PrimeVideoMirror : MainAPI() {
                         name,
                         it.label,
                         fixUrl(it.file),
-                        "${mainUrl}/",
-                        getQualityFromName(it.file.substringAfter("q=", "")),
-                        true
-                    )
+                        type = ExtractorLinkType.M3U8
+                     ) {
+                         this.referer = "$mainUrl/"
+                         this.quality = getQualityFromName(it.file.substringAfter("q=", ""))
+                     }
                 )
             }
 
