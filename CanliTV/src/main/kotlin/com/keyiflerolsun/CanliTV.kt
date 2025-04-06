@@ -129,9 +129,8 @@ class CanliTV : MainAPI() {
 
                      type = ExtractorLinkType.M3U8
                  ) {
-                     this.referer = referer
-                     this.quality = stream.quality ?: Qualities.Unknown.value
-                     this.headers = stream.headers
+                     headers = mapOf("Referer" to "${mainUrl}/")
+                     quality = Qualities.Unknown.value
                  }
         )
 
