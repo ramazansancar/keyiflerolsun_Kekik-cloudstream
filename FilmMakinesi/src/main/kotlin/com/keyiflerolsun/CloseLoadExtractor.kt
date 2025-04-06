@@ -45,18 +45,18 @@ open class CloseLoad : ExtractorApi() {
             Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
             callback.invoke(
-                ExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = m3uLink,
-                    referer = mainUrl,
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+            newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                type = ExtractorLinkType.M3U8 // Tür olarak M3U8'yi belirtiyoruz
+            ) {
+                quality = Qualities.Unknown.value // Varsayılan kalite ayarlandı
+                /* referer = url // bunun yerine headers kodunu ekledim */
+                headers = mapOf("Referer" to url) // Referer burada başlıklar üzerinden ayarlandı
+                /* site açılmıyor şu anda o yüzden hata vermemesi için bunu kapatıyorum isM3u8 = true */
+            }
             )
-        } else {
-            println("No match found")
         }
-
     }
 }
