@@ -178,7 +178,6 @@ class GolgeTV : MainAPI() {
 				type = ExtractorLinkType.M3U8
 			) {
                 quality = Qualities.Unknown.value
-                headers = headers
 				}
             )
         return true

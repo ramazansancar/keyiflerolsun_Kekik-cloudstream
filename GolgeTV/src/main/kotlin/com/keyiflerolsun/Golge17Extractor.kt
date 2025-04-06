@@ -58,7 +58,6 @@ open class Golge17 : ExtractorApi() {
 				type = ExtractorLinkType.M3U8
             ) {
                 quality = Qualities.Unknown.value
-                headers = headers
 					}
         )
     }
