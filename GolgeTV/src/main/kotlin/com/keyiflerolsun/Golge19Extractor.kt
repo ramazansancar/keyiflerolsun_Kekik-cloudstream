@@ -48,7 +48,7 @@ open class Golge19 : ExtractorApi() {
 			type = ExtractorLinkType.M3U8
          ) {
             quality = Qualities.Unknown.value
-            headers = mapOf("origin" to "https://google.com")
+            headers = headers
 			}
 		)
     }

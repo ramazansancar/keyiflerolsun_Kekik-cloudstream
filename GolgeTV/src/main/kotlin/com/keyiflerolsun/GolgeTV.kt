@@ -181,7 +181,6 @@ class GolgeTV : MainAPI() {
                 headers = headers
 				}
             )
-        )
         return true
     }
 }
