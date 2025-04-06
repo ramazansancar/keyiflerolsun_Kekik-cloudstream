@@ -205,14 +205,15 @@ class KultFilmler : MainAPI() {
                 Log.d("Kekik_VidMoly", "m3uLink » $m3uLink")
 
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source  = "VidMoly",
                         name    = "VidMoly",
                         url     = m3uLink,
-                        referer = "https://vidmoly.to/",
-                        quality = Qualities.Unknown.value,
                         type    = INFER_TYPE
-                    )
+            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to "https://vidmoly.to/")
+            }
                 )
             } else {
                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)

@@ -210,7 +210,7 @@ class PrimeVideoMirror : MainAPI() {
         playlist.forEach { item ->
             item.sources.forEach {
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         name,
                         it.label,
                         fixUrl(it.file),

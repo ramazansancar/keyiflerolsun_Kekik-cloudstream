@@ -39,14 +39,15 @@ open class YildizKisaFilm : ExtractorApi() {
         val m3uLink       = videoResponse.securedLink
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
-                referer = extRef,
-                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
-            )
+            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to extRef)
+            }
         )
     }
 
