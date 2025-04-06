@@ -63,7 +63,6 @@ open class TRsTX : ExtractorApi() {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to extRef)
             }
-                )
             )
         }
     }

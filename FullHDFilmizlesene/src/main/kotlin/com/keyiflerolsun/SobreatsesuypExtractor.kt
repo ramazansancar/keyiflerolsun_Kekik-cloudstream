@@ -45,7 +45,6 @@ open class Sobreatsesuyp : ExtractorApi() {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to extRef)
             }
-                )
             )
         }
     }

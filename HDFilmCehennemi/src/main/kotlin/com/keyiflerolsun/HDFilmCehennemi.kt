@@ -158,7 +158,6 @@ class HDFilmCehennemi : MainAPI() {
                 headers = mapOf("Referer" to "${mainUrl}/")
                 quality = Qualities.Unknown.value
             }
-            )
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {

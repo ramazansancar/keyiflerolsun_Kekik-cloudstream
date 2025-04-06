@@ -28,7 +28,6 @@ open class TurboImgz : ExtractorApi() {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to extRef)
             }
-            )
         )
     }
 }
