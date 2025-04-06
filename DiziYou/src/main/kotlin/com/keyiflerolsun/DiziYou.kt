@@ -138,7 +138,7 @@ class DiziYou : MainAPI() {
              newExtractorLink(
                 source = this.name,
                 name = this.name,
-                url = source.file,
+                url = stream.file,
                 type    = INFER_TYPE
             ) {
                 headers = mapOf("Referer" to "${mainUrl}/") // Referer ayarlandı
