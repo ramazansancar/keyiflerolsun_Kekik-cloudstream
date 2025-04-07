@@ -129,7 +129,7 @@ class CanliTV : MainAPI() {
 
                      type = ExtractorLinkType.M3U8
                  ) {
-                     headers = mapOf("Referer" to "${mainUrl}/")
+                     headers = mapOf("Referer" to extRef)
                      quality = Qualities.Unknown.value
                  }
         )
