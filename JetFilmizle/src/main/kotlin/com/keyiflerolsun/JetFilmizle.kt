@@ -20,7 +20,7 @@ class JetFilmizle : MainAPI() {
         "${mainUrl}/page/"                                     to "Son Filmler",
         "${mainUrl}/netflix/page/"                             to "Netflix",
         "${mainUrl}/editorun-secimi/page/"                     to "Editörün Seçimi",
-        "${mainUrl}/turk-film-full-hd-izle/page/"              to "Türk Filmleri",
+        "${mainUrl}/turk-film-full-hd-izle/page/"                      to "Türk Filmleri",
         "${mainUrl}/cizgi-filmler-izle/page/"                  to "Çizgi Filmler",
         "${mainUrl}/kategoriler/yesilcam-filmleri-izlee/page/" to "Yeşilçam Filmleri"
     )

@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("keyiflerolsun")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Film modun geldiyse yüksek kalitede en yeni filmleri izle, 1080p izleyebileceğiniz reklamsiz film sitesi."
 

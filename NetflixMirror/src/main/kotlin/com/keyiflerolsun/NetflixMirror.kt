@@ -11,8 +11,10 @@ import com.keyiflerolsun.entities.PostData
 import com.keyiflerolsun.entities.SearchData
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.httpsify
 import com.lagradost.cloudstream3.utils.getQualityFromName
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -207,14 +209,15 @@ class NetflixMirror : MainAPI() {
         playlist.forEach { item ->
             item.sources.forEach {
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         name,
                         it.label,
                         fixUrl(it.file),
-                        "${mainUrl}/",
-                        getQualityFromName(it.file.substringAfter("q=", "")),
-                        true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = "${mainUrl}/"
+                        this.quality = getQualityFromName(it.file.substringAfter("q=", ""))
+                    }
                 )
             }
 

@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("keyiflerolsun", "usdogu", "nikyokki")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Film Makinesi, en yeni ve en güncel filmleri sitemizde full HD kalite farkı ile izleyebilirsiniz. HD film izle denildiğinde akla gelen en kaliteli film izleme sitesi."
 

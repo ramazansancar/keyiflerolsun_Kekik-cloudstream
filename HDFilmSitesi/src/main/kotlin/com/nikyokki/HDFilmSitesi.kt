@@ -22,9 +22,11 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class HDFilmSitesi : MainAPI() {
@@ -218,24 +220,26 @@ class HDFilmSitesi : MainAPI() {
                     name2 = audioList[1].groupValues.getOrNull(1).toString()
                 }
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = "$resolution - $name1",
                         url = uri,
-                        referer = uri,
-                        quality = getQualityFromName("4k"),
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = uri
+                        this.quality = getQualityFromName("4k")
+                    }
                 )
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = "$resolution - $name2",
                         url = uriv2,
-                        referer = uriv2,
-                        quality = getQualityFromName("4k"),
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = uriv2
+                        this.quality = getQualityFromName("4k")
+                    }
                 )
             }
         } else if (data.contains("vidlop")) {
@@ -247,14 +251,15 @@ class HDFilmSitesi : MainAPI() {
                 referer = "${mainUrl}/"
             ).parsedSafe<VidLop>()?.securedLink ?: return false
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = vidUrl,
-                    referer = data,
-                    quality = Qualities.Unknown.value,
-                    isM3u8 = true
-                )
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = data
+                    this.quality = Qualities.Unknown.value
+                }
             )
             loadExtractor(data, subtitleCallback, callback)
         }
@@ -274,81 +279,16 @@ class HDFilmSitesi : MainAPI() {
                     .substringAfter("var id =").substringBefore(";")
                     .replace("'", "").trim()
                 val m3uLink = "https://vidmody.com/vs/$bb"
-                /*val m3uicerik = app.get(m3uLink, referer = mainUrl).text
-                val audioRegex = Regex(
-                    "#EXT-X-MEDIA:TYPE=AUDIO,.*NAME=\"(.*?)\".*URI=\"(.*?)\"",
-                    RegexOption.MULTILINE
-                )
-                val audioMatches = audioRegex.findAll(m3uicerik)
-                audioMatches.forEach { matchResult ->
-                    val name = matchResult.groupValues[1]
-                    val uri = matchResult.groupValues[2]
-                }
-                val audioList = audioMatches.toList()
-                // SUBTITLES verilerini al
-                val subtitlesRegex = Regex(
-                    "#EXT-X-MEDIA:TYPE=SUBTITLES,.*NAME=\"(.*?)\".*URI=\"(.*?)\"",
-                    RegexOption.MULTILINE
-                )
-                val subtitlesMatches = subtitlesRegex.findAll(m3uicerik)
-                subtitlesMatches.forEach { matchResult ->
-                    val name = matchResult.groupValues[1]
-                    val uri = matchResult.groupValues[2]
-                    subtitleCallback.invoke(
-                        SubtitleFile(
-                            lang = name,
-                            url = fixUrl(uri)
-                        )
-                    )
-                }
-
-                // STREAM verilerini al
-                val streamRegex = Regex(
-                    "#EXT-X-STREAM-INF:.*RESOLUTION=(\\d+x\\d+).*\\s+(https?://\\S+)",
-                    RegexOption.MULTILINE
-                )
-                val streamMatches = streamRegex.findAll(m3uicerik)
-                streamMatches.forEachIndexed { index, matchResult ->
-                    val resolution = matchResult.groupValues[1]
-                    val uri = matchResult.groupValues[2]
-                    val uriv2 = matchResult.groupValues[2].replace("a1.gif", "a2.gif")
-                    var name1 = ""
-                    var name2 = ""
-                    if (audioList.isNotEmpty()) {
-                        name1 = audioList[0].groupValues.getOrNull(1).toString()
-                        name2 = audioList[1].groupValues.getOrNull(1).toString()
-                    }
-                    callback.invoke(
-                        ExtractorLink(
-                            source = this.name,
-                            name = "$resolution - $name1",
-                            url = uri,
-                            referer = uri,
-                            quality = getQualityFromName("4k"),
-                            isM3u8 = true
-                        )
-                    )
-                    callback.invoke(
-                        ExtractorLink(
-                            source = this.name,
-                            name = "$resolution - $name2",
-                            url = uriv2,
-                            referer = uriv2,
-                            quality = getQualityFromName("4k"),
-                            isM3u8 = true
-                        )
-                    )
-
-                }*/
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = m3uLink,
-                        referer = "$mainUrl/",
-                        quality = getQualityFromName("4k"),
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = "$mainUrl/"
+                        this.quality = getQualityFromName("4k")
+                    }
                 )
                 loadExtractor(iframeLink, "$mainUrl/", subtitleCallback, callback)
             } else if (iframeLink.contains("vidlop")) {
@@ -359,14 +299,15 @@ class HDFilmSitesi : MainAPI() {
                     referer = "${mainUrl}/"
                 ).parsedSafe<VidLop>()?.securedLink ?: return false
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = vidUrl,
-                        referer = data,
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = data
+                        this.quality = Qualities.Unknown.value
+                    }
                 )
                 loadExtractor(data, subtitleCallback, callback)
             }

@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("nikyokki")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "En güncel ve popüler filmleri Full HD kalitesinde, Türkçe altyazılı veya Türkçe dublaj seçenekleriyle izleyebileceğiniz tek adres! Sinema tutkunları için en özel film deneyimini yaşamak için fullhdfilmizlede.net"
 

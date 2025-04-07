@@ -35,6 +35,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -211,15 +212,15 @@ class HDFilmCehennemi : MainAPI() {
         val subData = script.substringAfter("tracks: [").substringBefore("]")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = source,
                 name = source,
                 url = base64Decode(videoData),
-                referer = "${mainUrl}/",
-                quality = Qualities.Unknown.value,
                 type = INFER_TYPE
-                // isM3u8  = true
-            )
+            ) {
+                this.referer = "${mainUrl}/"
+                this.quality = Qualities.Unknown.value
+            }
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }

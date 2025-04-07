@@ -13,7 +13,7 @@ android {
 cloudstream {
     authors     = listOf("GitLatte", "patr0nq")
     language    = "tr"
-    description = "Oha.to Türkiye televizyon listesi. @keyiflerolsun Canlı TV eklentisinden yararlanılmıştır."
+    description = "Oha.to Spor Türkiye televizyon listesi. @keyiflerolsun Canlı TV eklentisinden yararlanılmıştır."
 
     /**
      * Status int as the following:

@@ -1,9 +1,9 @@
-version = 2
+version = 1
 
 cloudstream {
     authors     = listOf("kerimmkirac")
     language    = "tr"
-    description = "Binlerce Film İzleme Seçeneğiyle En İyi Film İzleme Sitesi"
+    description = "Full hd film izleme keyfini hdfilmcehennemi2 ile yaşayın. Türkiyenin en güncel yüksek hd kalitede film izleme sitesi."
 
     /**
      * Status int as the following:
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie")
-    iconUrl = "https://www.google.com/s2/favicons?domain=https://jetfilmizle.de&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=www.hdfilmcehennemi2.nl&sz=%size%"
 }

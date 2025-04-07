@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("keyiflerolsun")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Fullhdfilm ile en yeni vizyon filmler Full HD ve kesintisiz film sizlerle. Özgün film arşivimizle en üstün kaliteli film izle keyfini sunuyoruz."
 
