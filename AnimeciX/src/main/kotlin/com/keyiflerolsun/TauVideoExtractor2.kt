@@ -7,7 +7,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.fasterxml.jackson.annotation.JsonProperty
 
-open class TauVideo : ExtractorApi() {
+open class TauVideo2 : ExtractorApi() {
     override val name            = "TauVideo2"
     override val mainUrl         = "https://fang-heshan.store"
     override val requiresReferer = true
