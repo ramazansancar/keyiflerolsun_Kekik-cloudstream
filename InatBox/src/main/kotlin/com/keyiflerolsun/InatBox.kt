@@ -338,7 +338,8 @@ class InatBox : MainAPI() {
             val reg = chContent.chReg
             val type = chContent.chType
 
-            val jsonResponse = runCatching { makeInatRequest(url) }.getOrNull() ?: getJsonFromEncryptedInatResponse(app.get(url).text) ?: return
+            val jsonResponse = runCatching { makeInatRequest(url) }.getOrNull()
+    ?: getJsonFromEncryptedInatResponse(app.get(url).body?.string() ?: "") ?: return
             val firstItem = JSONObject(jsonResponse)
             firstItem.put("chHeaders", headers)
             firstItem.put("chReg", reg)
@@ -428,7 +429,7 @@ class InatBox : MainAPI() {
         )
 
         if (response.isSuccessful) {
-            val encryptedResponse = response.text
+            val encryptedResponse = response.body?.string() ?: ""
             // Log.d("InatBox", "Encrypted response: ${encryptedResponse}")
             return getJsonFromEncryptedInatResponse(encryptedResponse)
         } else {
