@@ -8,19 +8,19 @@ import com.lagradost.cloudstream3.utils.*
 import com.fasterxml.jackson.annotation.JsonProperty
 
 open class TauVideo : ExtractorApi() {
-    override val name            = "TauVideo"
-    override val mainUrl         = "https://tau-video.xyz"
+    override val name            = "TauVideo2"
+    override val mainUrl         = "https://fang-heshan.store"
     override val requiresReferer = true
 
    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
     val extRef = referer ?: ""
     val videoKey = url.split("/").last()
-    val videoUrl = "${mainUrl}/api/video/${videoKey}"
+    val videoUrl = "${mainUrl}/file/tau-video/${videoKey}"
     Log.d("Kekik_${this.name}", "videoUrl » $videoUrl")
 
-    val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: throw ErrorLoadingException("TauVideo")
+    val file = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: throw ErrorLoadingException("TauVideo")
 
-    for (video in api.urls) {
+    for (video in file.urls) {
         callback.invoke(
             newExtractorLink(
                 source = this.name,
