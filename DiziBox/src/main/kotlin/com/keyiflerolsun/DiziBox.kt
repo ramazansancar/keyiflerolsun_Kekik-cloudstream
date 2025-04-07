@@ -48,7 +48,7 @@ class DiziBox : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/dizi-arsivi/page/SAYFA/?ulke[]=turkiye&yil=&imdb"   to "Yerli",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=aile&yil&imdb"       to "Aile",
+        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]%5B%5D=aile&yil&imdb"       to "Aile",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=aksiyon&yil&imdb"    to "Aksiyon",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=animasyon&yil&imdb"  to "Animasyon",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=belgesel&yil&imdb"   to "Belgesel",
@@ -79,9 +79,8 @@ class DiziBox : MainAPI() {
         val document = app.get(
             url,
             cookies     = mapOf(
-                "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1722403730363"
+                "dbxu"          to "1744042826683"
             ),
             interceptor = interceptor
         ).document
@@ -104,7 +103,7 @@ class DiziBox : MainAPI() {
             cookies     = mapOf(
                 "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1722403730363"
+                "dbxu"          to "1744042826683"
             ),
             interceptor = interceptor
         ).document
@@ -120,7 +119,7 @@ class DiziBox : MainAPI() {
             cookies     = mapOf(
                 "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1722403730363"
+                "dbxu"          to "1744042826683"
             ),
             interceptor = interceptor
         ).document
@@ -142,7 +141,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1722403730363"
+                    "dbxu"          to "1744042826683"
                 ),
                 interceptor = interceptor
             ).document
@@ -183,7 +182,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1722403730363"
+                    "dbxu"          to "1744042826683"
                 ),
                 interceptor = interceptor
             ).document
@@ -197,14 +196,15 @@ class DiziBox : MainAPI() {
             val vidUrl        = Regex("""file: '(.*)',""").find(decryptedDoc.html())?.groupValues?.get(1) ?: return false
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    referer = vidUrl,
-                    quality = getQualityFromName("4k"),
-                    isM3u8  = true
-                )
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = vidUrl
+                    this.quality = getQualityFromName("4K")
+                }
             )
 
         } else if (iframe.contains("/player/moly/moly.php")) {
@@ -215,7 +215,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1722403730363"
+                    "dbxu"          to "1744042826683"
                 ),
                 interceptor = interceptor
             ).document
@@ -239,7 +239,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1722403730363"
+                    "dbxu"          to "1744042826683"
                 ),
                 interceptor = interceptor
             ).document
@@ -266,7 +266,7 @@ class DiziBox : MainAPI() {
             cookies     = mapOf(
                 "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1722403730363"
+                "dbxu"          to "1744042826683"
             ),
             interceptor = interceptor
         ).document
@@ -282,7 +282,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1722403730363"
+                    "dbxu"          to "1744042826683"
                 ),
                 interceptor = interceptor
             ).document

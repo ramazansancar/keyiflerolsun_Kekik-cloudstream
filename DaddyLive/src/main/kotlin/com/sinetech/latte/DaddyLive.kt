@@ -12,7 +12,7 @@ import java.io.InputStream
 class DaddyLive : MainAPI() {
     override var mainUrl              = "https://raw.githubusercontent.com/GitLatte/temporarylists/refs/heads/main/dl/dl-daddyliveall.m3u"
     private val defaultPosterUrl      = "https://raw.githubusercontent.com/GitLatte/m3ueditor/refs/heads/site/images/kanal-gorselleri/referans/isimsizkanal.png"
-    override var name                 = "DaddyLive"
+    override var name                 = "DaddyLive "
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = true
@@ -28,7 +28,7 @@ class DaddyLive : MainAPI() {
                 val show  = group.value.map { kanal ->
                     val streamurl   = kanal.url.toString()
                     val channelname = kanal.title.toString()
-                    val posterurl   = kanal.attributes["tvg-logo"]?.toString() ?: defaultPosterUrl ?: defaultPosterUrl ?: defaultPosterUrl
+                    val posterurl   = kanal.attributes["tvg-logo"]?.toString() ?: defaultPosterUrl
                     val chGroup     = kanal.attributes["group-title"].toString()
                     val nation      = kanal.attributes["tvg-country"].toString()
 
@@ -55,7 +55,7 @@ class DaddyLive : MainAPI() {
         return kanallar.items.filter { it.title.toString().lowercase().contains(query.lowercase()) }.map { kanal ->
             val streamurl   = kanal.url.toString()
             val channelname = kanal.title.toString()
-            val posterurl   = kanal.attributes["tvg-logo"]?.toString() ?: defaultPosterUrl ?: defaultPosterUrl
+            val posterurl   = kanal.attributes["tvg-logo"]?.toString() ?: defaultPosterUrl
             val chGroup     = kanal.attributes["group-title"].toString()
             val nation      = kanal.attributes["tvg-country"].toString()
 
@@ -130,7 +130,7 @@ class DaddyLive : MainAPI() {
                 headers = kanal.headers,
                 referer = kanal.headers["referrer"] ?: "",
                 quality = Qualities.Unknown.value,
-                isM3u8  = true
+                type    = ExtractorLinkType.M3U8
             )
         )
 
@@ -148,7 +148,7 @@ class DaddyLive : MainAPI() {
 
             val streamurl   = kanal.url.toString()
             val channelname = kanal.title.toString()
-            val posterurl   = kanal.attributes["tvg-logo"]?.toString() ?: defaultPosterUrl ?: defaultPosterUrl
+            val posterurl   = kanal.attributes["tvg-logo"]?.toString() ?: defaultPosterUrl
             val chGroup     = kanal.attributes["group-title"].toString()
             val nation      = kanal.attributes["tvg-country"].toString()
 
@@ -266,7 +266,7 @@ class IptvPlaylistParser {
 
     private fun String.getAttributes(): Map<String, String> {
         val extInfRegex = Regex("(#EXTINF:.?[0-9]+)", RegexOption.IGNORE_CASE)
-        val attributesString = replace(extInfRegex, "").replaceQuotesAndTrim().split(",").first()
+        val attributesString = replace(extInfRegex, "").replaceQuotesAndTrim()
         val attributeRegex = Regex("([\\w-]+)=\"([^\"]*)\"|([\\w-]+)=([^\\s\"]+)")
         
         return attributeRegex.findAll(attributesString)
@@ -274,13 +274,9 @@ class IptvPlaylistParser {
                 val (key1, value1, key2, value2) = matchResult.destructured
                 val key = key1.ifEmpty { key2 }
                 val value = value1.ifEmpty { value2 }
-                key to cleanAttributeValue(value)
+                key to value.replaceQuotesAndTrim()
             }
             .toMap()
-    }
-
-    private fun cleanAttributeValue(value: String): String {
-        return value.removeSurrounding("\"").trim()
     }
 
     private fun String.getTagValue(key: String): String? {

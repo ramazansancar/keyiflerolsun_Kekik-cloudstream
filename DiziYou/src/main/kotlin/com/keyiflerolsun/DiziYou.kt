@@ -135,14 +135,15 @@ class DiziYou : MainAPI() {
 
         for (stream in streamUrls) {
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = stream.name,
                     name    = stream.name,
                     url     = stream.url,
-                    referer = "${mainUrl}/",
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = "${mainUrl}/"
+                    this.quality = Qualities.Unknown.value
+                }
             )
         }
 

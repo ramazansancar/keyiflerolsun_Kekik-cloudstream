@@ -3,7 +3,6 @@
 package com.keyiflerolsun
 
 import android.util.Base64
-import android.util.Log
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -26,7 +25,6 @@ import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.newHomePageResponse
-import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
@@ -115,22 +113,11 @@ class Dizilla : MainAPI() {
         }
     }
 
-    private fun SearchItem.toSearchResponse(): SearchResponse? {
-        return newTvSeriesSearchResponse(
-            title ?: return null,
-            "${mainUrl}/${slug}",
-            TvType.TvSeries,
-        ) {
-            this.posterUrl = poster
-        }
-    }
-
     override suspend fun search(query: String): List<SearchResponse> {
         val searchReq = app.post(
             "${mainUrl}/api/bg/searchcontent?searchterm=$query",
             headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-                "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
                 "Accept" to "application/json, text/plain, */*",
                 "Accept-Language" to "en-US,en;q=0.5",
                 "X-Requested-With" to "XMLHttpRequest",

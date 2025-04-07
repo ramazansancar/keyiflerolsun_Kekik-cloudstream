@@ -26,8 +26,10 @@ import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
@@ -277,35 +279,18 @@ class DiziMag : MainAPI() {
                             )
                         )
                     }
-                    val m3u8Content = app.get(
-                        jsonData.videoLocation,
-                        referer = iframe,
-                        headers = mapOf("Accept" to "*/*", "Referer" to iframe)
-                    ).document.body()
-                    val regex = Regex("#EXT-X-STREAM-INF:.*? (https?://\\S+)")
-                    val matchResult = regex.find(m3u8Content.text())
-                    val m3uUrl = matchResult?.groupValues?.get(1) ?: ""
-//                    callback.invoke(
-//                        ExtractorLink(
-//                            source = this.name,
-//                            name = this.name,
-//                            headers = mapOf("Accept" to "*/*", "Referer" to iframe),
-//                            url = m3uUrl,
-//                            referer = iframe,
-//                            quality = Qualities.Unknown.value,
-//                            isM3u8 = true
-//                        )
-//                    )
+
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source = this.name,
                             name = this.name,
-                            headers = mapOf("Accept" to "*/*", "Referer" to iframe),
                             url = jsonData.videoLocation,
-                            referer = iframe,
-                            quality = Qualities.Unknown.value,
-                            isM3u8 = true
-                        )
+                            ExtractorLinkType.M3U8
+                        ) {
+                            this.headers = mapOf("Accept" to "*/*", "Referer" to iframe)
+                            this.referer = iframe
+                            this.quality = Qualities.Unknown.value
+                        }
                     )
                 }
             }

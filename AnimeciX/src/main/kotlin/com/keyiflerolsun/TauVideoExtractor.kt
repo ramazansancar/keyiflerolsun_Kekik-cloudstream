@@ -21,8 +21,8 @@ open class TauVideo : ExtractorApi() {
         val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: throw ErrorLoadingException("TauVideo")
 
         for (video in api.urls) {
-            callback.invoke(
-                ExtractorLink(
+            /*callback.invoke(
+                ExtractorLink (
                     source  = this.name,
                     name    = this.name,
                     url     = video.url,
@@ -30,7 +30,12 @@ open class TauVideo : ExtractorApi() {
                     quality = getQualityFromName(video.label),
                     type    = INFER_TYPE
                 )
-            )
+            )*/
+            callback.invoke(
+                newExtractorLink(source = this.name, name = this.name, url = video.url, type = INFER_TYPE) {
+                    this.referer = extRef
+                    this.quality = getQualityFromName(video.label)
+                })
         }
     }
 
