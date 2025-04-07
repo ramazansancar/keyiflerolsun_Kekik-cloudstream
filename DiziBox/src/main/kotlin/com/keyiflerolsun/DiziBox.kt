@@ -80,7 +80,7 @@ class DiziBox : MainAPI() {
             url,
             cookies     = mapOf(
                 "isTrustedUser" to "true",
-                "dbxu"          to "1744042826683"
+                "dbxu"          to "1744046091594"
             ),
             interceptor = interceptor
         ).document
@@ -103,7 +103,7 @@ class DiziBox : MainAPI() {
             cookies     = mapOf(
                 "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1744042826683"
+                "dbxu"          to "1744046091594"
             ),
             interceptor = interceptor
         ).document
@@ -119,7 +119,7 @@ class DiziBox : MainAPI() {
             cookies     = mapOf(
                 "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1744042826683"
+                "dbxu"          to "1744046091594"
             ),
             interceptor = interceptor
         ).document
@@ -141,7 +141,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1744042826683"
+                    "dbxu"          to "1744046091594"
                 ),
                 interceptor = interceptor
             ).document
@@ -182,7 +182,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1744042826683"
+                    "dbxu"          to "1744046091594"
                 ),
                 interceptor = interceptor
             ).document
@@ -215,7 +215,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1744042826683"
+                    "dbxu"          to "1744046091594"
                 ),
                 interceptor = interceptor
             ).document
@@ -239,7 +239,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1744042826683"
+                    "dbxu"          to "1744046091594"
                 ),
                 interceptor = interceptor
             ).document
@@ -266,7 +266,7 @@ class DiziBox : MainAPI() {
             cookies     = mapOf(
                 "LockUser"      to "true",
                 "isTrustedUser" to "true",
-                "dbxu"          to "1744042826683"
+                "dbxu"          to "1744046091594"
             ),
             interceptor = interceptor
         ).document
@@ -282,7 +282,7 @@ class DiziBox : MainAPI() {
                 cookies     = mapOf(
                     "LockUser"      to "true",
                     "isTrustedUser" to "true",
-                    "dbxu"          to "1744042826683"
+                    "dbxu"          to "1744046091594"
                 ),
                 interceptor = interceptor
             ).document
