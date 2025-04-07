@@ -26,9 +26,11 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -36,7 +38,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 
 class WebteIzle : MainAPI() {
-    override var mainUrl              = "https://webteizle1.xyz/"
+    override var mainUrl              = "https://webteizle1.xyz"
     override var name                 = "WebteIzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -231,14 +233,15 @@ class WebteIzle : MainAPI() {
                     }
 
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = m3uLink,
-                            referer = "${mainUrl}/",
-                            quality = getQualityFromName("1440p"),
-                            isM3u8  = true
-                        )
+                            ExtractorLinkType.M3U8
+                        ) {
+                            this.referer = "${mainUrl}/"
+                            this.quality = getQualityFromName("1440p")
+                        }
                     )
 
                     continue
@@ -251,14 +254,15 @@ class WebteIzle : MainAPI() {
                     }
 
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = fixUrl(decoded),
-                            referer = "${mainUrl}/",
-                            quality = Qualities.Unknown.value,
-                            isM3u8  = true
-                        )
+                            ExtractorLinkType.M3U8
+                        ) {
+                            this.referer = "${mainUrl}/"
+                            this.quality = Qualities.Unknown.value
+                        }
                     )
                 }
 

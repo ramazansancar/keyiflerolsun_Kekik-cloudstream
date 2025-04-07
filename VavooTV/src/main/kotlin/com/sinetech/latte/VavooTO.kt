@@ -10,9 +10,9 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class VavooTO : MainAPI() {
-    override var mainUrl              = "https://raw.githubusercontent.com/patr0nq/link/refs/heads/main/kekik-vavoo/vavoo-sadecespor.m3u"
+    override var mainUrl              = "https://raw.githubusercontent.com/patr0nq/link/refs/heads/main/vavoo.m3u"
     private val defaultPosterUrl      = "https://raw.githubusercontent.com/patr0nq/link/refs/heads/main/tv-logo/vavoo.png"
-    override var name                 = "Vavoo.to"
+    override var name                 = "Vavoo.to "
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = true
@@ -130,7 +130,7 @@ class VavooTO : MainAPI() {
                 headers = kanal.headers,
                 referer = kanal.headers["referrer"] ?: "",
                 quality = Qualities.Unknown.value,
-                type    = ExtractorLinkType.M3U8
+                isM3u8  = true
             )
         )
 

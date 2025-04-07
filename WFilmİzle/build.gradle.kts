@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("nikyokki", "kerimmkirac")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Aile Filmleri izle, Yerli ve yabancı en yeni Aile filmlerini Full HD 1080p görüntü kalitesiyle Türkçe Dublaj ve Türkçe Altyazı seçenekleriyle izleyin."
 

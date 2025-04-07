@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("nikyokki")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Türkçe altyazılı film izle, full hd olarak film izlemenin keyfini çıkarın. Türkiyenin en büyük film izleme platformu tafdi kalitesiyle sizlerle."
 

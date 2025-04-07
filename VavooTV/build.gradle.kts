@@ -13,7 +13,7 @@ android {
 cloudstream {
     authors     = listOf("GitLatte", "patr0nq")
     language    = "tr"
-    description = "Vavoo.to Spor Türkiye televizyon listesi. @keyiflerolsun Canlı TV eklentisinden yararlanılmıştır."
+    description = "Vavoo.to Türkiye televizyon listesi. @keyiflerolsun Canlı TV eklentisinden yararlanılmıştır."
 
     /**
      * Status int as the following:

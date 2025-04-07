@@ -23,9 +23,11 @@ import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -228,18 +230,19 @@ class YabanciDizi : MainAPI() {
                         ?: ""
                 Log.d("YBD", vidUrl)
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = name,
                         name = name,
                         url = vidUrl,
-                        referer = mainUrl,
-                        headers = mapOf(
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = mainUrl
+                        this.headers = mapOf(
                             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
                             "Referer" to mainUrl
-                        ),
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = true
-                    )
+                        )
+                        this.quality = Qualities.Unknown.value
+                    }
                 )
                 val aa = app.get(
                     vidUrl, referer = "$mainUrl/", headers =
@@ -249,18 +252,19 @@ class YabanciDizi : MainAPI() {
                 for (sonUrl in urlList) {
                     Log.d("YBD", "sonUrl: ${sonUrl.link} -- ${sonUrl.resolution}")
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source = "$name -- ${sonUrl.resolution}",
                             name = "$name -- ${sonUrl.resolution}",
                             url = sonUrl.link,
-                            referer = vidUrl,
-                            headers = mapOf(
+                            ExtractorLinkType.M3U8
+                        ) {
+                            this.referer = vidUrl
+                            this.headers = mapOf(
                                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
                                 "Referer" to vidUrl
-                            ),
-                            quality = getQualityFromName(sonUrl.resolution),
-                            isM3u8 = true
-                        )
+                            )
+                            this.quality = getQualityFromName(sonUrl.resolution)
+                        }
                     )
                 }
             } else if (name.contains("VidMoly")) {

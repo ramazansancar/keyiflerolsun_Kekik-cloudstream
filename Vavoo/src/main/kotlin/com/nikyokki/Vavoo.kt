@@ -6,7 +6,9 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class Vavoo() : MainAPI() {
     override var mainUrl = "https://vavoo.to"
@@ -73,15 +75,16 @@ class Vavoo() : MainAPI() {
     ): Boolean {
         Log.d("TV2", data)
         callback(
-            ExtractorLink(
+            newExtractorLink(
                 this.name,
                 this.name,
                 data,
-                headers = headers,
-                referer = mainUrl,
-                quality = Qualities.Unknown.value,
-                isM3u8 = true
-            )
+                ExtractorLinkType.M3U8
+            ) {
+                this.headers = headers
+                this.referer = mainUrl
+                this.quality = Qualities.Unknown.value
+            }
         )
         return true
     }

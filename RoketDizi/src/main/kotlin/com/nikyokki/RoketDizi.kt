@@ -9,7 +9,6 @@ import com.lagradost.cloudstream3.ErrorLoadingException
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
-import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
 import com.lagradost.cloudstream3.SearchResponse
@@ -18,7 +17,7 @@ import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
-import com.lagradost.cloudstream3.network.CloudflareKiller
+import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
@@ -27,10 +26,6 @@ import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.nicehttp.cookies
-import okhttp3.Interceptor
-import okhttp3.Response
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 class RoketDizi : MainAPI() {
@@ -38,20 +33,11 @@ class RoketDizi : MainAPI() {
     override var name = "RoketDizi"
     override val hasMainPage = true
     override var lang = "tr"
-    override val hasQuickSearch = false
+    override val hasQuickSearch = true
     override val hasChromecastSupport = true
-    override val hasDownloadSupport = true
+    override val hasDownloadSupport = false
     override val supportedTypes = setOf(TvType.TvSeries, TvType.Movie)
-    var cf_clearance = ""
-    var ci_session = ""
-    var level = ""
-    var udys = ""
 
-    // ! CloudFlare bypass
-    override var sequentialMainPage =
-        true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay = 250L  // ? 0.05 saniye
-    override var sequentialMainPageScrollDelay = 250L  // ? 0.05 saniye
 
     override val mainPage = mainPageOf(
         "${mainUrl}/dizi/tur/aksiyon" to "Aksiyon",
@@ -63,28 +49,22 @@ class RoketDizi : MainAPI() {
         "${mainUrl}/dizi/tur/macera" to "Macera",
         "${mainUrl}/dizi/tur/suc" to "Suç",
 
-        "${mainUrl}/film-kategori/animasyon" to "Aksiyon Film"
+        "${mainUrl}/film-kategori/animasyon" to "Animasyon Film",
+        "${mainUrl}/film-kategori/aile" to "Aile Film",
+        "${mainUrl}/film-kategori/aksiyon" to "Aksiyon Film",
+        "${mainUrl}/film-kategori/western" to "Western Film",
+        "${mainUrl}/film-kategori/gizem" to "Gizem Film",
+        "${mainUrl}/film-kategori/gerilim" to "Gerilim Film",
+        "${mainUrl}/film-kategori/bilim-kurgu" to "Bilim Kurgu Film",
+        "${mainUrl}/film-kategori/savas" to "Savaş Film",
+        "${mainUrl}/film-kategori/romantik" to "Romantik Film",
+        "${mainUrl}/film-kategori/fantastik" to "Fantastik Film",
+        "${mainUrl}/film-kategori/korku" to "Korku Film",
+        "${mainUrl}/film-kategori/macera" to "Macera Film",
+        "${mainUrl}/film-kategori/suc" to "Suç Film",
+        "${mainUrl}/film-kategori/komedi" to "Komedi Film",
     )
 
-    private val cloudflareKiller by lazy { CloudflareKiller() }
-    private val interceptor by lazy { CloudflareInterceptor(cloudflareKiller) }
-
-    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller) : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            println("Chain: $chain")
-            val request = chain.request()
-            println("Request: $request")
-            val response = chain.proceed(request)
-            println("Request: $response")
-            val doc = Jsoup.parse(response.peekBody(1024 * 1024).string())
-            val intercept = cloudflareKiller.intercept(chain)
-            println("Saved Cookies: ${cloudflareKiller.savedCookies}")
-            println("Cookies: ${intercept.cookies}")
-            return intercept
-
-            //return response
-        }
-    }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val mainReq = app.get("${request.data}?&page=${page}")
@@ -111,10 +91,10 @@ class RoketDizi : MainAPI() {
         }
     }
 
-    private fun toSearchResponse(ad: String, link: String, posterLink: String): SearchResponse? {
+    private fun toSearchResponse(ad: String, link: String, posterLink: String): SearchResponse {
         if (link.contains("dizi")) {
             return newTvSeriesSearchResponse(
-                ad ?: return null,
+                ad,
                 link,
                 TvType.TvSeries,
             ) {
@@ -122,7 +102,7 @@ class RoketDizi : MainAPI() {
             }
         } else {
             return newMovieSearchResponse(
-                ad ?: return null,
+                ad,
                 link,
                 TvType.Movie,
             ) {
@@ -169,7 +149,6 @@ class RoketDizi : MainAPI() {
         val searchDoc = searchReq.data.html?.trim()
 
         searchDoc?.trim()?.split("</a>")?.forEach { item ->
-
             val bb = item.substringAfter("<a href=\"").substringBefore("\"")
             val diziUrl = bb.trim()
             val cc = item.substringAfter("data-srcset=\"").substringBefore(" 1x")
@@ -177,8 +156,6 @@ class RoketDizi : MainAPI() {
             val dd = item.substringAfter("<span class=\"text-white\">").substringBefore("</span>")
             val ad = dd.trim()
             toSearchResponse(ad, diziUrl, posterLink)?.let { veriler.add(it) }
-
-
         }
         return veriler
     }
@@ -188,11 +165,10 @@ class RoketDizi : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val mainReq = app.get(url)
         val document = mainReq.document
-        val phpCookie = mainReq.cookies["PHPSESSID"].toString()
-        val cntCookie = "vakTR"
+
         if (url.contains("/dizi/")) {
             val title = document.selectFirst("div.poster.hidden h2")?.text() ?: return null
-            val poster = fixUrlNull(document.selectFirst("img.object-cover")?.attr("src"))
+            val poster = fixUrlNull(document.selectFirst("div.w-full.page-top.relative img")?.attr("src"))
             val year =
                 document.select("div.w-fit.min-w-fit")[1].selectFirst("span.text-sm.opacity-60")?.text()
                     ?.split(" ")?.last()?.toIntOrNull()
@@ -215,26 +191,17 @@ class RoketDizi : MainAPI() {
                 val episodes = sezonDoc.select("div.episodes")
                 for (bolum in episodes.select("div.cursor-pointer")) {
                     val epName = bolum.select("a").last()?.text() ?: continue
-                    println("epName: $epName")
                     val epHref = fixUrlNull(bolum.select("a").last()?.attr("href")) ?: continue
-                    println("epHref: $epHref")
                     val epEpisode = bolum.selectFirst("a")?.text()?.trim()?.toIntOrNull()
-                    println("epEpisode: $epEpisode")
-                    //val epSeason  = bolum.selectFirst("div.seasons-menu")?.text()?.substringBefore(".Sezon")?.trim()?.toIntOrNull()
-                    val epSeason = eps
-                    println("epSeason: $epSeason")
 
                     episodeses.add(
-                        Episode(
-                            data = epHref,
-                            name = epName,
-                            season = epSeason,
-                            episode = epEpisode
-                        )
-                    )
+                        newEpisode(epHref) {
+                            this.name = epName
+                            this.season = eps
+                            this.episode = epEpisode
+                        })
                 }
             }
-            println("Episodes : " + episodeses.size)
 
             return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
                 this.posterUrl = poster
@@ -284,9 +251,9 @@ class RoketDizi : MainAPI() {
     ): Boolean {
         Log.d("RKD", "data » ${data}")
         val document = app.get(data).document
-        var iframe =
+        val iframe =
             fixUrlNull(document.selectFirst("div.bg-prm iframe")?.attr("src")) ?: return false
-        Log.d("RKD", "iframe » ${iframe}")
+        Log.d("RKD", "iframe » $iframe")
 
         loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
         return true

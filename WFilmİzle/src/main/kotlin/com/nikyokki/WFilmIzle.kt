@@ -21,13 +21,15 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class WFilmIzle : MainAPI() {
-    override var mainUrl = "https://www.wfilmizle.vip/"
+    override var mainUrl = "https://www.wfilmizle.plus"
     override var name = "WFilmİzle"
     override val hasMainPage = true
     override var lang = "tr"
@@ -163,22 +165,22 @@ class WFilmIzle : MainAPI() {
             val master = updatedVideoData.videoSource ?: ""
             Log.d("WFI", "Master: $master")
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source = name,
                     name = name,
                     url = master,
-                    referer = mainUrl,
+                    ExtractorLinkType.M3U8
+                ) {
+                    referer = mainUrl
                     headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox",
                         "Accept" to "*/*", "X-Requested-With" to "XMLHttpRequest",
                         "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8"
-                    ),
-                    quality = Qualities.Unknown.value,
-                    isM3u8 = true
-                )
+                    )
+                    quality = Qualities.Unknown.value
+                }
             )
         }
-        //loadExtractor(iframe.toS, "${mainUrl}/", subtitleCallback, callback)
         return true
     }
     private fun decodeUnicodeEscapeSequences(input: String): String {

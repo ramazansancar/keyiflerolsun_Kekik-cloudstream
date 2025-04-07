@@ -242,14 +242,15 @@ class SezonlukDizi : MainAPI() {
             "https://sezonlukdizi6.com/"
         )*/
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = "$dil - ${veri.baslik}",
                 name = "$dil - ${veri.baslik}",
                 url = sonFile.file,
-                referer = "$mainUrl/",
-                quality = Qualities.Unknown.value,
-                isM3u8 = true
-            )
+                ExtractorLinkType.M3U8
+            ) {
+                this.referer = "$mainUrl/"
+                this.quality = Qualities.Unknown.value
+            }
         )
     }
 

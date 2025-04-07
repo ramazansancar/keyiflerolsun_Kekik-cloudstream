@@ -1,7 +1,7 @@
-version = 1
+version = 2
 
 cloudstream {
-    authors     = listOf("keyiflerolsun")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "Her türlü filmi ister dublaj ister altyazılı, en kaliteli bir şekilde izleyebileceğiniz arşivi en geniş gerçek film izleme siteniz."
 
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie")
-    iconUrl = "https://www.google.com/s2/favicons?domain=webteizle1.xyz&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=webteizle2.com&sz=%size%"
 }
