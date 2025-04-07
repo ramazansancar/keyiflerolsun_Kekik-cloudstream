@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
 
 class YouTube : MainAPI() {
-    override var mainUrl              = "https://iv.ggtyler.dev" // ! https://inv.nadeko.net
+    override var mainUrl              = "https://inv.nadeko.net"
     override var name                 = "YouTube"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -78,7 +78,7 @@ class YouTube : MainAPI() {
                 "${provider.mainUrl}/watch?v=${videoId}",
                 TvType.Others
             ) {
-                this.posterUrl = "${provider.mainUrl}/vi/${videoId}/hqdefault.jpg"
+                this.posterUrl = "${provider.mainUrl}/vi/${videoId}/mqdefault.jpg"
             }
         }
     }
@@ -114,17 +114,16 @@ class YouTube : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         loadExtractor("https://youtube.com/watch?v=${data}", subtitleCallback, callback)
         callback(
-            ExtractorLink(
+            newExtractorLink(
                 "YouTube",
                 "YouTube",
                 "${mainUrl}/api/manifest/dash/id/${data}",
-                "",
-                Qualities.Unknown.value,
-                false,
-                mapOf(),
-                null,
-                true
-            )
+                ExtractorLinkType.DASH
+            ) {
+                this.referer = ""
+                this.extractorData = null
+                this.headers = mapOf()
+            }
         )
         return true
     }
