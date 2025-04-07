@@ -21,9 +21,9 @@ _Kullanabilmek için kendiniz derlemelisiniz.._
 1. **[cloudstream/pre-release](https://github.com/recloudstream/cloudstream/releases/tag/pre-release)** _Adresinden güncel APK dosyasını indirip kurun._
 2. **Uygulamanın yüklü olduğu cihazda** _[depoyu otomatik yüklemek için tıklayın](https://www.ramazansancar.com.tr/tools/http-protocol-redirector.html?r=cloudstreamrepo://raw.githubusercontent.com/ramazansancar/keyiflerolsun_Kekik-cloudstream/master/repo.json)_
   - **veya**
-    - `Depo ekle` _butonuyla **manuel** ekleme yapmak isteyen arkadaşlar için_ `cs-ramsan45` _**kısa kod**u mevcuttur._
+    - `Depo ekle` _butonuyla **manuel** ekleme yapmak isteyen arkadaşlar için_ `cs-ramsan` _**kısa kod**u mevcuttur._
     
-    - `Depo ismi` _kısmını boş bırakarak_ `Depo URL'si` _kısmına_ `cs-ramsan45` yazarak `Depo ekle` _demeniz yeterli.._
+    - `Depo ismi` _kısmını boş bırakarak_ `Depo URL'si` _kısmına_ `cs-ramsan` yazarak `Depo ekle` _demeniz yeterli.._
 
 ### 📺 » [Google TV Temel Kurulum Adımları](https://keyiflerolsun.me/Kekik-cloudstream/MiBox)
 
