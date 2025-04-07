@@ -84,7 +84,7 @@ class KultFilmler : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title: String? = this.selectFirst("div.img img")?.attr("alt")?.takeIf { it.isNotEmpty() }
+        val title = this.selectFirst("div.img img")?.attr("alt")?.takeIf { it.isNotEmpty() } ?: return null
         Log.d("toSearchResult", "Title: $title")
 
         val href = this.selectFirst("a")?.attr("href")?.let { fixUrlNull(it) } ?: return null
@@ -96,7 +96,6 @@ class KultFilmler : MainAPI() {
             newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
         }
     }
-
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}?s=${query}").document
