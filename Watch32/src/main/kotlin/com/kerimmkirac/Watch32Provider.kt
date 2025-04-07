@@ -10,6 +10,7 @@ import com.lagradost.cloudstream3.MainPageRequest
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
@@ -220,7 +221,7 @@ class Watch32Provider : MainAPI() {
             }
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     name,
                     vidDataId.text(),
                     m3u8,
