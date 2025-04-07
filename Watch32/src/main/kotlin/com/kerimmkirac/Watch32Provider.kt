@@ -226,7 +226,7 @@ class Watch32Provider : MainAPI() {
                     m3u8,
                     "",
                     0,
-                    isM3u8 = true
+                    ExtractorLinkType.M3U8
                 )
             )
         }
