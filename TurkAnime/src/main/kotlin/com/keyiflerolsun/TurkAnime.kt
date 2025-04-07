@@ -195,7 +195,7 @@ class TurkAnime : MainAPI() {
         val document  = app.get(data).document
         val iframe    = fixUrlNull(document.selectFirst("iframe")?.attr("src")) ?: return false
 
-        if (iframe.contains("a-ads.com")) {
+        if (iframe.contains("turkanime.co")) {
             for (button in document.select("button[onclick*='ajax/videosec']")) {
                 val butonLink = fixUrlNull(button.attr("onclick").substringAfter("IndexIcerik('").substringBefore("'")) ?: continue
                 val subDoc    = app.get(butonLink, headers=mapOf("X-Requested-With" to "XMLHttpRequest")).document

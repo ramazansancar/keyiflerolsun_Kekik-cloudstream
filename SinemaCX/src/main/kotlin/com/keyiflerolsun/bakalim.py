@@ -21,12 +21,12 @@ def sinemaCX(film_url:str) -> dict:
 
     iframe_link  = secici.css("iframe::attr(data-vsrc)").get().split("?img=")[0]
 
-    oturum.headers.update({"Referer": "https://www.sinema.cx/"})
+    oturum.headers.update({"Referer": "https://www.sinemax.cc/"})
     iframe_istek = oturum.get(iframe_link)
     alt_yazi     = findall(r'playerjsSubtitle = "\[(.*?)\](https?://[^\s]+)"', iframe_istek.text)
 
     oturum.headers.update({"X-Requested-With": "XMLHttpRequest"})
-    video_istek = oturum.post("https://panel.sinema.cx/player/index.php?data=" + iframe_link.split("/")[-1] + "&do=getVideo")
+    video_istek = oturum.post("https://player.filmizle.in/player/index.php?data=" + iframe_link.split("/")[-1] + "&do=getVideo")
     video_url   = video_istek.json()["securedLink"]
 
     parts.append({
@@ -36,8 +36,4 @@ def sinemaCX(film_url:str) -> dict:
 
     return parts
 
-konsol.print(sinemaCX("https://www.sinema.cx/film/lovelace-izle/"))
-konsol.print(sinemaCX("https://www.sinema.cx/film/intihar-odasi/"))
-konsol.print(sinemaCX("https://www.sinema.cx/film/alacakaranlik-5-izle/"))
-konsol.print(sinemaCX("https://www.sinema.cx/film/titanik-filmi-full-1080p-izle-yeni/"))
-konsol.print(sinemaCX("https://www.sinema.cx/film/challengers-2023-izle/"))
+konsol.print(sinemaCX("https://www.sinemax.cc/film/intihar-odasi/"))
