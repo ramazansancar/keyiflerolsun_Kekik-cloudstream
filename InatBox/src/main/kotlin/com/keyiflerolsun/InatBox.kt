@@ -26,7 +26,7 @@ class InatBox : MainAPI() {
     override var sequentialMainPage   = false
 
     private val urlToSearchResponse = mutableMapOf<String, SearchResponse>()
-    private val aesKey = "ywevqtjrurkwtqgz" //Master secret and iv key
+    private val aesKey = "ywevqtjrurkwtqgz" 
 
     override val mainPage = mainPageOf(
         "https://boxbc.sbs/CDN/001_STR/boxbc.sbs/spor_v2.php" to "Spor Kanalları",
@@ -67,7 +67,7 @@ class InatBox : MainAPI() {
             }
         }
 
-        // Return a HomePageResponse with the parsed results
+        
         return newHomePageResponse(request.name, searchResults)
     }
 
@@ -183,7 +183,7 @@ class InatBox : MainAPI() {
 
                 val seasonUrl = seasonItem.getString("diziUrl")
 
-                // Fetch the episode data for this season
+                
                 val episodeResponse = makeInatRequest(seasonUrl) ?: continue
                 val episodeArray = try {
                     JSONArray(episodeResponse)
@@ -211,7 +211,7 @@ class InatBox : MainAPI() {
                 }
             }
 
-            // Get the poster URL from the first season
+            
             val firstSeason = jsonArray.getJSONObject(0)
             val posterUrl = firstSeason.getString("diziImg")
 
@@ -338,7 +338,8 @@ class InatBox : MainAPI() {
             val reg = chContent.chReg
             val type = chContent.chType
 
-            val jsonResponse = runCatching { makeInatRequest(url) }.getOrNull() ?: getJsonFromEncryptedInatResponse(app.get(url).text) ?: return
+            val jsonResponse = runCatching { makeInatRequest(url) }.getOrNull()
+    ?: getJsonFromEncryptedInatResponse(app.get(url).body?.string() ?: "") ?: return
             val firstItem = JSONObject(jsonResponse)
             firstItem.put("chHeaders", headers)
             firstItem.put("chReg", reg)
@@ -378,7 +379,7 @@ class InatBox : MainAPI() {
                 )
             }
 
-        //When no extractor found, try to load as generic
+       
         if (!extractorFound) {
             callback.invoke(
                 ExtractorLink(
@@ -428,8 +429,8 @@ class InatBox : MainAPI() {
         )
 
         if (response.isSuccessful) {
-            val encryptedResponse = response.text
-            // Log.d("InatBox", "Encrypted response: ${encryptedResponse}")
+            val encryptedResponse = response.body?.string() ?: ""
+            
             return getJsonFromEncryptedInatResponse(encryptedResponse)
         } else {
             Log.e("InatBox", "Request failed")
@@ -442,13 +443,13 @@ class InatBox : MainAPI() {
             val algorithm = "AES/CBC/PKCS5Padding"
             val keySpec = SecretKeySpec(aesKey.toByteArray(), "AES")
 
-            // First decryption iteration
+           
             val cipher1 = Cipher.getInstance(algorithm)
             cipher1.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(aesKey.toByteArray()))
             val firstIterationData =
                 cipher1.doFinal(Base64.decode(response.split(":")[0], Base64.DEFAULT))
 
-            // Second decryption iteration
+            
             val cipher2 = Cipher.getInstance(algorithm)
             cipher2.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(aesKey.toByteArray()))
             val secondIterationData = cipher2.doFinal(
@@ -458,7 +459,7 @@ class InatBox : MainAPI() {
                 )
             )
 
-            // Parse JSON
+           
             val jsonString = String(secondIterationData)
             return jsonString
         } catch (e: Exception) {
@@ -494,11 +495,11 @@ class InatBox : MainAPI() {
                             this.posterUrl = posterUrl
                         }
 
-                        else -> null // Ignore unsupported types
+                        else -> null 
                     }
                     searchResponse?.let { searchResults.add(it) }
                 } else if (item.has("chName") && item.has("chUrl") && item.has("chImg")) {
-                    // Handle the case where diziType is missing but chName, chUrl, and chImg are present
+                
                     val name = item.getString("chName")
                     val posterUrl = item.getString("chImg")
                     val chType = item.getString("chType")
