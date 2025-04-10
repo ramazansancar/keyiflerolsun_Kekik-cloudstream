@@ -99,7 +99,7 @@ class JetFilmizle : MainAPI() {
         val document = app.get(data).document
 
         val iframes    = mutableListOf<String>()
-        val mainIframe = fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("data-src")) ?: fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("data")) ?: fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("src"))
+        val mainIframe = fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("data-src")) ?: fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("data")) ?: fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("src")) ?: fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("data-litespeed-src"))
         Log.d("JTF", "mainIframe » $mainIframe")
         if (mainIframe != null) {
             iframes.add(mainIframe)
