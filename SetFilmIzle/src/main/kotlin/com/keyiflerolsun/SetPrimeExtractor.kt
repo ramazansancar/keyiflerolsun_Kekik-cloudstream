@@ -12,8 +12,8 @@ open class SetPrime : ExtractorApi() {
     override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        val partKey  = url.substringAfter("?partKey=").substringAfter("turkce").uppercase()
-        @Suppress("NAME_SHADOWING") val url      = url.substringBefore("?partKey=")
+        // val partKey  = url.substringAfter("?partKey=").substringAfter("turkce").uppercase()
+        // @Suppress("NAME_SHADOWING") val url      = url.substringBefore("?partKey=")
         val iSource  = app.post(url.replace("embed?i=", "embed/get?i="), referer=url).text
 
         val links = Regex("""Links":\["([^"\]]+)""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("Links not found")
