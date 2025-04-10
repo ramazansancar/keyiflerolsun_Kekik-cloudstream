@@ -116,7 +116,7 @@ class JetFilmizle : MainAPI() {
             if (iframe != null) {
                 iframes.add(iframe)
             } else {
-                movDoc.select("div#movie p a").forEach downloadLinkForEach@{ link ->
+                movDoc.select("div.movie p a").forEach downloadLinkForEach@{ link ->
                     val downloadLink = fixUrlNull(link.attr("href")) ?: return@downloadLinkForEach
                     iframes.add(downloadLink)
                 }
@@ -124,7 +124,7 @@ class JetFilmizle : MainAPI() {
         }
 
         for (iframe in iframes) {
-            if (iframe.contains("jetv.xyz") || iframe.contains("zupeo.com")) {
+            if (iframe.contains("jetv.xyz")) {
                 Log.d("JTF", "jetv » $iframe")
                 val jetvDoc    = app.get(iframe).document
                 val jetvIframe = fixUrlNull(jetvDoc.selectFirst("iframe")?.attr("src")) ?: continue
