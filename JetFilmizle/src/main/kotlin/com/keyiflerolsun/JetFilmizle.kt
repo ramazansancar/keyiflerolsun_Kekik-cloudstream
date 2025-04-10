@@ -124,7 +124,7 @@ class JetFilmizle : MainAPI() {
         }
 
         for (iframe in iframes) {
-            if (iframe.contains("jetv.xyz") || sourceIframe.contains("zupeo.com")) {
+            if (iframe.contains("jetv.xyz") || iframe.contains("zupeo.com")) {
                 Log.d("JTF", "jetv » $iframe")
                 val jetvDoc    = app.get(iframe).document
                 val jetvIframe = fixUrlNull(jetvDoc.selectFirst("iframe")?.attr("src")) ?: continue
