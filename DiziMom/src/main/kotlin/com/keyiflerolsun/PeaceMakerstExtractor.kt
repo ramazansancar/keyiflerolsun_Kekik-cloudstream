@@ -54,12 +54,10 @@ open class PeaceMakerst : ExtractorApi() {
                 source = this.name,
                 name = this.name,
                 url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                type = ExtractorLinkType.M3U8 // Tür olarak M3U8'yi belirtiyoruz
+                type    = INFER_TYPE
             ) {
-                quality = Qualities.Unknown.value // Varsayılan kalite ayarlandı
-                /* referer = url // bunun yerine headers kodunu ekledim */
-                headers = mapOf("Referer" to url) // Referer burada başlıklar üzerinden ayarlandı
-                /* site açılmıyor şu anda o yüzden hata vermemesi için bunu kapatıyorum isM3u8 = true */
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to extRef)
             }
         )
     }
