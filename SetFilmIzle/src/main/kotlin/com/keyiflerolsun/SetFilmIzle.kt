@@ -215,9 +215,9 @@ class SetFilmIzle : MainAPI() {
             Log.d("STF", "iframe » $sourceIframe")
 
             if (sourceIframe.contains("setplay")) {
-                loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
-            } else {
                 loadExtractor(sourceIframe, "${mainUrl}/", subtitleCallback, callback)
+            } else {
+                loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
             }
         }
 
