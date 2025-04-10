@@ -40,7 +40,7 @@ open class W2MExtractor(override val mainUrl: String, private val context: Conte
                     displayZoomControls                = false
                     allowContentAccess                 = true
                     mixedContentMode                   = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                    userAgentString                    = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+                    userAgentString                    = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0"
                 }
 
                 evaluateJavascript(

@@ -9,7 +9,5 @@ class SetFilmIzlePlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(SetFilmIzle())
         registerExtractorAPI(SetPlay())
-        registerExtractorAPI(SetPrime())
-        registerExtractorAPI(ExPlay())
     }
 }
