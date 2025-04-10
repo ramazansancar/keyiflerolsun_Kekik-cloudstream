@@ -124,7 +124,7 @@ class Watch2Movies : MainAPI() {
         val epId     = data.split("-").last()
         val document = app.get("${mainUrl}/ajax/episode/list/${epId}", referer=data).document
 
-        document.select("div.detail_page-watch").forEach {
+        document.select("li.nav-item a").forEach {
             val dataId     = it.attr("data-id")
             Log.d("W2M", "dataId » $dataId")
             loadExtractor("${data}.${dataId}", "${mainUrl}/", subtitleCallback, callback)

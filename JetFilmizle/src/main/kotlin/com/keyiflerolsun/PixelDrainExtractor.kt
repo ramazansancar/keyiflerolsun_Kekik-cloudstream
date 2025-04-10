@@ -23,7 +23,7 @@ open class PixelDrain : ExtractorApi() {
                 url     = downloadLink,
                 type    = INFER_TYPE
 			) {
-                headers = mapOf("Referer" to "${mainUrl}/u/${pixelId}?download")
+                headers = mapOf("Referer" to url)
                 quality = Qualities.Unknown.value
             }
         )
