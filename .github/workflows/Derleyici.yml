@@ -1,4 +1,3 @@
-# Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 name: CloudStream Derleyici
 
 concurrency:
@@ -20,8 +19,6 @@ on:
 jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
-    env:
-      TMDB_SECRET_API: ${{ secrets.TMDB_SECRET_API }}  # Secret olarak tanımlanan API Key burada
     steps:
       - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
@@ -34,11 +31,8 @@ jobs:
           ref: "builds"
           path: "builds"
 
-      - name: API Key’i Gradle İçin Kaydet
-        run: echo "TMDB_SECRET_API=${{ secrets.TMDB_SECRET_API }}" >> $GITHUB_WORKSPACE/src/local.properties
-
-      - name: Eski Derlemeleri Temizle
-        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
+      - name: Eski Derlemeleri Temizle (GolgeTV.cs3,AnimeciX.cs3 ve Sinewix.cs3 hariç)
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'SineWix.cs3' -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -57,12 +51,82 @@ jobs:
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
+      - name: jq Araçlarını Kur (GolgeTV ve AnimeciX eklemeleri için)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: GolgeTV Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "GolgeTV")' plugins.json > /dev/null; then
+            jq '. += [{
+              "iconUrl": "https://www.apkdelisi.net/wp-content/uploads/2022/03/golge-tv-reklamsiz-mod-apk-canli-tv-apkdelisi-0.jpg",
+              "apiVersion": 1,
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "fileSize": '"$(stat -c%s GolgeTV.cs3)"',
+              "status": 1,
+              "language": "tr",
+              "authors": ["nikyokki"],
+              "tvTypes": ["TV"],
+              "version": 1,
+              "internalName": "GolgeTV",
+              "description": "GolgeTV canlı TV ve diziler için hızlı ve stabil bir çözümdür.",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/GolgeTV.cs3",
+              "name": "GolgeTV"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "GolgeTV zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+          - name: Sinewix Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "SineWix")' plugins.json > /dev/null; then
+            jq '. += [{
+              "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX",
+              "apiVersion": 1,
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "fileSize": '"$(stat -c%s SineWix.cs3)"',
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["TV"],
+              "version": 1,
+              "internalName": "Sinewix",
+              "description": "Sinewix diziler için hızlı ve stabil bir çözümdür.",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/SineWix.cs3",
+              "name": "Sinewix"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "Sinewix zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+      - name: AnimeciX Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "AnimeciX")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["Anime"],
+              "version": 1,
+              "internalName": "AnimeciX",
+              "description": "AnimeciX için CloudStream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/AnimeciX.cs3",
+              "name": "AnimeciX",
+              "iconUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://anm.cx&size=%size%"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "AnimeciX zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
       - name: Derlemeleri Yükle
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add .
-          git commit --amend -m "$GITHUB_SHA 'nın Derlenmesi" || exit 0   # eğer commit edilecek bir şey yoksa hata verme
+          git commit -m "Yeni Derleme: $GITHUB_SHA" || exit 0  # Commit yapmadan önce eski commit'i değiştirme
           git push --force
-
