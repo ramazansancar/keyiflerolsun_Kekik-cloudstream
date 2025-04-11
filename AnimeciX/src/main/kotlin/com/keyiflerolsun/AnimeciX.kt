@@ -122,10 +122,13 @@ override suspend fun loadLinks(
     val iframeLink = response.url
     Log.d("ACX", "iframeLink » $iframeLink")
 
-    // Eğer iframeLink embed link değilse (dizi sayfasıysa)
     if (iframeLink.contains("/secure/best-video")) {
+        // iframe sayfasının HTML içeriğini al
         val html = app.get(iframeLink, referer = "${mainUrl}/").text
-        val regex = Regex("""src=['"]?(https://tau-video\.xyz/embed/[^'"]+)""")
+        Log.d("ACX", "iframe HTML:\n$html")
+
+        // src veya data-src içinde tau-video içeren linki yakala
+        val regex = Regex("""(?:src|data-src)=['"]?(https://[^'"]*tau-video[^'"]+)""")
         val match = regex.find(html)
         val videoUrl = match?.groupValues?.get(1)
 
@@ -136,7 +139,7 @@ override suspend fun loadLinks(
             Log.d("ACX", "Video URL not found in HTML.")
         }
     } else {
-        // embed link ise doğrudan extractor'a gönder
+        // Embed link ise doğrudan extractor’a gönder
         loadExtractor(iframeLink, "${mainUrl}/", subtitleCallback, callback)
     }
 
