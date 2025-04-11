@@ -110,13 +110,28 @@ class AnimeciX : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("ACX", "data » $data")
-        val iframeLink = app.get("${mainUrl}/${data}", referer="${mainUrl}/").url
-        Log.d("ACX", "iframeLink » $iframeLink")
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("ACX", "data » $data")
+    val url = "${mainUrl}/${data}"
+    val initialResponse = app.get(url, referer = "${mainUrl}/")
+    val iframeLink = initialResponse.url
+    Log.d("ACX", "iframeLink » $iframeLink")
 
+    if (iframeLink.contains("/secure/best-video")) {
+        val redirected = app.get(iframeLink, referer = "${mainUrl}/")
+        val finalUrl = redirected.url
+        Log.d("ACX", "Redirected to finalUrl » $finalUrl")
+
+        loadExtractor(finalUrl, "${mainUrl}/", subtitleCallback, callback)
+    } else {
         loadExtractor(iframeLink, "${mainUrl}/", subtitleCallback, callback)
-
-        return true
     }
+
+    return true
+}
 }
