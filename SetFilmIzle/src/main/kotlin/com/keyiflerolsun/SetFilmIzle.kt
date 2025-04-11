@@ -198,7 +198,7 @@ class SetFilmIzle : MainAPI() {
         Log.d("STF", "data » $data")
         val document = app.get(data).document
 
-        document.select("nav.player").map { element ->
+        document.select("nav.player a").map { element ->
             val sourceId = element.attr("data-post-id")
             val name     = element.attr("data-player-name")
             val partKey  = element.attr("data-part-key")
