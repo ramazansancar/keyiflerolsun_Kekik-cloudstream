@@ -118,17 +118,25 @@ override suspend fun loadLinks(
 ): Boolean {
     Log.d("ACX", "data » $data")
     val url = "${mainUrl}/${data}"
-    val initialResponse = app.get(url, referer = "${mainUrl}/")
-    val iframeLink = initialResponse.url
+    val response = app.get(url, referer = "${mainUrl}/")
+    val iframeLink = response.url
     Log.d("ACX", "iframeLink » $iframeLink")
 
+    // Eğer iframeLink embed link değilse (dizi sayfasıysa)
     if (iframeLink.contains("/secure/best-video")) {
-        val redirected = app.get(iframeLink, referer = "${mainUrl}/")
-        val finalUrl = redirected.url
-        Log.d("ACX", "Redirected to finalUrl » $finalUrl")
+        val html = app.get(iframeLink, referer = "${mainUrl}/").text
+        val regex = Regex("""src=['"]?(https://tau-video\.xyz/embed/[^'"]+)""")
+        val match = regex.find(html)
+        val videoUrl = match?.groupValues?.get(1)
 
-        loadExtractor(finalUrl, "${mainUrl}/", subtitleCallback, callback)
+        if (videoUrl != null) {
+            Log.d("ACX", "Extracted video URL from HTML: $videoUrl")
+            loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
+        } else {
+            Log.d("ACX", "Video URL not found in HTML.")
+        }
     } else {
+        // embed link ise doğrudan extractor'a gönder
         loadExtractor(iframeLink, "${mainUrl}/", subtitleCallback, callback)
     }
 
