@@ -60,7 +60,7 @@ jobs:
           if ! jq -e '.[] | select(.internalName == "GolgeTV")' plugins.json > /dev/null; then
             jq '. += [{
               "iconUrl": "https://www.apkdelisi.net/wp-content/uploads/2022/03/golge-tv-reklamsiz-mod-apk-canli-tv-apkdelisi-0.jpg",
-              "apiVersion": 1,
+              "apiVersion": 2,
               "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
               "fileSize": '"$(stat -c%s GolgeTV.cs3)"',
               "status": 1,
