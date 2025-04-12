@@ -32,7 +32,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle (GolgeTV.cs3,AnimeciX.cs3 ve Sinewix.cs3 hariç)
-        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'SineWix.cs3' -delete
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'SineWix.cs3' ! -name 'Watch32.cs3' -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
