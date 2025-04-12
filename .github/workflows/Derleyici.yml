@@ -108,7 +108,6 @@ jobs:
               "iconUrl": "https://editorialge.com/wp-content/uploads/2023/07/Watch32..jpg",
               "apiVersion": 1,
               "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "fileSize": '"$(stat -c%s Watch32.cs3)"',
               "status": 1,
               "language": "tr",
               "authors": ["kerimmkirac"],
