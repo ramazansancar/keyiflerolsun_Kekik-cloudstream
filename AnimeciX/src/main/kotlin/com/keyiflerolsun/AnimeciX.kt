@@ -132,7 +132,7 @@ override suspend fun loadLinks(
         val match = regex.find(html)
         val videoUrl = match?.groupValues?.get(1)
 
-        if (video Url != null) {
+        if (videoUrl != null) {
             Log.d("ACX", "Extracted video URL from HTML: $videoUrl")
             loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
         } else {
