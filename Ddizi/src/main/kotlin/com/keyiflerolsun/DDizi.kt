@@ -20,7 +20,7 @@ class DDizi : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}/${page}").document
+        val document = app.get("${request.data}").document
         val home     = document.select("div.col-lg-3").mapNotNull { it.diziler() }
 
         return newHomePageResponse(request.name, home)
