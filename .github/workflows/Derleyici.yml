@@ -100,7 +100,7 @@ jobs:
             echo "Sinewix zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-          - name: IPTV Eklentisini plugins.json'a Elle Ekle
+      - name: IPTV Eklentisini plugins.json'a Elle Ekle
         run: |
           cd $GITHUB_WORKSPACE/builds
           if ! jq -e '.[] | select(.internalName == "IPTV")' plugins.json > /dev/null; then
