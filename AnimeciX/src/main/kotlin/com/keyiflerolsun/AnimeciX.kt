@@ -109,7 +109,6 @@ class AnimeciX : MainAPI() {
             addTrailer(response.title.trailer)
         }
     }
-
 override suspend fun loadLinks(
     data: String,
     isCasting: Boolean,
@@ -119,26 +118,31 @@ override suspend fun loadLinks(
     Log.d("ACX", "data » $data")
     val pageUrl = "$mainUrl/$data"
 
-    // İlk sayfayı çek (film ya da dizi)
+    // Sayfayı çek
     val response = app.get(pageUrl, referer = "$mainUrl/")
-    val iframeLink = response.url
+    var iframeLink = response.url
     Log.d("ACX", "iframeLink » $iframeLink")
 
-    // Eğer iframe link 'best-video' içeriyorsa, yönlendirme yapılması gerekir
+    // Eğer iframeLink içinde çift URL varsa düzelt
+    val doubleUrlRegex = Regex("https://anm.cx/(https://anm.cx/secure/[^\\s]+)")
+    val match = doubleUrlRegex.find(iframeLink)
+    if (match != null) {
+        iframeLink = match.groupValues[1]
+        Log.d("ACX", "Corrected iframeLink » $iframeLink")
+    }
+
+    // Eğer dizi (best-video) ise yönlendirmeyi takip et
     if (iframeLink.contains("/secure/best-video")) {
-        // Redirect'i elle takip et
         val redirectResponse = app.get(iframeLink, referer = "$mainUrl/")
         val redirectedUrl = redirectResponse.url
         Log.d("ACX", "Redirected final URL » $redirectedUrl")
 
-        // Eğer yönlendirme başarılıysa loadExtractor’a gönder
         if (redirectedUrl.contains("tau-video")) {
             loadExtractor(redirectedUrl, "$mainUrl/", subtitleCallback, callback)
         } else {
             Log.d("ACX", "Redirect failed or unexpected URL: $redirectedUrl")
         }
     } else {
-        // Embed link ise doğrudan yükle
         loadExtractor(iframeLink, "$mainUrl/", subtitleCallback, callback)
     }
 
