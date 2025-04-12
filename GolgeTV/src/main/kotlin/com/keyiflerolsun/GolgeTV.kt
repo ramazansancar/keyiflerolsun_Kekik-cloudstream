@@ -83,9 +83,9 @@ class GolgeTV : MainAPI() {
             data = mapOf(
                 "ormoxRoks" to "D8C42BC6CD20C00E85659003F62B1F4A7A882DCB",
                 "ormxArmegedEryxc" to "",
-                "asize" to "R62DggGip3jCa6/BWCkswA==\n",
+                "asize" to "R62DggGip3jCa6/BWCkswA==",
                 "serverurl" to "https://raw.githubusercontent.com/sevdaliyim/sevdaliyim/refs/heads/main/ssl2.key",
-                "glg1Key" to "wSG2/05QGod+tS/qIH/tSeU4xtF6H+7grFq8DFi/R0XqVaYPZTfWmbBGxbLw6UuT\n",
+                "glg1Key" to "wSG2/05QGod+tS/qIH+tSeU4xtF6H+7grFq8DFi/R0XqVaYPZTfWmbBGxbLw6UuT",
                 "kategori" to request.name
             )
         )
