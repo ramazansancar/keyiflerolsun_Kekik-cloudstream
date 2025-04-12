@@ -26,7 +26,7 @@ open class DDiziExtractor : ExtractorApi() {
                 type = ExtractorLinkType.M3U8
             ) {
                 headers = mapOf("Referer" to url)
-                quality = Qualities.Unknown.value,
+                quality = Qualities.Unknown.value
             }
         )
     }
