@@ -71,11 +71,10 @@ class AnimeciX : MainAPI() {
         ).parsedSafe<Title>() ?: return null
         val episodes = mutableListOf<Episode>()
         val titleId  = url.substringAfter("?titleId=")
-        val videoId  = url.substringAfter("?videoId=")
 
         if (response.title.titleType == "anime") {
             for (sezon in response.title.seasons) {
-                val sezonResponse = app.get("${mainUrl}/secure/related-videos?episode=1&season=${sezon.number}&videoId=${videoId}&titleId=${titleId}").parsedSafe<TitleVideos>() ?: return null
+                val sezonResponse = app.get("${mainUrl}/secure/related-videos?episode=1&season=${sezon.number}&videoId=0&titleId=${titleId}").parsedSafe<TitleVideos>() ?: return null
                 for (video in sezonResponse.videos) {
                     episodes.add(newEpisode(video.url) {
                         this.name = "${video.seasonNum}. Sezon ${video.episodeNum}. Bölüm"
@@ -123,7 +122,7 @@ override suspend fun loadLinks(
     val iframeLink = response.url
     Log.d("ACX", "iframeLink » $iframeLink")
 
-    if (iframeLink.contains("/secure/best-video")) {
+    if (iframeLink.contains("best-video")) {
         // iframe sayfasının HTML içeriğini al
         val html = app.get(iframeLink, referer = "${mainUrl}/").text
         Log.d("ACX", "iframe HTML:\n$html")
@@ -133,7 +132,7 @@ override suspend fun loadLinks(
         val match = regex.find(html)
         val videoUrl = match?.groupValues?.get(1)
 
-        if (videoUrl != null) {
+        if (video Url != null) {
             Log.d("ACX", "Extracted video URL from HTML: $videoUrl")
             loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
         } else {
