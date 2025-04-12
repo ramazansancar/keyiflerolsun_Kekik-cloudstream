@@ -28,7 +28,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     }
 
     val url = when (request.name) {
-        "Eski Diziler" -> "${request.data}/$page"
+        "Eski Diziler" -> "${request.data}"
         else -> request.data
     }
 
@@ -38,7 +38,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     println("DDZ 📄 Sayfa yüklendi: ${document.title()}")
 
     val selector = when (request.name) {
-        "Yeni Eklenenler" -> "div.col-lg-12"
+        "Yeni Eklenenler" -> "div.col-lg-12 div.dizi-boxpost-cat a"
         else               -> "div.col-lg-3 div.dizi-boxpost a"
     }
 
