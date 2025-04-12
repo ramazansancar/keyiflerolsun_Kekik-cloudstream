@@ -16,7 +16,7 @@ class DDizi : MainAPI() {
     override val mainPage = mainPageOf(
         "${mainUrl}/yeni-eklenenler1"      to "Yeni Eklenenler",
         "${mainUrl}/yabanci-dizi-izle"     to "Yabancı Diziler",
-        "${mainUrl}/eski.diziler/page/"    to "Eski Diziler"
+        "${mainUrl}/eski.diziler/"    to "Eski Diziler"
     )
 
 override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -39,7 +39,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
 
     val selector = when (request.name) {
         "Yeni Eklenenler" -> "div.col-lg-12"
-        else               -> "div.col-lg-3"
+        else               -> "div.col-lg-3 div.dizi-boxpost a"
     }
 
     val elements = document.select(selector)
