@@ -194,33 +194,40 @@ class SetFilmIzle : MainAPI() {
         return client.newCall(request).execute()
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("STF", "data » $data")
-        val document = app.get(data).document
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("STF", "data » $data")
+    val document = app.get(data).document
 
-        document.select("nav.player a").map { element ->
-            val sourceId = element.attr("data-post-id")
-            val name     = element.attr("data-player-name")
-            val partKey  = element.attr("data-part-key")
+    document.select("nav.player a").map { element ->
+        val sourceId = element.attr("data-post-id")
+        val name = element.attr("data-player-name")
+        val partKey = element.attr("data-part-key").takeIf { it.isNotEmpty() }
 
-            Triple(name, sourceId, partKey)
-        }.forEach { (name, sourceId, partKey) ->
-            if (sourceId.contains("event")) return@forEach
-            if (partKey == "" || sourceId == "") return@forEach
+        Triple(name, sourceId, partKey)
+    }.forEach { (name, sourceId, partKey) ->
+        if (sourceId.contains("event") || sourceId.isEmpty()) return@forEach
 
-            val nonce        = Regex("""nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
-            val multiPart    = sendMultipartRequest(nonce, sourceId, name, partKey, data)
-            val sourceBody   = multiPart.body.string()
-            val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
-            Log.d("STF", "iframe » $sourceIframe")
+        val nonce = Regex("""nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
+        val multiPart = sendMultipartRequest(nonce, sourceId, name, partKey ?: "", data)
+        val sourceBody = multiPart.body.string()
+        val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
 
-            if (sourceIframe.contains("setplay")) {
-                loadExtractor(sourceIframe, "${mainUrl}/", subtitleCallback, callback)
-            } else {
-                loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
-            }
+        Log.d("STF", "iframe » $sourceIframe")
+
+        val finalUrl = if (sourceIframe.contains("setplay")) {
+            sourceIframe // partKey ekleme
+        } else {
+            if (partKey != null) "$sourceIframe?partKey=$partKey" else sourceIframe
         }
 
-        return true
+        loadExtractor(finalUrl, "$mainUrl/", subtitleCallback, callback)
     }
+
+    return true
+}
 }
