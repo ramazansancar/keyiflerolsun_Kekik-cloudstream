@@ -32,7 +32,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle (GolgeTV.cs3,AnimeciX.cs3 ve Sinewix.cs3 hariç)
-        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'SineWix.cs3' ! -name 'Watch32.cs3' -delete
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'SineWix.cs3' ! -name 'Watch32.cs3' ! -name 'IPTVProvider.cs3' -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -65,7 +65,7 @@ jobs:
               "fileSize": '"$(stat -c%s GolgeTV.cs3)"',
               "status": 1,
               "language": "tr",
-              "authors": ["nikyokki"],
+              "authors": ["kerimmkirac"],
               "tvTypes": ["TV"],
               "version": 1,
               "internalName": "GolgeTV",
@@ -98,6 +98,30 @@ jobs:
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "Sinewix zaten plugins.json'da mevcut, eklenmedi."
+          fi
+      
+      
+      - name: IPTV Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "IPTV")' plugins.json > /dev/null; then
+            jq '. += [{
+              "iconUrl": "https://play-lh.googleusercontent.com/ogxniIVkA_NDWLbPPhbzitf3tOMRBXhRLKr6nbIdrRTu1t1KC4QDDu4EDvltUeSog9I",
+              "apiVersion": 2,
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "fileSize": '"$(stat -c%s IPTVProvider.cs3)"',
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["Live"],
+              "version": 1,
+              "internalName": "IPTV",
+              "description": "IPTV Cloudstream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/IPTVProvider.cs3",
+              "name": "IPTV"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "IPTV zaten plugins.json'da mevcut, eklenmedi."
           fi
 
       - name: Watch32 Eklentisini plugins.json'a Elle Ekle
