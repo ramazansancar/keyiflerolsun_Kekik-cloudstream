@@ -20,8 +20,10 @@ class DDizi : MainAPI() {
     )
 
 override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-    // Sayfalanmayanlar için sadece ilk sayfayı çek
+    println("DDZ ➡️ getMainPage() çağrıldı | Sayfa: $page | Kategori: ${request.name}")
+
     if (request.name != "Eski Diziler" && page > 1) {
+        println("DDZ ⛔ ${request.name} için sayfalanma desteklenmiyor. Sayfa: $page")
         return newHomePageResponse(request.name, listOf())
     }
 
@@ -30,26 +32,48 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
         else -> request.data
     }
 
-    val document = app.get(url).document
+    println("DDZ 🔗 URL oluşturuldu: $url")
 
-    val elements = when (request.name) {
-        "Yeni Eklenenler" -> document.select("div.col-lg-12")
-        else               -> document.select("div.col-lg-3")
+    val document = app.get(url).document
+    println("DDZ 📄 Sayfa yüklendi: ${document.title()}")
+
+    val selector = when (request.name) {
+        "Yeni Eklenenler" -> "div.col-lg-12"
+        else               -> "div.col-lg-3"
     }
 
-    val home = elements.mapNotNull { it.diziler() }
+    val elements = document.select(selector)
+    println("DDZ 🔍 Selector '$selector' ile ${elements.size} element bulundu.")
+
+    val home = elements.mapNotNull {
+        val item = it.diziler()
+        if (item == null) println("⚠️ diziler() null döndü.")
+        else println("DDZ ✅ dizi bulundu: ${item.name}")
+        item
+    }
+
+    println("DDZ 🏠 Toplam ${home.size} içerik bulundu ve döndürüldü.")
 
     return newHomePageResponse(request.name, home)
 }
 
+private fun Element.diziler(): SearchResponse? {
+    val title = this.selectFirst("a.title")?.text()?.substringBefore(" izle")
+    val href = fixUrlNull(this.selectFirst("a")?.attr("href"))
+    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
-    private fun Element.diziler(): SearchResponse? {
-        val title     = this.selectFirst("a.title")?.text()?.substringBefore(" izle") ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+    println("DDZ 🎞️ diziler() çağrıldı -> title: $title, href: $href, poster: $posterUrl")
 
-        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+    if (title == null || href == null) {
+        println("DDZ ❌ Eksik veri -> title ya da href null")
+        return null
     }
+
+    return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+        this.posterUrl = posterUrl
+    }
+}
+
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}/?s=${query}").document
