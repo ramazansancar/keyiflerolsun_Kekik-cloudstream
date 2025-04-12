@@ -117,30 +117,29 @@ override suspend fun loadLinks(
     callback: (ExtractorLink) -> Unit
 ): Boolean {
     Log.d("ACX", "data » $data")
-    val url = "${mainUrl}/${data}"
-    val response = app.get(url, referer = "${mainUrl}/")
+    val pageUrl = "$mainUrl/$data"
+
+    // İlk sayfayı çek (film ya da dizi)
+    val response = app.get(pageUrl, referer = "$mainUrl/")
     val iframeLink = response.url
     Log.d("ACX", "iframeLink » $iframeLink")
 
-    if (iframeLink.contains("best-video")) {
-        // iframe sayfasının HTML içeriğini al
-        val html = app.get(iframeLink, referer = "${mainUrl}/").text
-        Log.d("ACX", "iframe HTML:\n$html")
+    // Eğer iframe link 'best-video' içeriyorsa, yönlendirme yapılması gerekir
+    if (iframeLink.contains("/secure/best-video")) {
+        // Redirect'i elle takip et
+        val redirectResponse = app.get(iframeLink, referer = "$mainUrl/")
+        val redirectedUrl = redirectResponse.url
+        Log.d("ACX", "Redirected final URL » $redirectedUrl")
 
-        // src veya data-src içinde tau-video içeren linki yakala
-        val regex = Regex("""(?:src|data-src)=['"]?(https://[^'"]*tau-video[^'"]+)""")
-        val match = regex.find(html)
-        val videoUrl = match?.groupValues?.get(1)
-
-        if (videoUrl != null) {
-            Log.d("ACX", "Extracted video URL from HTML: $videoUrl")
-            loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
+        // Eğer yönlendirme başarılıysa loadExtractor’a gönder
+        if (redirectedUrl.contains("tau-video")) {
+            loadExtractor(redirectedUrl, "$mainUrl/", subtitleCallback, callback)
         } else {
-            Log.d("ACX", "Video URL not found in HTML.")
+            Log.d("ACX", "Redirect failed or unexpected URL: $redirectedUrl")
         }
     } else {
-        // Embed link ise doğrudan extractor’a gönder
-        loadExtractor(iframeLink, "${mainUrl}/", subtitleCallback, callback)
+        // Embed link ise doğrudan yükle
+        loadExtractor(iframeLink, "$mainUrl/", subtitleCallback, callback)
     }
 
     return true
