@@ -40,8 +40,8 @@ class Watch32Provider : MainAPI() {
         "movie" to "Popular Movies",
         "tv-show" to "Popular TV Shows",
         "genre/animation" to "Animations",
-        "country/IN" to "India",
-        "country/FR" to "France"
+        "country/tr" to "Türkiye",
+        "country/US" to "Amerika"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest
