@@ -3,7 +3,9 @@
 package com.keyiflerolsun
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.ErrorLoadingException
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.*
 
 open class SetPlay : ExtractorApi() {
@@ -19,17 +21,17 @@ open class SetPlay : ExtractorApi() {
         val videoServer = Regex("""videoServer":"([^",]+)""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("videoServer not found")
         val title       = Regex("""title":"([^",]+)""").find(iSource)?.groupValues?.get(1)?.split(".")?.last() ?: "Unknown"
         val m3uLink     = "${mainUrl}${videoUrl.replace("\\", "")}?s=${videoServer}"
-        Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
+        Log.d("set", "m3uLink » $m3uLink")
 
         callback.invoke(
             newExtractorLink(
                 source  = this.name,
                 name    = "${this.name} - $title",
                 url     = m3uLink,
-                ExtractorLinkType.M3U8
+                type = ExtractorLinkType.M3U8
             ) {
-                this.referer = url
-                this.quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to url) // "Referer" ayarı burada yapılabilir
+                quality = getQualityFromName(Qualities.Unknown.value.toString())
             }
         )
     }

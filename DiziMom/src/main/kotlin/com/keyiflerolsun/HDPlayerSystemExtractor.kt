@@ -3,9 +3,11 @@
 package com.keyiflerolsun
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.ErrorLoadingException
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.utils.*
 
 open class HDPlayerSystem : ExtractorApi() {
     override val name            = "HDPlayerSystem"
@@ -40,13 +42,13 @@ open class HDPlayerSystem : ExtractorApi() {
 
         callback.invoke(
             newExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = m3uLink,
-                type    = INFER_TYPE
+                source = this.name,
+                name = this.name,
+                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                type = ExtractorLinkType.M3U8 // isM3u8 artık bu şekilde belirtiliyor
             ) {
-                this.referer = extRef
-                this.quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to url) // Eski "referer" artık headers içinde
+                quality = Qualities.Unknown.value // Kalite ayarlandı
             }
         )
     }

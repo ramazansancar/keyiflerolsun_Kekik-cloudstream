@@ -3,7 +3,9 @@
 package com.keyiflerolsun
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.ErrorLoadingException
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.*
 
 open class SetPrime : ExtractorApi() {
@@ -22,17 +24,17 @@ open class SetPrime : ExtractorApi() {
         }
 
         val m3uLink = "${mainUrl}${links}"
-        Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
+        Log.d("setf", "m3uLink » $m3uLink")
 
         callback.invoke(
             newExtractorLink(
                 source  = this.name,
                 name    = if (partKey != "") "${this.name} - $partKey" else this.name,
                 url     = m3uLink,
-                ExtractorLinkType.M3U8
+                type = ExtractorLinkType.M3U8
             ) {
-                this.referer = url
-                this.quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to url) // "Referer" ayarı burada yapılabilir
+                quality = getQualityFromName(Qualities.Unknown.value.toString())
             }
         )
     }

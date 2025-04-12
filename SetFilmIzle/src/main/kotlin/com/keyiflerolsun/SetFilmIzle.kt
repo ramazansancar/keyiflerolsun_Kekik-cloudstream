@@ -3,14 +3,18 @@
 package com.keyiflerolsun
 
 import android.util.Log
-import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONObject
 import org.jsoup.Jsoup
-import okhttp3.*
+import org.jsoup.nodes.Element
 
 class SetFilmIzle : MainAPI() {
     override var mainUrl              = "https://www.setfilmizle.nl"
@@ -182,7 +186,7 @@ class SetFilmIzle : MainAPI() {
 
         val headers = mapOf(
             "Referer"      to referer,
-            "Content-Type" to "multipart/form-data; boundary=---------------------------112453778312642376182726606734",
+            "Content-Type" to "MultipartBody.Builder().setType(MultipartBody.FORM)",
         )
 
         val request = Request.Builder().url("${mainUrl}/wp-admin/admin-ajax.php").post(requestBody).apply {
@@ -195,8 +199,7 @@ class SetFilmIzle : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("STF", "data » $data")
-        println("STF data » $data")
+        Log.d("set", "data » $data")
         val document = app.get(data).document
 
         document.select("nav.player a").map { element ->
@@ -207,16 +210,17 @@ class SetFilmIzle : MainAPI() {
             Triple(name, sourceId, partKey)
         }.forEach { (name, sourceId, partKey) ->
             if (sourceId.contains("event")) return@forEach
-            if (sourceId == "") return@forEach
-            var setKey= "SetPlay"
+            if (partKey == "" || sourceId == "") return@forEach
 
-            val nonce        = Regex("""nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
-
+            val nonce = document.select("script")
+                .mapNotNull { it.data() }
+                .firstNotNullOfOrNull { data ->
+                    Regex("""PLAYER_CONFIG\s*=\s*[^;]*?nonce\s*:\s*['"]([^'"]+)['"]""").find(data)?.groupValues?.get(1)
+                } ?: throw ErrorLoadingException("Nonce bulunamadı!")
             val multiPart    = sendMultipartRequest(nonce, sourceId, name, partKey, data)
             val sourceBody   = multiPart.body.string()
             val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
-            Log.d("STF", "iframe » $sourceIframe")
-            println("STF iframe » $sourceIframe")
+            Log.d("set", "iframe » $sourceIframe")
 
             if (sourceIframe.contains("explay.store") || sourceIframe.contains("setplay.site")) {
                 loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
