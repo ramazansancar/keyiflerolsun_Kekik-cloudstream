@@ -100,6 +100,29 @@ jobs:
             echo "Sinewix zaten plugins.json'da mevcut, eklenmedi."
           fi
 
+      - name: Watch32 Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "Watch32")' plugins.json > /dev/null; then
+            jq '. += [{
+              "iconUrl": "https://editorialge.com/wp-content/uploads/2023/07/Watch32..jpg",
+              "apiVersion": 1,
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "fileSize": '"$(stat -c%s Watch32.cs3)"',
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["TV"],
+              "version": 1,
+              "internalName": "Watch32",
+              "description": "Watch32",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/Watch32.cs3",
+              "name": "Watch32"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "Watch32 zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
      
 
       - name: AnimeciX Eklentisini plugins.json'a Elle Ekle
