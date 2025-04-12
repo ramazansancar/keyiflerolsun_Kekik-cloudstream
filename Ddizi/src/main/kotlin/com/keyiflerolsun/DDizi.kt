@@ -19,12 +19,29 @@ class DDizi : MainAPI() {
         "${mainUrl}/eski.diziler/page/"    to "Eski Diziler"
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}").document
-        val home     = document.select("div.col-lg-3").mapNotNull { it.diziler() }
-
-        return newHomePageResponse(request.name, home)
+override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+    // Sayfalanmayanlar için sadece ilk sayfayı çek
+    if (request.name != "Eski Diziler" && page > 1) {
+        return newHomePageResponse(request.name, listOf())
     }
+
+    val url = when (request.name) {
+        "Eski Diziler" -> "${request.data}/$page"
+        else -> request.data
+    }
+
+    val document = app.get(url).document
+
+    val elements = when (request.name) {
+        "Yeni Eklenenler" -> document.select("div.col-lg-12")
+        else               -> document.select("div.col-lg-3")
+    }
+
+    val home = elements.mapNotNull { it.diziler() }
+
+    return newHomePageResponse(request.name, home)
+}
+
 
     private fun Element.diziler(): SearchResponse? {
         val title     = this.selectFirst("a.title")?.text()?.substringBefore(" izle") ?: return null
