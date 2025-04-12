@@ -100,27 +100,7 @@ jobs:
             echo "Sinewix zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-      - name: IPTV Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "IPTV")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["live"],
-              "version": 1,
-              "internalName": "IPTV",
-              "description": "IPTV için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/IPTVProvider.cs3",
-              "name": "IPTV",
-              "iconUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8WF2_SDH2Ez8QTobiSBrKHSpS3B_1M-XPqg&s"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "AnimeciX zaten plugins.json'da mevcut, eklenmedi."
-          fi
+     
 
       - name: AnimeciX Eklentisini plugins.json'a Elle Ekle
         run: |
