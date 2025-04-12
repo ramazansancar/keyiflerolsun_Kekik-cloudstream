@@ -190,23 +190,25 @@ class TurkAnime : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("TRANM", "data » $data")
-        val document  = app.get(data).document
-        val iframe    = fixUrlNull(document.selectFirst("iframe")?.attr("src")) ?: return false
+override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    Log.d("TRANM", "data » $data")
+    val document = app.get(data).document
 
-        if (iframe.contains("a-ads.com")) {
-            for (button in document.select("button[onclick*='ajax/videosec']")) {
-                val butonLink = fixUrlNull(button.attr("onclick").substringAfter("IndexIcerik('").substringBefore("'")) ?: continue
-                val subDoc    = app.get(butonLink, headers=mapOf("X-Requested-With" to "XMLHttpRequest")).document
+    val iframeElement = document.selectFirst("iframe")
+    val iframe = fixUrlNull(iframeElement?.attr("src"))
 
-                val subFrame  = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
-                iframe2Load(subDoc, subFrame, subtitleCallback, callback)
-            }
-        } else {
-            iframe2Load(document, iframe, subtitleCallback, callback)
+    if (iframe == null || iframe.contains("a-ads.com")) {
+        for (button in document.select("button[onclick*='ajax/videosec']")) {
+            val butonLink = fixUrlNull(button.attr("onclick").substringAfter("IndexIcerik('").substringBefore("'")) ?: continue
+            val subDoc = app.get(butonLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest")).document
+
+            val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
+            iframe2Load(subDoc, subFrame, subtitleCallback, callback)
         }
-
-        return true
+    } else {
+        iframe2Load(document, iframe, subtitleCallback, callback)
     }
+
+    return true
+}
 }
