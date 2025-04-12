@@ -46,7 +46,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     private fun Element.diziler(): SearchResponse? {
         val title     = this.selectFirst("a.title")?.text()?.substringBefore(" izle") ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
