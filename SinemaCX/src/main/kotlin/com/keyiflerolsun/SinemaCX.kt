@@ -115,7 +115,7 @@ class SinemaCX : MainAPI() {
             }
         }
 
-        if (iframe.contains("player.filmizle.in")){
+        if (iframe.lowercase().contains("player.filmizle.in")) {
             val vidUrl = app.post(
                 "https://player.filmizle.in/player/index.php?data=" + iframe.split("/").last() + "&do=getVideo",
                 headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
