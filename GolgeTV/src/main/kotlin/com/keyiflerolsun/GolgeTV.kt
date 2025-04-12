@@ -86,6 +86,7 @@ class GolgeTV : MainAPI() {
                 "asize" to "R62DggGip3jCa6/BWCkswA==",
                 "serverurl" to "https://raw.githubusercontent.com/sevdaliyim/sevdaliyim/refs/heads/main/ssl2.key",
                 "glg1Key" to "wSG2/05QGod+tS/qIH+tSeU4xtF6H+7grFq8DFi/R0XqVaYPZTfWmbBGxbLw6UuT",
+		"Authorization" to "Bearer 6o9+Ct3Tp/Wxg6lqKYVQkw==",
                 "kategori" to request.name
             )
         )
