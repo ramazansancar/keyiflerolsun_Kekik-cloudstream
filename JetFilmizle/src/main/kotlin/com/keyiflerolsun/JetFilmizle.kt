@@ -99,7 +99,7 @@ class JetFilmizle : MainAPI() {
         val document = app.get(data).document
 
         val iframes    = mutableListOf<String>()
-        val mainIframe = fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("data-litespeed-src")) ?: fixUrlNull(document.selectFirst("div#movie p iframe")?.attr("src"))
+        val mainIframe = fixUrlNull(document.selectFirst("div#movie iframe")?.attr("data-litespeed-src")) ?: fixUrlNull(document.selectFirst("div#movie iframe")?.attr("src"))
         Log.d("JTF", "mainIframe » $mainIframe")
         if (mainIframe != null) {
             iframes.add(mainIframe)
@@ -110,7 +110,7 @@ class JetFilmizle : MainAPI() {
             if (source.lowercase().contains("fragman")) return@forEach
 
             val movDoc = app.get(it.attr("href")).document
-            val iframe = fixUrlNull(movDoc.selectFirst("div#movie p iframe")?.attr("data-litespeed-src")) ?: fixUrlNull(movDoc.selectFirst("div#movie p iframe")?.attr("src"))
+            val iframe = fixUrlNull(movDoc.selectFirst("div#movie iframe")?.attr("data-litespeed-src")) ?: fixUrlNull(movDoc.selectFirst("div#movie iframe")?.attr("src"))
             Log.d("JTF", "iframe » $iframe")
 
             if (iframe != null) {
