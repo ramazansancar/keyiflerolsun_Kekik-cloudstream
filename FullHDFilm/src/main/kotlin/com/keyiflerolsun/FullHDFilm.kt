@@ -201,3 +201,9 @@ class FullHDFilm : MainAPI() {
         return true
     }
 }
+
+    data class VidLop(
+        @JsonProperty("hls") val hls: Boolean? = null,
+        @JsonProperty("securedLink") val securedLink: String? = null
+    )
+}
