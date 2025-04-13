@@ -71,7 +71,7 @@ override suspend fun load(url: String): LoadResponse? {
 
     val document = app.get(url).document
 
-    val title = document.selectFirst("h1")?.text()?.substringBefore(" izle")
+    val title = document.selectFirst("title")?.text()?.substringBefore(" izle")
     Log.d("ddz", "title: $title")
     if (title == null) {
         Log.d("ddz", "Title bulunamadı, null dönülüyor")
