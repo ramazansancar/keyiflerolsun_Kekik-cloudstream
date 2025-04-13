@@ -120,7 +120,7 @@ override suspend fun load(url: String): LoadResponse? {
 
     val document = app.get(data).document
     val iframeRaw = document.selectFirst("iframe")?.attr("src") ?: return false
-    val iframe = if (iframeRaw.startsWith("http")) iframeRaw else "$mainUrl${iframeRaw.trimStart('/')}"
+    val iframe = if (iframeRaw.startsWith("http")) iframeRaw else "$mainUrl/${iframeRaw.trimStart('/')}"
     Log.d("DDZ", "iframe » $iframe")
 
     loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
