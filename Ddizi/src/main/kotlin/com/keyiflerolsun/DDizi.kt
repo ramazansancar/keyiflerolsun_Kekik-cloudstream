@@ -66,7 +66,7 @@ private fun Element.diziler(): SearchResponse? {
         return document.select("div.post").mapNotNull { it.diziler() }
     }
 
-    override suspend fun load(url: String): LoadResponse? {
+override suspend fun load(url: String): LoadResponse? {
     Log.d("ddz", "load başladı: $url")
 
     val document = app.get(url).document
@@ -109,11 +109,6 @@ private fun Element.diziler(): SearchResponse? {
         Log.d("ddz", "LoadResponse oluşturuldu")
     }
 }
-
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-            this.posterUrl = poster
-        }
-    }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("DDZ", "data » ${data}")
