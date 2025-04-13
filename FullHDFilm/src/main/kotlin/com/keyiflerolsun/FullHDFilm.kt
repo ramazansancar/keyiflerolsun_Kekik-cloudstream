@@ -2,6 +2,7 @@
 
 package com.keyiflerolsun
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import android.util.Log
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
