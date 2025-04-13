@@ -110,15 +110,21 @@ override suspend fun load(url: String): LoadResponse? {
     }
 }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("DDZ", "data » ${data}")
+    override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("DDZ", "data » $data")
 
-        val document = app.get(data).document
-        val iframe   = document.selectFirst("iframe")?.attr("src") ?: return false
-        Log.d("DDZ", "iframe » ${iframe}")
+    val document = app.get(data).document
+    val iframeRaw = document.selectFirst("iframe")?.attr("src") ?: return false
+    val iframe = if (iframeRaw.startsWith("http")) iframeRaw else "$mainUrl${iframeRaw.trimStart('/')}"
+    Log.d("DDZ", "iframe » $iframe")
 
-        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+    loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
 
-        return true
-    }
+    return true
+}
 } 
