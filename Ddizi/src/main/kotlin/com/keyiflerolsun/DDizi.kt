@@ -85,9 +85,9 @@ private fun Element.diziler(): SearchResponse? {
         val document = app.get(url).document
 
         val title       = document.selectFirst("h1")?.text()?.substringBefore(" izle") ?: return null
-        val poster      = fixUrlNull(document.selectFirst("div.afis img")?.attr("data-src"))
-        val description = document.selectFirst("div.ozet")?.text()?.trim()
-        val year        = document.selectFirst("div.bilgi")?.text()?.substringAfter("Yayınlandı: ")?.substringBefore("/")?.trim()?.toIntOrNull()
+        val poster      = fixUrlNull(document.selectFirst("div.dizi-boxpost img")?.attr("data-src"))
+        val description = document.selectFirst("b")?.text()?.trim()
+        val year        = document.selectFirst("i")?.text()?.substringAfter("Yayınlandı: ")?.substringBefore("/")?.trim()?.toIntOrNull()
 
         val episodes    = document.select("div.col-lg-12 a").mapNotNull {
             val epName    = it.text().trim()
