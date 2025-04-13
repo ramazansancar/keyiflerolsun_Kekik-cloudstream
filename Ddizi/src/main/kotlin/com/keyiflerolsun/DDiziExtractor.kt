@@ -15,7 +15,7 @@ open class DDiziExtractor : ExtractorApi() {
         val iSource = app.get(url, referer=extRef).text
         Log.d("DDZ_EXT", "iSource » ${iSource}")
 
-        val m3uLink = Regex("""https:\"([^\"]+)""").find(iSource)?.groupValues?.get(1)
+        val m3uLink = Regex("""file:\"([^\"]+)""").find(iSource)?.groupValues?.get(1)
         Log.d("DDZ_EXT", "m3uLink » ${m3uLink}")
 
         callback.invoke(
