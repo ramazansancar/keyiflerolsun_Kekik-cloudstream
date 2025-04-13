@@ -28,7 +28,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     }
 
     val url = when (request.name) {
-        "Eski Diziler" -> "${request.data}"
+        "Eski Diziler" -> "${request.data}/$page"
         else -> request.data
     }
 
@@ -85,9 +85,7 @@ private fun Element.diziler(): SearchResponse? {
         val document = app.get(url).document
 
         val title       = document.selectFirst("h1")?.text()?.substringBefore(" izle") ?: return null
-        val poster      = fixUrlNull(document.selectFirst("div.dizi-boxpost img")?.attr("data-src"))
-        val description = document.selectFirst("b")?.text()?.trim()
-        val year        = document.selectFirst("i")?.text()?.substringAfter("Yayınlandı: ")?.substringBefore("/")?.trim()?.toIntOrNull()
+        val poster      = fixUrlNull(document.selectFirst("div.col-lg-12 div.dizi-boxpost img")?.attr("data-src"))
 
         val episodes    = document.select("div.col-lg-12 a").mapNotNull {
             val epName    = it.text().trim()
@@ -105,8 +103,6 @@ private fun Element.diziler(): SearchResponse? {
 
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
             this.posterUrl = poster
-            this.plot      = description
-            this.year      = year
         }
     }
 
