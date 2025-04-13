@@ -156,6 +156,9 @@ class FullHDFilm : MainAPI() {
                 }
             )
             loadExtractor(data, subtitleCallback, callback)
+        } else {
+                loadExtractor(data, "${mainUrl}/", subtitleCallback, callback)
+            }
         }
 
         val document = app.get(data).document
