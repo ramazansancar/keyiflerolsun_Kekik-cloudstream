@@ -136,10 +136,25 @@ class FullHDFilm : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("FHDF", "data » $data")
 
-        if (!data.contains(mainUrl)) {
-            loadExtractor(data, "${mainUrl}/", subtitleCallback, callback)
-
-            return true
+    if (data.contains("vidlop")) {
+        val vidUrl = app.post(
+            "https://vidlop.com/player/index.php?data=" + data.split("/")
+                .last() + "&do=getVideo",
+             headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
+             referer = "${mainUrl}/"
+            ).parsedSafe<VidLop>()?.securedLink ?: return false
+            callback.invoke(
+                newExtractorLink(
+                    source = this.name,
+                    name = this.name,
+                    url = vidUrl,
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = data
+                    this.quality = Qualities.Unknown.value
+                }
+            )
+            loadExtractor(data, subtitleCallback, callback)
         }
 
         val document = app.get(data).document
