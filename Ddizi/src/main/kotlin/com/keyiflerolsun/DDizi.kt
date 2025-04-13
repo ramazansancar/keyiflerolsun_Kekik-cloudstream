@@ -78,7 +78,7 @@ override suspend fun load(url: String): LoadResponse? {
         return null
     }
 
-    val poster = fixUrlNull(document.selectFirst("div.col-lg-12 div.dizi-boxpost img")?.attr("data-src"))
+    val poster = fixUrlNull(document.selectFirst("div.col-lg-12 div.dizi-boxpost-cat img")?.attr("data-src"))
     Log.d("ddz", "poster: $poster")
 
     val episodes = document.select("div.col-lg-12 div.dizi-boxpost-cat a").mapNotNull {
@@ -117,7 +117,7 @@ override suspend fun load(url: String): LoadResponse? {
         val iframe   = document.selectFirst("iframe")?.attr("src") ?: return false
         Log.d("DDZ", "iframe » ${iframe}")
 
-        loadExtractor(iframe, data, subtitleCallback, callback)
+        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
 
         return true
     }
