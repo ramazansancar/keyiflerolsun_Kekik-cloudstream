@@ -70,7 +70,7 @@ jobs:
               "version": 1,
               "internalName": "GolgeTV",
               "description": "GolgeTV canlı TV ve diziler için hızlı ve stabil bir çözümdür.",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/GolgeTV.cs3",
+              "url": "https://github.com/MakotoTokioki/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/GolgeTV.cs3",
               "name": "GolgeTV"
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
