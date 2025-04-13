@@ -22,13 +22,15 @@ class DDizi : MainAPI() {
 override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
     println("DDZ ➡️ getMainPage() çağrıldı | Sayfa: $page | Kategori: ${request.name}")
 
+    // Sayfalanmayan kategoriler için yalnızca ilk sayfayı getir
     if (request.name != "Eski Diziler" && page > 1) {
-        println("DDZ ⛔ ${request.name} için sayfalanma desteklenmiyor. Sayfa: $page")
+        println("DDZ ⛔ ${request.name} için sayfalanma yok. Sayfa: $page")
         return newHomePageResponse(request.name, listOf())
     }
 
+    // URL oluştur
     val url = when (request.name) {
-        "Eski Diziler" -> "${request.data}/$page"
+        "Eski Diziler" -> if (page == 1) request.data else "${request.data}/$page"
         else -> request.data
     }
 
@@ -87,7 +89,7 @@ private fun Element.diziler(): SearchResponse? {
         val title       = document.selectFirst("h1")?.text()?.substringBefore(" izle") ?: return null
         val poster      = fixUrlNull(document.selectFirst("div.col-lg-12 div.dizi-boxpost img")?.attr("data-src"))
 
-        val episodes    = document.select("div.col-lg-12 a").mapNotNull {
+        val episodes    = document.select("div.col-lg-12 div.dizi-boxpost-cat a").mapNotNull {
             val epName    = it.text().trim()
             val epHref    = fixUrlNull(it.attr("href")) ?: return@mapNotNull null
             val epSeason  = Regex("""(\d+)\.Sezon""").find(epName)?.groupValues?.get(1)?.toIntOrNull() ?: 1
