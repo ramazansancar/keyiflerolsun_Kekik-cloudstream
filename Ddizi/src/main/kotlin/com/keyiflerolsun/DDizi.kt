@@ -95,12 +95,11 @@ private fun Element.diziler(): SearchResponse? {
             val epSeason  = Regex("""(\d+)\.Sezon""").find(epName)?.groupValues?.get(1)?.toIntOrNull() ?: 1
             val epEpisode = Regex("""(\d+)\.Bölüm""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
 
-            Episode(
-                data    = epHref,
-                name    = epName.substringBefore(" izle").replace(title, "").trim(),
-                season  = epSeason,
-                episode = epEpisode
-            )
+        newEpisode(epHref) {
+        this.name = epName.substringBefore(" izle").replace(title, "").trim()
+        this.season = epSeason
+        this.episode = epEpisode
+          }
         }
 
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
