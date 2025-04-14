@@ -139,8 +139,9 @@ class JetFilmizle : MainAPI() {
             ) {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to iframe)
-        }
-    )
+            }
+        )
+    }
 }
         else -> {
             val iframeReferer = when {
