@@ -88,7 +88,7 @@ class GolgeTV : MainAPI() {
                 "glg1Key" to "wSG2/05QGod+tS/qIH+tSeU4xtF6H+7grFq8DFi/R0XqVaYPZTfWmbBGxbLw6UuT",
                 "Authorization" to "Bearer 6o9+Ct3Tp/Wxg6lqKYVQkw==",
                 "email" to "frhatfrat@gmail.com",
-                "asize" to "1q1q1q",
+                "password" to "1q1q1q",
                 "kategori" to request.name
             )
         )
