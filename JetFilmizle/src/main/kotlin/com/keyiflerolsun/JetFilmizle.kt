@@ -120,7 +120,7 @@ class JetFilmizle : MainAPI() {
 
         iframes.forEach { iframe ->
             Log.d("JTF", "iframe » $iframe")
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+            loadExtractor(iframe, iframe, subtitleCallback, callback)
         }
 
         return true
