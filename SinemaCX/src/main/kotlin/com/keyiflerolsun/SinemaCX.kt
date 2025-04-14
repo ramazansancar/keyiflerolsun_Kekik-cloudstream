@@ -115,27 +115,31 @@ class SinemaCX : MainAPI() {
             }
         }
 
-        if (iframe.lowercase().contains("player.filmizle.in")) {
-            val vidUrl = app.post(
-                "https://player.filmizle.in/player/index.php?data=" + iframe.split("/").last() + "&do=getVideo",
-                headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-                referer = "${mainUrl}/"
-            ).parsedSafe<Panel>()?.securedLink ?: return false
+    if (iframe.lowercase().contains("player.filmizle.in")) {
+        val baseUrl = Regex("""https?://([^/]+)""").find(iframe)?.groupValues?.get(1)
+            ?: return false
 
-            callback.invoke(
-                newExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = vidUrl,
-				type = ExtractorLinkType.M3U8
+        val vidUrl = app.post(
+            "https://$baseUrl/player/index.php?data=" + iframe.split("/").last() + "&do=getVideo",
+            headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
+            referer = "${mainUrl}/"
+        ).parsedSafe<Panel>()?.securedLink ?: return false
+
+        callback.invoke(
+            newExtractorLink(
+                source  = this.name,
+                name    = this.name,
+                url     = vidUrl,
+                type    = ExtractorLinkType.M3U8
             ) {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to iframe)
             }
-            )
-        } else {
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-        }
+        )
+    } else {
+        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+    }
+
 
         return true
     }
