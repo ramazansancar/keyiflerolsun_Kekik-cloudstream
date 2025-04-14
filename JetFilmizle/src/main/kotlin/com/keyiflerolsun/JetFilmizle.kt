@@ -118,20 +118,47 @@ class JetFilmizle : MainAPI() {
             }
         }
 
-        iframes.forEach { iframe ->
-            Log.d("JTF", "iframe » $iframe")
+         iframes.forEach { iframe ->
+              Log.d("JTF", "iframe » $iframe")
 
-        val iframeReferer = when {
-            iframe.contains("zupeo.com") -> iframe
-            iframe.contains("jetvid.top") -> iframe
-            iframe.contains("d2rs.com") -> iframe
-            iframe.contains("videolar.biz") -> iframe
-            iframe.contains("jtfi.buzz") -> iframe
-            else -> mainUrl // fallback
+         when {
+            iframe.contains("d2rs.com") -> {
+                val page = app.get(iframe, referer = mainUrl).document
+
+                // Videonun içeriği iframe'in içine gömülü
+                val scriptTag = page.selectFirst("script:containsData(mp4)")?.data()
+                val mp4Regex = Regex("""https.*?\.mp4""")
+                val mp4Url = mp4Regex.find(scriptTag ?: "")?.value
+
+    if (mp4Url != null) {
+        callback.invoke(
+            newExtractorLink(
+                name = "D2RS",
+                source = "d2rs.com",
+                url = mp4Url,
+                isM3u8 = false
+            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to iframe)
         }
+    )
+}
 
-        loadExtractor(iframe, iframeReferer, subtitleCallback, callback)
+
+        else -> {
+            val iframeReferer = when {
+                iframe.contains("zupeo.com") -> iframe
+                iframe.contains("jetvid.top") -> iframe
+                iframe.contains("videolar.biz") -> iframe
+                iframe.contains("jtfi.buzz") -> iframe
+                else -> mainUrl
+            }
+
+            loadExtractor(iframe, iframeReferer, subtitleCallback, callback)
+        }
     }
+}
+
         return true
     }
 }
