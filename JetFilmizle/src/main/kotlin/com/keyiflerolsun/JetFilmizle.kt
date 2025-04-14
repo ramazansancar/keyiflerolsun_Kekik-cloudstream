@@ -115,11 +115,6 @@ class JetFilmizle : MainAPI() {
 
             if (iframe != null) {
                 iframes.add(iframe)
-            } else {
-                movDoc.select("div#movie p a").forEach downloadLinkForEach@{ link ->
-                    val downloadLink = fixUrlNull(link.attr("href")) ?: return@downloadLinkForEach
-                    iframes.add(downloadLink)
-                }
             }
         }
 
