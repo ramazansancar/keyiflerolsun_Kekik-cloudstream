@@ -129,6 +129,7 @@ class JetFilmizle : MainAPI() {
                 val scriptTag = page.selectFirst("script:containsData(mp4)")?.data()
                 val mp4Regex = Regex("""https.*?\.mp4""")
                 val mp4Url = mp4Regex.find(scriptTag ?: "")?.value
+				Log.d("JTF", "mp4Url » $mp4Url")
 
     if (mp4Url != null) {
         callback.invoke(
