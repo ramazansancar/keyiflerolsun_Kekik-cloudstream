@@ -96,7 +96,7 @@ override suspend fun loadLinks(
 
     // Sayfa ve ilk iframe'i al
     val document = app.get(data).document
-    val iframeRaw = document.select("iframe").map { it.attr("src") }
+    val iframeRaw = document.select("iframe").map { it.attr("data-vsrc") }
 
     val hasOnlyTrailer = iframeRaw.all {
         it.contains("youtube", ignoreCase = true) ||
@@ -108,7 +108,7 @@ override suspend fun loadLinks(
     val iframeList = if (hasOnlyTrailer) {
         val altUrl = if (data.endsWith("/")) data + "2/" else "$data/2/"
         val altDoc = app.get(altUrl).document
-        altDoc.select("iframe").map { it.attr("src") }
+        altDoc.select("iframe").map { it.attr("data-vsrc") }
     } else {
         iframeRaw
     }
