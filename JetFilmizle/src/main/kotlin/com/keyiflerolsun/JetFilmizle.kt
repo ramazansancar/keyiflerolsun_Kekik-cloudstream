@@ -120,9 +120,18 @@ class JetFilmizle : MainAPI() {
 
         iframes.forEach { iframe ->
             Log.d("JTF", "iframe » $iframe")
-            loadExtractor(iframe, iframe, subtitleCallback, callback)
+
+        val iframeReferer = when {
+            iframe.contains("zupeo.com") -> iframe
+            iframe.contains("jetvid.top") -> iframe
+            iframe.contains("d2rs.com") -> iframe
+            iframe.contains("videolar.biz") -> iframe
+            iframe.contains("jtfi.buzz") -> iframe
+            else -> mainUrl // fallback
         }
 
+        loadExtractor(iframe, iframeReferer, subtitleCallback, callback)
+    }
         return true
     }
 }
