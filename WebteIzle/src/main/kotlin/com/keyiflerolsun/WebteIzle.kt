@@ -197,7 +197,7 @@ class WebteIzle : MainAPI() {
 
                 if (iframe == null) {
                     val scriptSource = embedApi.html()
-                    val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+                    val matchResult = Regex("""(vidmoly|5c93)\('([\d\w]+)','""").find(scriptSource)
 
                     if (matchResult == null) {
                         Log.d("WBTI", "scriptSource » $scriptSource")
@@ -207,7 +207,7 @@ class WebteIzle : MainAPI() {
 
                         iframe = when (platform) {
                             "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
-                            "dzen" -> {
+                            "5c93" -> {
                                 // Dzen için özel ID çıkarımı
                                 val dzenMatch = Regex("""dzen\.ru/embed/([\w-]+)""").find(scriptSource)
                                 val videoId = dzenMatch?.groupValues?.get(1)
