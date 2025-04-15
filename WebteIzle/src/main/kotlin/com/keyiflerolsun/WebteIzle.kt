@@ -220,7 +220,6 @@ class WebteIzle : MainAPI() {
                             else -> null
                         }
                     }
-                }
                     Log.d("WBTI", "iframe » $iframe")
                     loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
