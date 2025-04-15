@@ -156,11 +156,11 @@ class WebteIzle : MainAPI() {
         Log.d("WBTI", "filmId » $filmId")
 
         val dilList = mutableListOf<String>()
-        if (document.selectFirst("div#dilsec a[data-dil=0]") != null) {
+        if (document.selectFirst("div.golge a[href*='dublaj']") != null) {
             dilList.add("0")
         }
 
-        if (document.selectFirst("div#dilsec a[data-dil=1]") != null) {
+        if (document.selectFirst("div.golge a[href*='altyazi']") != null) {
             dilList.add("1")
         }
 
