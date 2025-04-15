@@ -171,12 +171,13 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     if (slugMap.containsKey("1")) dilList.add("1")
 
     dilList.forEach {
+        val dilAd = if (dilCode == "0") "Dublaj" else "Altyazı"
         val playerApi = app.post(
             "${mainUrl}/ajax/dataAlternatif3.asp",
             headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
             data = mapOf(
                 "filmid" to filmId,
-                "dil" to it,
+                "dil" to dilCode,
                 "s" to "",
                 "b" to "",
                 "bot" to "0"
@@ -195,8 +196,8 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
             if (iframe == null) {
-                val slug = slugMap[it] ?: return@forEach
-                val fallbackUrl = "$mainUrl/izle/${if (it == "0") "dublaj" else "altyazi"}/$slug"
+                val slug = slugMap[dilCode] ?: return@forEach
+                val fallbackUrl = "$mainUrl/izle/${if (dilCode == "0") "dublaj" else "altyazi"}/$slug"
                 Log.d("WBTI", "Fallback URL » $fallbackUrl")
 
                 val fallbackDoc = app.get(fallbackUrl).document
