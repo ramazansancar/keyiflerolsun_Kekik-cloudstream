@@ -229,10 +229,10 @@ class DiziPal : MainAPI() {
         source = this.name,
         name = this.name,
         url = m3uLink,
-        type = ExtractorLinkType.M3U8 // isM3u8 = true yerine bu türü belirtiyoruz
+        type = ExtractorLinkType.M3U8
         ) {
-        headers = mapOf("Referer" to "${mainUrl}/") // Referer burada ayarlandı
-        quality = Qualities.Unknown.value // Kalite ayarlandı
+        headers = mapOf("Referer" to "${mainUrl}/")
+        quality = Qualities.Unknown.value
           }
         )
 

@@ -208,6 +208,7 @@ override suspend fun loadLinks(
                 val fallbackDoc = Jsoup.parse(fallbackHtml)
 
                 iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
+				Log.d("WBTI", "Iframe from DOM » $iframe")
 
                 if (iframe == null) {
                     val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(fallbackHtml)
@@ -221,6 +222,7 @@ override suspend fun loadLinks(
                             "dzen"     -> "https://dzen.ru/embed/${vidId}"
                             else       -> null
                         }
+						Log.d("WBTI", "Iframe from Regex » $iframe")
                     }
                 }
             }else if (iframe.contains(mainUrl)) {
