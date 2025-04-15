@@ -190,8 +190,8 @@ class WebteIzle : MainAPI() {
                 var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
                 if (iframe == null) {
-                    val scriptSource = embedApi.html()
-                    val matchResult  = Regex("""(vidmoly|okru|filemoon|dzen)\('([\d\w]+)','""").find(scriptSource)
+                    val scriptSource = embed-$embedApi.html()
+                    val matchResult  = Regex("""(vidmoly|filemoon|dzen)\('([\d\w]+)','""").find(scriptSource)
 
                     if (matchResult == null) {
                         Log.d("WBTI", "scriptSource » $scriptSource")
@@ -201,8 +201,6 @@ class WebteIzle : MainAPI() {
 
                         iframe       = when(platform) {
                             "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
-                            "okru"     -> "https://odnoklassniki.ru/videoembed/${vidId}"
-                            "filemoon" -> "https://filemoon.sx/e/${vidId}"
                             "dzen"     -> "https://dzen.ru/embed/${vidId}"
                             else       -> null
                         }
@@ -238,7 +236,7 @@ class WebteIzle : MainAPI() {
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = m3uLink,
-				type = ExtractorLinkType.M3U8
+                            type = ExtractorLinkType.M3U8
             ) {
                 this.quality = getQualityFromName("1440p")
                 headers = mapOf("Referer" to "${mainUrl}/")
