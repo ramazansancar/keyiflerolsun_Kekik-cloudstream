@@ -206,7 +206,16 @@ override suspend fun loadLinks(
 
                 iframe = when (matchResult?.groupValues?.get(1)) {
                     "vidmoly"  -> "https://vidmoly.to/embed-${matchResult.groupValues[2]}.html"
-                    "dzen"     -> "https://dzen.ru/embed/${matchResult.groupValues[2]}"
+                    "dzen"     -> {
+                        // Dzen için özel ID çıkarımı
+                        val dzenMatch = Regex("""dzen\.ru/embed/([\w-]+)""").find(scriptSource)
+                        val videoId = dzenMatch?.groupValues?.get(1)
+                        if (videoId != null) {
+                            "https://dzen.ru/embed/$videoId"
+                        } else {
+                            null
+                        }
+                    }
                     else       -> null
                 }
 
