@@ -12,9 +12,6 @@ import android.webkit.WebViewClient
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.cloudstream3.utils.ExtractorApi
-import com.lagradost.cloudstream3.utils.Qualities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -24,43 +21,57 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 open class W2MExtractor(override val mainUrl: String, private val context: Context) : ExtractorApi() {
-    override val name = "W2MExtractor"
+    override val name            = "W2MExtractor"
     override val requiresReferer = true
+    private lateinit var webView: WebView
 
     @SuppressLint("SetJavaScriptEnabled")
-    override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         withContext(Dispatchers.Main) {
-            val webView = WebView(context).apply {
+            webView = WebView(context).apply {
                 settings.apply {
-                    javaScriptEnabled = true
-                    domStorageEnabled = true
-                    mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+                    javaScriptEnabled                  = true
+                    domStorageEnabled                  = true
+                    javaScriptCanOpenWindowsAutomatically = true
+                    loadWithOverviewMode               = true
+                    useWideViewPort                    = true
+                    allowFileAccess                    = true
+                    builtInZoomControls                = true
+                    displayZoomControls                = false
+                    allowContentAccess                 = true
+                    mixedContentMode                   = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                    userAgentString                    = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0"
                 }
+
+                evaluateJavascript(
+                    """
+Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+Object.defineProperty(navigator, 'language', { get: () => 'en-US' });
+window.chrome = { runtime: {} };
+""".trimIndent()
+                ) {}
 
                 webViewClient = object : WebViewClient() {
                     override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
-                        val requestUrl = request?.url?.toString() ?: return null
-                        val headers = request.requestHeaders
+                        @Suppress("NAME_SHADOWING") val url = request?.url.toString()
+                        val headers = request?.requestHeaders
 
-                        if (requestUrl.endsWith(".m3u8")) {
-                            callback.invoke(
-                                ExtractorLink(
-                                    source = name,
-                                    name = name,
-                                    url = requestUrl,
-                                    referer = headers["Referer"] ?: mainUrl,
-                                    quality = Qualities.Unknown.value,
-                                    type = ExtractorLinkType.M3U8,
-                                    headers = headers
+                        Thread {
+                            fetchAndCheckResponse(url, headers) { sourceUrl, headers ->
+                                callback.invoke(
+                                    ExtractorLink(
+                                        source  = this@W2MExtractor.name,
+                                        name    = this@W2MExtractor.name,
+                                        url     = sourceUrl,
+                                        referer = headers["Referer"] ?: headers["referer"] ?: mainUrl,
+                                        quality = Qualities.Unknown.value,
+                                        type    = ExtractorLinkType.M3U8,
+                                        headers = headers
+                                    )
                                 )
-                            )
-                        }
+                            }
+                        }.start()
 
                         return super.shouldInterceptRequest(view, request)
                     }
@@ -68,9 +79,31 @@ open class W2MExtractor(override val mainUrl: String, private val context: Conte
 
                 loadUrl(url)
             }
+        }
 
-            // Ensure WebView is cleaned up after use
-            Runtime.getRuntime().addShutdownHook(Thread { webView.destroy() })
+        delay(10_000)
+    }
+
+    private fun fetchAndCheckResponse(url: String, headers: Map<String, String>?, onResponseCaptured: (url: String, headers: Map<String, String>) -> Unit) {
+        try {
+            val connection = URL(url).openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+
+            headers?.forEach { (key, value) ->
+                connection.setRequestProperty(key, value)
+            }
+
+            connection.connect()
+            val response = BufferedReader(InputStreamReader(connection.inputStream))
+                .lineSequence()
+                .joinToString("\n")
+
+            if (response.startsWith("#EXTM3U")) {
+                Log.d("W2M", response)
+                onResponseCaptured(connection.url.toString(), headers ?: mapOf())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

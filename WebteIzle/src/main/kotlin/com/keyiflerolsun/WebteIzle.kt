@@ -191,7 +191,7 @@ class WebteIzle : MainAPI() {
 
                 if (iframe == null) {
                     val scriptSource = embedApi.html()
-                    val matchResult  = Regex("""(vidmoly|okru|filemoon)\('([\d\w]+)','""").find(scriptSource)
+                    val matchResult  = Regex("""(vidmoly|okru|filemoon|dzen)\('([\d\w]+)','""").find(scriptSource)
 
                     if (matchResult == null) {
                         Log.d("WBTI", "scriptSource » $scriptSource")
@@ -203,6 +203,7 @@ class WebteIzle : MainAPI() {
                             "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
                             "okru"     -> "https://odnoklassniki.ru/videoembed/${vidId}"
                             "filemoon" -> "https://filemoon.sx/e/${vidId}"
+                            "dzen"     -> "https://dzen.ru/embed/${vidId}"
                             else       -> null
                         }
                     }
