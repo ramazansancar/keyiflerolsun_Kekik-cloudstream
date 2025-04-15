@@ -199,7 +199,22 @@ override suspend fun loadLinks(
 
             var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
+            // ✅ Eğer iframe null ise scriptSource üzerinden yakala
             if (iframe == null) {
+                val scriptSource = embedApi.html()
+                val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+
+                iframe = when (matchResult?.groupValues?.get(1)) {
+                    "vidmoly"  -> "https://vidmoly.to/embed-${matchResult.groupValues[2]}.html"
+                    "dzen"     -> "https://dzen.ru/embed/${matchResult.groupValues[2]}"
+                    else       -> null
+                }
+
+                Log.d("WBTI", "Iframe from Regex » $iframe")
+            }
+
+            if (iframe == null) {
+                // fallbackUrl mantığı
                 val slug = slugMap[dilCode] ?: return@forEach
                 val fallbackUrl = "$mainUrl/izle/${if (dilCode == "0") "dublaj" else "altyazi"}/$slug"
                 Log.d("WBTI", "Fallback URL » $fallbackUrl")
@@ -208,22 +223,18 @@ override suspend fun loadLinks(
                 val fallbackDoc = Jsoup.parse(fallbackHtml)
 
                 iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
-				Log.d("WBTI", "Iframe from DOM » $iframe")
+                Log.d("WBTI", "Iframe from DOM » $iframe")
 
                 if (iframe == null) {
                     val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(fallbackHtml)
 
-                    if (matchResult != null) {
-                        val platform = matchResult.groupValues[1]
-                        val vidId = matchResult.groupValues[2]
-
-                        iframe = when (platform) {
-                            "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
-                            "dzen"     -> "https://dzen.ru/embed/${vidId}"
-                            else       -> null
-                        }
-						Log.d("WBTI", "Iframe from Regex » $iframe")
+                    iframe = when (matchResult?.groupValues?.get(1)) {
+                        "vidmoly"  -> "https://vidmoly.to/embed-${matchResult.groupValues[2]}.html"
+                        "dzen"     -> "https://dzen.ru/embed/${matchResult.groupValues[2]}"
+                        else       -> null
                     }
+
+                    Log.d("WBTI", "Iframe from Fallback Regex » $iframe")
                 }
             }else if (iframe.contains(mainUrl)) {
                     Log.d("WBTI", "iframe » $iframe")
