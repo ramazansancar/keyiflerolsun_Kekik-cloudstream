@@ -140,7 +140,7 @@ jobs:
               "version": 1,
               "internalName": "YerelDiziler",
               "description": "YerelDiziler Cloudstream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/YerelDiziler.cs3",
+              "url": "https://github.com/MakotoTokioki/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/YerelDiziler.cs3",
               "name": "YerelDiziler"
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
