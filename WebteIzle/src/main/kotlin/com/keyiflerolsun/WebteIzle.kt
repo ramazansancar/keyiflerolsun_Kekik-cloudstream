@@ -148,7 +148,12 @@ class WebteIzle : MainAPI() {
         }
     }
 
-override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
     Log.d("WBTI", "data » $data")
     val document = app.get(data).document
 
@@ -157,23 +162,22 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
 
     val slugMap = mutableMapOf<String, String>()
 
-    // slugMap içini doldur
-    document.select("div.golge a[href]").forEach { aTag ->
-        val href = aTag.attr("href")
-        when {
-            href.contains("/dublaj/") -> slugMap["0"] = href.substringAfterLast("/")
-            href.contains("/altyazi/") -> slugMap["1"] = href.substringAfterLast("/")
+    document.select("div.golge a[href*='/izle/']").forEach {
+        val href = it.attr("href")
+        if (href.contains("dublaj")) {
+            slugMap["0"] = href.substringAfterLast("/")
+        } else if (href.contains("altyazi")) {
+            slugMap["1"] = href.substringAfterLast("/")
         }
     }
 
-    val dilList = mutableListOf<String>()
-    if (slugMap.containsKey("0")) dilList.add("0")
-    if (slugMap.containsKey("1")) dilList.add("1")
+    val dilList = slugMap.keys.toList()
 
     dilList.forEach { dilCode ->
         val dilAd = if (dilCode == "0") "Dublaj" else "Altyazı"
+
         val playerApi = app.post(
-            "${mainUrl}/ajax/dataAlternatif3.asp",
+            "$mainUrl/ajax/dataAlternatif3.asp",
             headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
             data = mapOf(
                 "filmid" to filmId,
@@ -188,7 +192,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
 
         for (thisEmbed in playerData.data) {
             val embedApi = app.post(
-                "${mainUrl}/ajax/dataEmbed.asp",
+                "$mainUrl/ajax/dataEmbed.asp",
                 headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
                 data = mapOf("id" to thisEmbed.id.toString())
             ).document
@@ -200,23 +204,22 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
                 val fallbackUrl = "$mainUrl/izle/${if (dilCode == "0") "dublaj" else "altyazi"}/$slug"
                 Log.d("WBTI", "Fallback URL » $fallbackUrl")
 
-                val fallbackDoc = app.get(fallbackUrl).document
+                val fallbackHtml = app.get(fallbackUrl).text
+                val fallbackDoc = Jsoup.parse(fallbackHtml)
+
                 iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
 
                 if (iframe == null) {
-                    val scriptSource = fallbackDoc.html()
-                    val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+                    val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(fallbackHtml)
 
-                    if (matchResult == null) {
-                        Log.d("WBTI", "Fallback scriptSource » $scriptSource")
-                    } else {
+                    if (matchResult != null) {
                         val platform = matchResult.groupValues[1]
                         val vidId = matchResult.groupValues[2]
 
                         iframe = when (platform) {
-                            "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
-                            "dzen" -> "https://dzen.ru/embed/${vidId}"
-                            else -> null
+                            "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
+                            "dzen"     -> "https://dzen.ru/embed/${vidId}"
+                            else       -> null
                         }
                     }
                 }
