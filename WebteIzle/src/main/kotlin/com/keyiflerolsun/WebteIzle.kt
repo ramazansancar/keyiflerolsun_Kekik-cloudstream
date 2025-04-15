@@ -1,4 +1,3 @@
-@ -0,0 +1,292 @@
 // ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
 package com.keyiflerolsun
