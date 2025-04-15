@@ -32,7 +32,7 @@ open class DzenRu : ExtractorApi() {
                     name    = this.name,
                     url     = link,
                 ) {
-                    this.referer = ${mainUrl}
+                    headers = mapOf("Referer" to extRef)
                     this.quality = Qualities.Unknown.value
                 }
             )
