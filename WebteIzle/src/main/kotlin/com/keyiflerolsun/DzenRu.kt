@@ -17,6 +17,7 @@ open class DzenRu : ExtractorApi() {
         val extRef   = referer ?: ""
         val videoKey = url.split("/").last()
         val videoUrl = "${mainUrl}/embed/${videoKey}"
+        Log.d("Kekik_${this.name}", "videoUrl: $videoUrl")
 
         val api = app.get(videoUrl).parsedSafe<DzenRuUrls>() ?: throw ErrorLoadingException("DzenRu")
 
