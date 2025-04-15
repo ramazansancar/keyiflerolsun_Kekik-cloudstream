@@ -6,8 +6,6 @@ import android.util.Log
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
-import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class Watch2Movies : MainAPI() {
     override var mainUrl              = "https://watch2movies.net"
@@ -49,54 +47,40 @@ class Watch2Movies : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.flw-item").mapNotNull { it.toMainPageResult() }
-
+        val document = app.get("${request.data}$page").document
+        val home = document.select("div.flw-item").mapNotNull { it.toSearchResponse() }
         return newHomePageResponse(request.name, home)
     }
 
-    private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("h2 a")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
-
+    private fun Element.toSearchResponse(): SearchResponse? {
+        val title = selectFirst("h2 a")?.text() ?: return null
+        val href = fixUrlNull(selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(selectFirst("img")?.attr("data-src"))
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/search/${query}").document
-
-        return document.select("div.flw-item").mapNotNull { it.toMainPageResult() }
+        val document = app.get("$mainUrl/search/$query").document
+        return document.select("div.flw-item").mapNotNull { it.toSearchResponse() }
     }
-
-    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
+        val title = document.selectFirst("div.dp-i-content h2 a")?.text()?.trim() ?: return null
+        val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content"))
+        val description = document.selectFirst("meta[property=og:description]")?.attr("content")?.trim()
 
-        val title           = document.selectFirst("div.dp-i-content h2 a")?.text()?.trim() ?: return null
-        val poster          = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content"))
-        val description     = document.selectFirst("meta[property=og:description]")?.attr("content")?.trim()
-        val year            = document.select("div.row-line")
-            .firstOrNull { it.text().contains("Released:") }
-            ?.text()
-            ?.substringAfter("Released:")
-            ?.trim()
-            ?.split("-")?.firstOrNull()
-            ?.toIntOrNull()
+        val year = document.selectFirst("div.row-line:contains(Released:)")?.text()
+            ?.substringAfter("Released:")?.trim()?.split("-")?.first()?.toIntOrNull()
 
-        val tags            = document.select("div.row-line a[href*='/genre/']").map { it.text() }
-        val rating          = document.selectFirst("button.btn-imdb")?.text()?.trim()?.split(" ")?.last()?.toRatingInt()
-        val duration = document.select("div.row-line")
-            .firstOrNull { it.text().contains("Duration:") }
-            ?.text()
-            ?.substringAfter("Duration:")
-            ?.replace("min", "")
-            ?.trim()
-            ?.toIntOrNull()
-        val recommendations = document.select("div.flw-item").mapNotNull { it.toRecommendationResult() }
-        val actors          = document.select("div.row-line a[href*='/cast/']").map { Actor(it.text()) }
-        val trailer         = document.selectFirst("iframe#iframe-trailer")?.attr("data-src")
+        val tags = document.select("div.row-line a[href*='/genre/']").map { it.text() }
+        val rating = document.selectFirst("button.btn-imdb")?.text()?.substringAfterLast(" ")?.toRatingInt()
+        val duration = document.selectFirst("div.row-line:contains(Duration:)")?.text()
+            ?.substringAfter("Duration:")?.replace("min", "")?.trim()?.toIntOrNull()
+
+        val recommendations = document.select("div.flw-item").mapNotNull { it.toSearchResponse() }
+        val actors = document.select("div.row-line a[href*='/cast/']").map { Actor(it.text()) }
+        val trailer = document.selectFirst("iframe#iframe-trailer")?.attr("data-src")
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl       = poster
@@ -111,39 +95,20 @@ class Watch2Movies : MainAPI() {
         }
     }
 
-    private fun Element.toRecommendationResult(): SearchResponse? {
-        val title     = this.selectFirst("h3 a")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
-
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
-    }
-
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("W2M", "data » $data")
-        val epId     = data.split("-").last()
-        val document = app.get("${mainUrl}/ajax/episode/list/${epId}", referer=data).document
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val epId = data.split("-").last()
+        val document = app.get("$mainUrl/ajax/episode/list/$epId", referer = data).document
 
         document.select("li.nav-item a").forEach {
             val dataId     = it.attr("data-id")
             Log.d("W2M", "dataId » $dataId")
             val modifiedData = data.replace("/movie/", "/watch-movie/")
-            loadExtractor("${modifiedData}.${dataId}", "$mainUrl/", subtitleCallback, callback)
-            // val dataSource = app.get("${mainUrl}/ajax/episode/sources/${dataId}", referer=data).parsedSafe<Sources>()
-            // Log.d("W2M", "iframe » ${dataSource!!.link}")
-
-            // // ?   master  adb logcat -v tag | logcat-colorize | grep "W2M" 
-            // // ! D   W2M      data   » https://watch2movies.net/movie/watch-ferry-2-full-118828
-            // // * D   W2M      iframe » https://hanatyury.online/v2/embed-4/NDCSpcJUwFUT?z=
-            // // * D   W2M      iframe » https://pepepeyo.xyz/v2/embed-4/MfDjL0xjrfrX?z=
-            // // ! D   W2M      data   » https://watch2movies.net/movie/watch-adam-full-1542
-            // // * D   W2M      iframe » https://hanatyury.online/v2/embed-4/0DMRS34RzDzF?z=
-            // // * D   W2M      iframe » https://hanatyury.online/v2/embed-4/j3MXnGNwTkdx?z=
-            // // * D   W2M      iframe » https://upstream.to/embed-tigfkb1a9wol.html
-            // // * D   W2M      iframe » https://mixdrop.co/e/kn98qnk6h3k9wv
-
-            // // TODO: Extractors not coded yet » UpCloudExtractor.kt
-            // loadExtractor(dataSource!!.link, "${mainUrl}/", subtitleCallback, callback)
+            loadExtractor("$modifiedData.$dataId", "$mainUrl/", subtitleCallback, callback)
         }
 
         return true
