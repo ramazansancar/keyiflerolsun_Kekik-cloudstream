@@ -195,32 +195,35 @@ class WebteIzle : MainAPI() {
 
                 var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
-                if (iframe == null) {
-                    val scriptSource = embedApi.html()
-                    val matchResult = Regex("""(vidmoly|5c93)\('([\d\w]+)','""").find(scriptSource)
+if (iframe == null) {
+    val scriptSource = embedApi.html()
 
-                    if (matchResult == null) {
-                        Log.d("WBTI", "scriptSource » $scriptSource")
-                    } else {
-                        val platform = matchResult.groupValues[1]
-                        val vidId = matchResult.groupValues[2]
+    // Önce vidmoly gibi doğrudan eşleşmeyi dene
+    val matchResult = Regex("""(vidmoly)\('([\d\w]+)','""").find(scriptSource)
 
-                        iframe = when (platform) {
-                            "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
-                            "5c93" -> {
-                                // Dzen için özel ID çıkarımı
-                                val dzenMatch = Regex("""var\s+vid\s*=\s*'([^']+)'""").find(scriptSource)
-                                val videoId = dzenMatch?.groupValues?.get(1)
-                                if (videoId != null) {
-                                    "https://dzen.ru/embed/$videoId"
-                                } else {
-                                    null
-                                }
-                            }
-                            else -> null
-                        }
-                    }
-					}
+    if (matchResult != null) {
+        val platform = matchResult.groupValues[1]
+        val vidId = matchResult.groupValues[2]
+
+        iframe = when (platform) {
+            "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
+            else -> null
+        }
+    } else {
+        // Eğer vidmoly yoksa, _0x5c93 tanımı var mı diye kontrol et
+        val hasDzen = Regex("""var\s+_0x5c93\s*=""").containsMatchIn(scriptSource)
+        if (hasDzen) {
+            val dzenMatch = Regex("""var\s+vid\s*=\s*['"]([^'"]+)['"]""").find(scriptSource)
+            val videoId = dzenMatch?.groupValues?.get(1)
+            if (videoId != null) {
+                iframe = "https://dzen.ru/embed/$videoId"
+            }
+        } else {
+            Log.d("WBTI", "scriptSource » $scriptSource")
+        }
+    }
+}
+
 					if (iframe != null) {
                     Log.d("WBTI", "iframe » $iframe")
                     loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
