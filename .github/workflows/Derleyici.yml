@@ -131,7 +131,7 @@ jobs:
             jq '. += [{
               "iconUrl": "https://github.com/kerimmkirac/cs-kerim/blob/715c1e5c6087523a08a48e596f1fd89619859a69/yereldiziler.jpg",
               "apiVersion": 3,
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "repositoryUrl": "https://github.com/MakotoTokioki/Cloudstream-Turkce-Eklentiler",
               "fileSize": '"$(stat -c%s YerelDiziler.cs3)"',
               "status": 1,
               "language": "tr",
