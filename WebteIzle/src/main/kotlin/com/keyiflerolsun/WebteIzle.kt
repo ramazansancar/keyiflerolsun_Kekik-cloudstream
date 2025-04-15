@@ -148,75 +148,78 @@ class WebteIzle : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("WBTI", "data » $data")
-        val document = app.get(data).document
+override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    Log.d("WBTI", "data » $data")
+    val document = app.get(data).document
 
-        val filmId  = document.selectFirst("button#wip")?.attr("data-id") ?: return false
-        Log.d("WBTI", "filmId » $filmId")
+    val filmId = document.selectFirst("button#wip")?.attr("data-id") ?: return false
+    Log.d("WBTI", "filmId » $filmId")
 
-        val slugMap = mutableMapOf<String, String>()
-		
-        val dilList = mutableListOf<String>()
-        if (document.selectFirst("div.golge a[href*='dublaj']") != null) {
-            dilList.add("0")
+    val slugMap = mutableMapOf<String, String>()
+
+    // slugMap içini doldur
+    document.select("div.golge a[href]").forEach { aTag ->
+        val href = aTag.attr("href")
+        when {
+            href.contains("/dublaj/") -> slugMap["0"] = href.substringAfterLast("/")
+            href.contains("/altyazi/") -> slugMap["1"] = href.substringAfterLast("/")
         }
+    }
 
-        if (document.selectFirst("div.golge a[href*='altyazi']") != null) {
-            dilList.add("1")
-        }
+    val dilList = mutableListOf<String>()
+    if (slugMap.containsKey("0")) dilList.add("0")
+    if (slugMap.containsKey("1")) dilList.add("1")
 
-        dilList.forEach {
-            val dilAd = if (it == "0") "Dublaj" else "Altyazı"
+    dilList.forEach {
+        val playerApi = app.post(
+            "${mainUrl}/ajax/dataAlternatif3.asp",
+            headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
+            data = mapOf(
+                "filmid" to filmId,
+                "dil" to it,
+                "s" to "",
+                "b" to "",
+                "bot" to "0"
+            )
+        ).text
 
-            val playerApi = app.post(
-                "${mainUrl}/ajax/dataAlternatif3.asp",
+        val playerData = AppUtils.tryParseJson<DataAlternatif>(playerApi) ?: return@forEach
+
+        for (thisEmbed in playerData.data) {
+            val embedApi = app.post(
+                "${mainUrl}/ajax/dataEmbed.asp",
                 headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-                data    = mapOf(
-                    "filmid" to filmId,
-                    "dil"    to it,
-                    "s"      to "",
-                    "b"      to "",
-                    "bot"    to "0"
-                )
-            ).text
-            val playerData = AppUtils.tryParseJson<DataAlternatif>(playerApi) ?: return@forEach
+                data = mapOf("id" to thisEmbed.id.toString())
+            ).document
 
-            for (thisEmbed in playerData.data) { 
-                val embedApi = app.post(
-                    "${mainUrl}/ajax/dataEmbed.asp",
-                    headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-                    data    = mapOf("id" to thisEmbed.id.toString())
-                ).document
+            var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
-                var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
+            if (iframe == null) {
+                val slug = slugMap[it] ?: return@forEach
+                val fallbackUrl = "$mainUrl/izle/${if (it == "0") "dublaj" else "altyazi"}/$slug"
+                Log.d("WBTI", "Fallback URL » $fallbackUrl")
 
-if (iframe == null) {
-    val slug = slugMap[it] ?: return@forEach
-    val fallbackUrl = "$mainUrl/izle/${if (it == "0") "dublaj" else "altyazi"}/$slug"
-    Log.d("WBTI", "Fallback URL » $fallbackUrl")
+                val fallbackDoc = app.get(fallbackUrl).document
+                iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
 
-    val fallbackDoc = app.get(fallbackUrl).document
-    iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
+                if (iframe == null) {
+                    val scriptSource = fallbackDoc.html()
+                    val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
 
-    if (iframe == null) {
-        val scriptSource = fallbackDoc.html()
-        val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+                    if (matchResult == null) {
+                        Log.d("WBTI", "Fallback scriptSource » $scriptSource")
+                    } else {
+                        val platform = matchResult.groupValues[1]
+                        val vidId = matchResult.groupValues[2]
 
-        if (matchResult == null) {
-            Log.d("WBTI", "Fallback scriptSource » $scriptSource")
-        } else {
-            val platform = matchResult.groupValues[1]
-            val vidId = matchResult.groupValues[2]
-
-            iframe = when (platform) {
-                "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
-                "dzen" -> "https://dzen.ru/embed/${vidId}"
-                else -> null
-            }
+                        iframe = when (platform) {
+                            "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
+                            "dzen" -> "https://dzen.ru/embed/${vidId}"
+                            else -> null
                         }
                     }
-                } else if (iframe.contains(mainUrl)) {
+                }
+            }else if (iframe.contains(mainUrl)) {
                     Log.d("WBTI", "iframe » $iframe")
                     val iSource = app.get(iframe, referer=data).text
 
