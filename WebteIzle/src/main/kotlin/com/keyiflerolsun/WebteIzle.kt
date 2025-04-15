@@ -209,7 +209,7 @@ class WebteIzle : MainAPI() {
                             "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
                             "5c93" -> {
                                 // Dzen için özel ID çıkarımı
-                                val dzenMatch = Regex("""dzen\.ru/embed/([\w-]+)""").find(scriptSource)
+                                val dzenMatch = Regex("""var\s+vid\s*=\s*'([^']+)'""").find(scriptSource)
                                 val videoId = dzenMatch?.groupValues?.get(1)
                                 if (videoId != null) {
                                     "https://dzen.ru/embed/$videoId"
