@@ -1,3 +1,4 @@
+@ -0,0 +1,292 @@
 // ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
 package com.keyiflerolsun
@@ -148,65 +149,60 @@ class WebteIzle : MainAPI() {
         }
     }
 
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    Log.d("WBTI", "data » $data")
-    val document = app.get(data).document
+    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        Log.d("WBTI", "data » $data")
+        val document = app.get(data).document
 
-    val filmId = document.selectFirst("button#wip")?.attr("data-id") ?: return false
-    Log.d("WBTI", "filmId » $filmId")
+        val filmId  = document.selectFirst("button#wip")?.attr("data-id") ?: return false
+        Log.d("WBTI", "filmId » $filmId")
 
-    val slugMap = mutableMapOf<String, String>()
-
-    document.select("div.golge a[href*='/izle/']").forEach {
-        val href = it.attr("href")
-        if (href.contains("dublaj")) {
-            slugMap["0"] = href.substringAfterLast("/")
-        } else if (href.contains("altyazi")) {
-            slugMap["1"] = href.substringAfterLast("/")
+        val dilList = mutableListOf<String>()
+        if (document.selectFirst("div.golge a[href*=dublaj]") != null) {
+            dilList.add("0")
         }
-    }
 
-    val dilList = slugMap.keys.toList()
+        if (document.selectFirst("div.golge a[href*=altyazi]") != null) {
+            dilList.add("1")
+        }
 
-    dilList.forEach { dilCode ->
-        val dilAd = if (dilCode == "0") "Dublaj" else "Altyazı"
+        dilList.forEach {
+            val dilAd = if (it == "0") "Dublaj" else "Altyazı"
 
-        val playerApi = app.post(
-            "$mainUrl/ajax/dataAlternatif3.asp",
-            headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-            data = mapOf(
-                "filmid" to filmId,
-                "dil" to dilCode,
-                "s" to "",
-                "b" to "",
-                "bot" to "0"
-            )
-        ).text
-
-        val playerData = AppUtils.tryParseJson<DataAlternatif>(playerApi) ?: return@forEach
-
-        for (thisEmbed in playerData.data) {
-            val embedApi = app.post(
-                "$mainUrl/ajax/dataEmbed.asp",
+            val playerApi = app.post(
+                "${mainUrl}/ajax/dataAlternatif3.asp",
                 headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-                data = mapOf("id" to thisEmbed.id.toString())
-            ).document
+                data    = mapOf(
+                    "filmid" to filmId,
+                    "dil"    to it,
+                    "s"      to "",
+                    "b"      to "",
+                    "bot"    to "0"
+                )
+            ).text
+            val playerData = AppUtils.tryParseJson<DataAlternatif>(playerApi) ?: return@forEach
 
-            var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
+            for (thisEmbed in playerData.data) { 
+                val embedApi = app.post(
+                    "${mainUrl}/ajax/dataEmbed.asp",
+                    headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
+                    data    = mapOf("id" to thisEmbed.id.toString())
+                ).document
 
-            // ✅ Eğer iframe null ise scriptSource üzerinden yakala
-            if (iframe == null) {
-                val scriptSource = embedApi.html()
-                val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+                var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
-                iframe = when (matchResult?.groupValues?.get(1)) {
-                    "vidmoly"  -> "https://vidmoly.to/embed-${matchResult.groupValues[2]}.html"
-                    "dzen"     -> {
+                if (iframe == null) {
+                    val scriptSource = embedApi.html()
+                    val matchResult  = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+
+                    if (matchResult == null) {
+                        Log.d("WBTI", "scriptSource » $scriptSource")
+                    } else {
+                        val platform = matchResult.groupValues[1]
+                        val vidId    = matchResult.groupValues[2]
+
+                        iframe       = when(platform) {
+                            "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
+                            "dzen"     -> {
                         // Dzen için özel ID çıkarımı
                         val dzenMatch = Regex("""dzen\.ru/embed/([\w-]+)""").find(scriptSource)
                         val videoId = dzenMatch?.groupValues?.get(1)
@@ -216,36 +212,10 @@ override suspend fun loadLinks(
                             null
                         }
                     }
-                    else       -> null
-                }
-
-                Log.d("WBTI", "Iframe from Regex » $iframe")
-            }
-
-            if (iframe == null) {
-                // fallbackUrl mantığı
-                val slug = slugMap[dilCode] ?: return@forEach
-                val fallbackUrl = "$mainUrl/izle/${if (dilCode == "0") "dublaj" else "altyazi"}/$slug"
-                Log.d("WBTI", "Fallback URL » $fallbackUrl")
-
-                val fallbackHtml = app.get(fallbackUrl).text
-                val fallbackDoc = Jsoup.parse(fallbackHtml)
-
-                iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
-                Log.d("WBTI", "Iframe from DOM » $iframe")
-
-                if (iframe == null) {
-                    val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(fallbackHtml)
-
-                    iframe = when (matchResult?.groupValues?.get(1)) {
-                        "vidmoly"  -> "https://vidmoly.to/embed-${matchResult.groupValues[2]}.html"
-                        "dzen"     -> "https://dzen.ru/embed/${matchResult.groupValues[2]}"
-                        else       -> null
+                            else       -> null
+                        }
                     }
-
-                    Log.d("WBTI", "Iframe from Fallback Regex » $iframe")
-                }
-            }else if (iframe.contains(mainUrl)) {
+                } else if (iframe.contains(mainUrl)) {
                     Log.d("WBTI", "iframe » $iframe")
                     val iSource = app.get(iframe, referer=data).text
 
@@ -276,7 +246,7 @@ override suspend fun loadLinks(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = m3uLink,
-                            type = ExtractorLinkType.M3U8
+				type = ExtractorLinkType.M3U8
             ) {
                 this.quality = getQualityFromName("1440p")
                 headers = mapOf("Referer" to "${mainUrl}/")
