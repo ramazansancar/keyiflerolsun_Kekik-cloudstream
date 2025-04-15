@@ -18,8 +18,6 @@ open class MailRu : ExtractorApi() {
         val vidId     = url.substringAfter("embed/").trim()
         Log.d("Kekik_${this.name}", "vidId » $vidId")
 
-        val videoData = AppUtils.tryParseJson<DzenRuData>(url.text) ?: throw ErrorLoadingException("Video not found")
-
         for (video in videoData.videos) {
             Log.d("Kekik_${this.name}", "video » $video")
 
