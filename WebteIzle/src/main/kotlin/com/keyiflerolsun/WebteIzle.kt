@@ -220,8 +220,11 @@ class WebteIzle : MainAPI() {
                             else -> null
                         }
                     }
+					}
+					if (iframe != null) {
                     Log.d("WBTI", "iframe » $iframe")
                     loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+					}
             }
         }
         return true
