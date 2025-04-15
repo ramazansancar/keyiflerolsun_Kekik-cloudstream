@@ -170,7 +170,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     if (slugMap.containsKey("0")) dilList.add("0")
     if (slugMap.containsKey("1")) dilList.add("1")
 
-    dilList.forEach {
+    dilList.forEach { dilCode ->
         val dilAd = if (dilCode == "0") "Dublaj" else "Altyazı"
         val playerApi = app.post(
             "${mainUrl}/ajax/dataAlternatif3.asp",
