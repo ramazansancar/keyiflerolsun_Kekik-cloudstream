@@ -155,6 +155,8 @@ class WebteIzle : MainAPI() {
         val filmId  = document.selectFirst("button#wip")?.attr("data-id") ?: return false
         Log.d("WBTI", "filmId » $filmId")
 
+        val slugMap = mutableMapOf<String, String>()
+		
         val dilList = mutableListOf<String>()
         if (document.selectFirst("div.golge a[href*='dublaj']") != null) {
             dilList.add("0")
@@ -190,7 +192,8 @@ class WebteIzle : MainAPI() {
                 var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
 if (iframe == null) {
-    val fallbackUrl = "$mainUrl/izle/${if (it == "0") "dublaj" else "altyazi"}/${thisEmbed.baslik.lowercase()}"
+    val slug = slugMap[it] ?: return@forEach
+    val fallbackUrl = "$mainUrl/izle/${if (it == "0") "dublaj" else "altyazi"}/$slug"
     Log.d("WBTI", "Fallback URL » $fallbackUrl")
 
     val fallbackDoc = app.get(fallbackUrl).document
