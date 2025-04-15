@@ -189,20 +189,28 @@ class WebteIzle : MainAPI() {
 
                 var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
-                if (iframe == null) {
-                    val scriptSource = embedApi.html()
-                    val matchResult  = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+if (iframe == null) {
+    val fallbackUrl = "$mainUrl/izle/${if (it == "0") "dublaj" else "altyazi"}/${thisEmbed.baslik.lowercase()}"
+    Log.d("WBTI", "Fallback URL » $fallbackUrl")
 
-                    if (matchResult == null) {
-                        Log.d("WBTI", "scriptSource » $scriptSource")
-                    } else {
-                        val platform = matchResult.groupValues[1]
-                        val vidId    = matchResult.groupValues[2]
+    val fallbackDoc = app.get(fallbackUrl).document
+    iframe = fixUrlNull(fallbackDoc.selectFirst("iframe")?.attr("src"))
 
-                        iframe       = when(platform) {
-                            "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
-                            "dzen"     -> "https://dzen.ru/embed/${vidId}"
-                            else       -> null
+    if (iframe == null) {
+        val scriptSource = fallbackDoc.html()
+        val matchResult = Regex("""(vidmoly|dzen)\('([\d\w]+)','""").find(scriptSource)
+
+        if (matchResult == null) {
+            Log.d("WBTI", "Fallback scriptSource » $scriptSource")
+        } else {
+            val platform = matchResult.groupValues[1]
+            val vidId = matchResult.groupValues[2]
+
+            iframe = when (platform) {
+                "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
+                "dzen" -> "https://dzen.ru/embed/${vidId}"
+                else -> null
+            }
                         }
                     }
                 } else if (iframe.contains(mainUrl)) {
