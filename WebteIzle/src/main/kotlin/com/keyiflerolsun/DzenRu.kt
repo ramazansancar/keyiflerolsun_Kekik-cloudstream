@@ -14,21 +14,25 @@ open class DzenRu : ExtractorApi() {
     override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        val extRef   = referer ?: ""
         val videoKey = url.split("/").last()
         val videoUrl = "${mainUrl}/embed/${videoKey}"
         Log.d("Kekik_${this.name}", "videoUrl: $videoUrl")
 
-        val api = app.get(videoUrl).parsedSafe<DzenRuUrls>() ?: throw ErrorLoadingException("DzenRu")
+        val html = app.get(videoUrl).text
 
-        for (video in api.urls) {
+        val regex = Regex("""https://vd\d+\.okcdn\.ru/\?[^"'\\\s]+""")
+        val matches = regex.findAll(html).map { it.value }.toList()
+
+        if (matches.isEmpty()) throw ErrorLoadingException("DzenRu video link not found.")
+
+        for (link in matches.distinct()) {
             callback.invoke(
                 newExtractorLink(
                     source  = this.name,
                     name    = this.name,
-                    url     = video.url,
+                    url     = link,
                 ) {
-                    this.referer = extRef
+                    this.referer = ${mainUrl}
                     this.quality = Qualities.Unknown.value
                 }
             )
