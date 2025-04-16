@@ -123,7 +123,7 @@ class JetFilmizle : MainAPI() {
          when {
             iframe.contains("zupeo.com") -> {
                 val page = app.get(iframe, referer = mainUrl).document
-
+                Log.d("JTF", page.html())
                 // Videonun içeriği iframe'in içine gömülü
                 val m3u8Url = page.select("script").mapNotNull { script ->
                 Regex("""https.*?\.m3u8[^"'\s]+""").find(script.data())?.value
