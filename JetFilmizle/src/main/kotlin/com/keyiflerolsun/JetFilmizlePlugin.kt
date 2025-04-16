@@ -8,5 +8,6 @@ import android.content.Context
 class JetFilmizlePlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(JetFilmizle())
+        registerExtractorAPI(PixelDrain())
     }
 }

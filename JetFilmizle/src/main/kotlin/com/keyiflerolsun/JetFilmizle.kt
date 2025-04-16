@@ -105,16 +105,15 @@ class JetFilmizle : MainAPI() {
             iframes.add(iframe)
         }
 
-        document.select("div.film_part a").forEach {
-            val source = it.selectFirst("span")?.text()?.trim() ?: return@forEach
-            if (source.lowercase().contains("fragman")) return@forEach
-
-            val movDoc = app.get(it.attr("href")).document
-            val iframe = fixUrlNull(movDoc.selectFirst("div#movie iframe")?.attr("data-litespeed-src")) ?: fixUrlNull(movDoc.selectFirst("div#movie iframe")?.attr("src"))
+        document.select("a.download-btn[href]").forEach downloadLinkForEach@{ link ->
+            val href = link.attr("href")
+            if (!href.contains("pixeldrain.com")) return@downloadLinkForEach
             Log.d("JTF", "iframe » $iframe")
+		
+            val downloadLink = fixUrlNull(href) ?: return@downloadLinkForEach
 
             if (iframe != null) {
-                iframes.add(iframe)
+                iframes.add(downloadLink)
             }
         }
 
@@ -122,7 +121,7 @@ class JetFilmizle : MainAPI() {
               Log.d("JTF", "iframe » $iframe")
 
          when {
-            iframe.contains("d2rs.com") -> {
+            iframe.contains("zupeo.com") -> {
                 val page = app.get(iframe, referer = mainUrl).document
 
                 // Videonun içeriği iframe'in içine gömülü
@@ -146,7 +145,7 @@ class JetFilmizle : MainAPI() {
 }
         else -> {
             val iframeReferer = when {
-                iframe.contains("zupeo.com") -> iframe
+                iframe.contains("d2rs.com") -> iframe
                 iframe.contains("jetvid.top") -> iframe
                 iframe.contains("videolar.biz") -> iframe
                 iframe.contains("jtfi.buzz") -> iframe
