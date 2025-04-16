@@ -125,17 +125,17 @@ class JetFilmizle : MainAPI() {
                 val page = app.get(iframe, referer = mainUrl).document
 
                 // Videonun içeriği iframe'in içine gömülü
-                val scriptTag = page.selectFirst("script:containsData(mp4)")?.data()
-                val mp4Regex = Regex("""https.*?\.mp4""")
-                val mp4Url = mp4Regex.find(scriptTag ?: "")?.value
-				Log.d("JTF", "mp4Url » $mp4Url")
+                val m3u8Url = page.select("script").mapNotNull { script ->
+                Regex("""https.*?\.m3u8[^"'\s]+""").find(script.data())?.value
+				Log.d("JTF", "m3u8Url » $m3u8Url")
 
-    if (mp4Url != null) {
+    if (m3u8Url != null) {
         callback.invoke(
             newExtractorLink(
-                name = "D2RS",
-                source = "d2rs.com",
-                url = mp4Url,
+                name = "zupeo",
+                source = "zupeo.com",
+                url = m3u8Url,
+                type = ExtractorLinkType.M3U8,
             ) {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to iframe)

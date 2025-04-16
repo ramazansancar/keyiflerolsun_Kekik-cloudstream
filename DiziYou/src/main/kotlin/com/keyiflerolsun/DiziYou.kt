@@ -141,8 +141,8 @@ class DiziYou : MainAPI() {
                 url = stream.url,
                 type    = INFER_TYPE
             ) {
-                headers = mapOf("Referer" to "${mainUrl}/") // Referer ayarlandı
-                quality = Qualities.Unknown.value // Kalite ayarlandı
+                headers = mapOf("Referer" to "${mainUrl}/")
+                quality = Qualities.Unknown.value
             }
             )
         }
