@@ -127,6 +127,7 @@ class JetFilmizle : MainAPI() {
                 // Videonun içeriği iframe'in içine gömülü
                 val m3u8Url = page.select("script").mapNotNull { script ->
                 Regex("""https.*?\.m3u8[^"'\s]+""").find(script.data())?.value
+				}.firstOrNull()
 				Log.d("JTF", "m3u8Url » $m3u8Url")
 
     if (m3u8Url != null) {
