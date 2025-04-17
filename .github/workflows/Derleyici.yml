@@ -124,28 +124,6 @@ jobs:
             echo "IPTV zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-      - name: YerelDiziler Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "YerelDiziler")' plugins.json > /dev/null; then
-            jq '. += [{
-              "iconUrl": "https://github.com/kerimmkirac/cs-kerim/blob/715c1e5c6087523a08a48e596f1fd89619859a69/yereldiziler.jpg",
-              "apiVersion": 3,
-              "repositoryUrl": "https://github.com/MakotoTokioki/Cloudstream-Turkce-Eklentiler",
-              "fileSize": '"$(stat -c%s YerelDiziler.cs3)"',
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["TV"],
-              "version": 1,
-              "internalName": "YerelDiziler",
-              "description": "YerelDiziler Cloudstream eklentisi",
-              "url": "https://github.com/MakotoTokioki/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/YerelDiziler.cs3",
-              "name": "YerelDiziler"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "YerelDiziler zaten plugins.json'da mevcut, eklenmedi."
-          fi
      
 
      
