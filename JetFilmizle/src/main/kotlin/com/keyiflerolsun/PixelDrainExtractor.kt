@@ -18,8 +18,8 @@ open class PixelDrain : ExtractorApi() {
 
         callback.invoke(
             newExtractorLink(
-                source  = "pixeldrain - $pixelId",
-                name    = "pixeldrain - $pixelId",
+                source  = this.name,
+                name    = this.name,
                 url     = downloadLink,
                 type    = INFER_TYPE
 			) {
