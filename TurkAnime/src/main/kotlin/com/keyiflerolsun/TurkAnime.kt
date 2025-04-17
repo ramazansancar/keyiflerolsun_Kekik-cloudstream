@@ -190,36 +190,31 @@ class TurkAnime : MainAPI() {
         }
     }
 
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    suspend fun findIframeRecursive(doc: Document) {
-        val iframe = fixUrlNull(doc.selectFirst("iframe")?.attr("src"))
-        if (!iframe.isNullOrEmpty() && !iframe.contains("a-ads.com")) {
-            Log.d("TRANM", "iframe bulundu: $iframe")
-            iframe2Load(doc, iframe, subtitleCallback, callback)
-            return
-        }
-
-        for (button in doc.select("button[onclick*=\"IndexIcerik('\"]")) {
-            val link = button.attr("onclick")
-                .substringAfter("IndexIcerik('")
-                .substringBefore("'")
-                .takeIf { it.isNotBlank() }
-                ?.let { fixUrlNull(it) } ?: continue
-
-            Log.d("TRANM", "İç link: $link")
-
-            val subDoc = app.get(link, headers = mapOf("X-Requested-With" to "XMLHttpRequest")).document
-            findIframeRecursive(subDoc)
-        }
-    }
-
+override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    Log.d("TRANM", "data » $data")
     val document = app.get(data).document
-    findIframeRecursive(document)
+
+    val iframeElement = document.selectFirst("iframe")
+    val iframe = fixUrlNull(iframeElement?.attr("src"))
+
+    if (iframe == null || iframe.contains("a-ads.com")) {
+        val buttons = document.select("button[onclick*='IndexIcerik']")
+
+        for (button in buttons) {
+            val onclickAttr = button.attr("onclick")
+            val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'").takeIf { it.isNotBlank() }?.let { fixUrlNull(it) } ?: continue
+
+            Log.d("TRANM", "Extra seçici ile alınan link: $subLink")
+
+            val subDoc = app.get(subLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest")).document
+            val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
+            Log.d("TRANM", "subFrame » $subFrame")
+
+            iframe2Load(subDoc, subFrame, subtitleCallback, callback)
+        }
+    } else {
+        iframe2Load(document, iframe, subtitleCallback, callback)
+    }
 
     return true
 }
