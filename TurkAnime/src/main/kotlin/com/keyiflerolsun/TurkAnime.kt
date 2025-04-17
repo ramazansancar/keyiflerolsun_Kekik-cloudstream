@@ -204,6 +204,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
 
             val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
             iframe2Load(subDoc, subFrame, subtitleCallback, callback)
+			Log.d("TRANM", "iframe » $iframe")
         }
     } else {
         iframe2Load(document, iframe, subtitleCallback, callback)
