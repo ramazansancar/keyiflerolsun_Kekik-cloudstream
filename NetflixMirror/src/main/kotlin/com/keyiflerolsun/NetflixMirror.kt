@@ -18,7 +18,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class NetflixMirror : MainAPI() {
-    override var mainUrl              = "https://netfree.cc/mobile"
+    override var mainUrl              = "https://netfree2.cc/mobile"
     override var name                 = "NetflixMirror"
     override val hasMainPage          = true
     override var lang                 = "hi"
