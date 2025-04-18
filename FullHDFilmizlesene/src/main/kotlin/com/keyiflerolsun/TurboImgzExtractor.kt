@@ -14,6 +14,7 @@ open class TurboImgz : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
         val videoReq = app.get(url.split("/").last(), referer=extRef).text
+		Log.d("Kekik_${this.name}", "videoReq » $videoReq")
 
         val videoLink = Regex("""file: "(.*)",""").find(videoReq)?.groupValues?.get(1) ?: throw ErrorLoadingException("File not found")
         Log.d("Kekik_${this.name}", "videoLink » $videoLink")
