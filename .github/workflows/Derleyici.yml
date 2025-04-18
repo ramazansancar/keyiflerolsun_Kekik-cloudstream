@@ -32,7 +32,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle (GolgeTV.cs3,AnimeciX.cs3 ve Sinewix.cs3 hariç)
-        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'SineWix.cs3' ! -name 'Tabii.cs3' ! -name 'IPTVProvider.cs3' -delete
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3' ! -name 'Tabii.cs3' ! -name 'IPTVProvider.cs3' -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -145,6 +145,28 @@ jobs:
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "Tabii zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+      - name: YerelDiziler Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "YerelDiziler")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["Tv"],
+              "version": 1,
+              "internalName": "YerelDiziler",
+              "description": "YerelDiziler için CloudStream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/YerelDiziler.cs3",
+              "name": "YerelDiziler",
+              "iconUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/960px-Flag_of_Turkey.svg.png"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "YerelDiziler zaten plugins.json'da mevcut, eklenmedi."
           fi
      
 
