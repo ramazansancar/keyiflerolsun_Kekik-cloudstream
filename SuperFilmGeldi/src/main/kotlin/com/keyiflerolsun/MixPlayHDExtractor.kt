@@ -30,10 +30,10 @@ class MixPlayHD : ExtractorApi() {
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                ExtractorLinkType.M3U8
+				type = ExtractorLinkType.M3U8
             ) {
-                this.referer = url
-                this.quality = Qualities.Unknown.value
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to url)
             }
         )
     }

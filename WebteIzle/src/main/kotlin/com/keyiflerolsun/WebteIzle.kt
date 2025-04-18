@@ -26,11 +26,11 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -38,7 +38,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 
 class WebteIzle : MainAPI() {
-    override var mainUrl              = "https://webteizle.info"
+    override var mainUrl              = "https://webteizle1.xyz/"
     override var name                 = "WebteIzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -58,7 +58,7 @@ class WebteIzle : MainAPI() {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request  = chain.request()
             val response = chain.proceed(request)
-            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+            val doc = Jsoup.parse(response.peekBody(1024 * 1024).string())
 
             if (doc.text().contains("Just a moment")) {
                 return cloudflareKiller.intercept(chain)
@@ -69,50 +69,51 @@ class WebteIzle : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/film-izle/"                   to "Güncel",
-        "${mainUrl}/yeni-filmler/"                to "Yeni",
-        "${mainUrl}/tavsiye-filmler/"             to "Tavsiye",
-        "${mainUrl}/filtre/SAYFA?tur=Aile"        to "Aile",
-        "${mainUrl}/filtre/SAYFA?tur=Aksiyon"     to "Aksiyon",
-        "${mainUrl}/filtre/SAYFA?tur=Animasyon"   to "Animasyon",
-        "${mainUrl}/filtre/SAYFA?tur=Belgesel"    to "Belgesel",
+        "${mainUrl}/film-izle/" to "Güncel",
+        "${mainUrl}/yeni-filmler/" to "Yeni",
+        "${mainUrl}/tavsiye-filmler/" to "Tavsiye",
+        "${mainUrl}/filtre/SAYFA?tur=Aile" to "Aile",
+        "${mainUrl}/filtre/SAYFA?tur=Aksiyon" to "Aksiyon",
+        "${mainUrl}/filtre/SAYFA?tur=Animasyon" to "Animasyon",
+        "${mainUrl}/filtre/SAYFA?tur=Belgesel" to "Belgesel",
         "${mainUrl}/filtre/SAYFA?tur=Bilim-Kurgu" to "Bilim Kurgu",
-        "${mainUrl}/filtre/SAYFA?tur=Biyografi"   to "Biyografi",
-        "${mainUrl}/filtre/SAYFA?tur=Dram"        to "Dram",
-        "${mainUrl}/filtre/SAYFA?tur=Fantastik"   to "Fantastik",
-        "${mainUrl}/filtre/SAYFA?tur=Gerilim"     to "Gerilim",
-        "${mainUrl}/filtre/SAYFA?tur=Gizem"       to "Gizem",
-        "${mainUrl}/filtre/SAYFA?tur=Komedi"      to "Komedi",
-        "${mainUrl}/filtre/SAYFA?tur=Korku"       to "Korku",
-        "${mainUrl}/filtre/SAYFA?tur=Macera"      to "Macera",
-        "${mainUrl}/filtre/SAYFA?tur=Romantik"    to "Romantik",
-        "${mainUrl}/filtre/SAYFA?tur=Spor"        to "Spor",
-        "${mainUrl}/filtre/SAYFA?tur=Tarihi"      to "Tarihi",
-        "${mainUrl}/filtre/SAYFA?tur=Western"     to "Western"
+        "${mainUrl}/filtre/SAYFA?tur=Biyografi" to "Biyografi",
+        "${mainUrl}/filtre/SAYFA?tur=Dram" to "Dram",
+        "${mainUrl}/filtre/SAYFA?tur=Fantastik" to "Fantastik",
+        "${mainUrl}/filtre/SAYFA?tur=Gerilim" to "Gerilim",
+        "${mainUrl}/filtre/SAYFA?tur=Gizem" to "Gizem",
+        "${mainUrl}/filtre/SAYFA?tur=Komedi" to "Komedi",
+        "${mainUrl}/filtre/SAYFA?tur=Korku" to "Korku",
+        "${mainUrl}/filtre/SAYFA?tur=Macera" to "Macera",
+        "${mainUrl}/filtre/SAYFA?tur=Romantik" to "Romantik",
+        "${mainUrl}/filtre/SAYFA?tur=Spor" to "Spor",
+        "${mainUrl}/filtre/SAYFA?tur=Tarihi" to "Tarihi",
+        "${mainUrl}/filtre/SAYFA?tur=Western" to "Western"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url      = if ("SAYFA" in request.data) request.data.replace("SAYFA", "$page") else "${request.data}$page"
+        val url = if ("SAYFA" in request.data) request.data.replace("SAYFA", "$page") else "${request.data}$page"
         val document = app.get(url).document
-        val home     = document.select("div.golgever").mapNotNull { it.toSearchResult() }
+        val home = document.select("div.golgever").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("div.filmname")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val title = this.selectFirst("div.filmname")?.text() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        @Suppress("NAME_SHADOWING", "BlockingMethodInNonBlockingContext") val query = URLEncoder.encode(query, "ISO-8859-9")
+        @Suppress("NAME_SHADOWING", "BlockingMethodInNonBlockingContext")
+        val query = URLEncoder.encode(query, "ISO-8859-9")
 
         val document = app.get(
             "${mainUrl}/filtre?a=${query}",
-            referer     = "${mainUrl}/",
+            referer = "${mainUrl}/",
             interceptor = interceptor
         ).document
 
@@ -124,43 +125,48 @@ class WebteIzle : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
 
-        val title       = document.selectFirst("[property='og:title']")?.attr("content")?.substringBefore(" izle") ?: return null
-        val poster      = fixUrlNull(document.selectFirst("div.card img")?.attr("data-src"))
-        val year        = document.selectXpath("//td[contains(text(), 'Vizyon')]/following-sibling::td").text().trim().split(" ").last().toIntOrNull()
+        val title = document.selectFirst("[property='og:title']")?.attr("content")?.substringBefore(" izle") ?: return null
+        val poster = fixUrlNull(document.selectFirst("div.card img")?.attr("data-src"))
+        val year = document.selectXpath("//td[contains(text(), 'Vizyon')]/following-sibling::td").text().trim().split(" ").last().toIntOrNull()
         val description = document.selectFirst("blockquote")?.text()?.trim()
-        val tags        = document.selectXpath("//a[@itemgroup='genre']").map { it.text() }
-        val rating      = document.selectFirst("div.detail")?.text()?.trim()?.replace(",", ".").toRatingInt()
-        val duration    = document.selectXpath("//td[contains(text(), 'Süre')]/following-sibling::td").text().trim().split(" ").first().toIntOrNull()
-        val trailer     = document.selectFirst("button#fragman")?.attr("data-ytid")
-        val actors      = document.selectXpath("//div[@data-tab='oyuncular']//a").map {
+        val tags = document.selectXpath("//a[@itemgroup='genre']").map { it.text() }
+        val rating = document.selectFirst("div.detail")?.text()?.trim()?.replace(",", ".").toRatingInt()
+        val duration = document.selectXpath("//td[contains(text(), 'Süre')]/following-sibling::td").text().trim().split(" ").first().toIntOrNull()
+        val trailer = document.selectFirst("button#fragman")?.attr("data-ytid")
+        val actors = document.selectXpath("//div[@data-tab='oyuncular']//a").map {
             Actor(it.selectFirst("span")!!.text().trim(), fixUrlNull(it.selectFirst("img")!!.attr("data-src")))
         }
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-            this.year      = year
-            this.plot      = description
-            this.tags      = tags
-            this.rating    = rating
-            this.duration  = duration
+            this.year = year
+            this.plot = description
+            this.tags = tags
+            this.rating = rating
+            this.duration = duration
             addTrailer("https://www.youtube.com/embed/${trailer}")
             addActors(actors)
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
         Log.d("WBTI", "data » $data")
         val document = app.get(data).document
 
-        val filmId  = document.selectFirst("button#wip")?.attr("data-id") ?: return false
+        val filmId = document.selectFirst("button#wip")?.attr("data-id") ?: return false
         Log.d("WBTI", "filmId » $filmId")
 
         val dilList = mutableListOf<String>()
-        if (document.selectFirst("div.golge a[href*=dublaj]")?.attr("src") != null) {
+        if (document.selectFirst("div.golge a[href*=dublaj]") != null) {
             dilList.add("0")
         }
 
-        if (document.selectFirst("div.golge a[href*=altyazi]")?.attr("src") != null) {
+        if (document.selectFirst("div.golge a[href*=altyazi]") != null) {
             dilList.add("1")
         }
 
@@ -170,123 +176,60 @@ class WebteIzle : MainAPI() {
             val playerApi = app.post(
                 "${mainUrl}/ajax/dataAlternatif3.asp",
                 headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-                data    = mapOf(
+                data = mapOf(
                     "filmid" to filmId,
-                    "dil"    to it,
-                    "s"      to "",
-                    "b"      to "",
-                    "bot"    to "0"
+                    "dil" to it,
+                    "s" to "",
+                    "b" to "",
+                    "bot" to "0"
                 )
             ).text
             val playerData = AppUtils.tryParseJson<DataAlternatif>(playerApi) ?: return@forEach
 
-            for (thisEmbed in playerData.data) { 
+            for (thisEmbed in playerData.data) {
                 val embedApi = app.post(
                     "${mainUrl}/ajax/dataEmbed.asp",
                     headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
-                    data    = mapOf("id" to thisEmbed.id.toString())
+                    data = mapOf("id" to thisEmbed.id.toString())
                 ).document
 
                 var iframe = fixUrlNull(embedApi.selectFirst("iframe")?.attr("src"))
 
-                if (iframe == null) {
-                    val scriptSource = embedApi.html()
-                    val matchResult  = Regex("""(vidmoly|okru|filemoon)\('([\d\w]+)','""").find(scriptSource)
+if (iframe == null) {
+    val scriptSource = embedApi.html()
 
-                    if (matchResult == null) {
-                        Log.d("WBTI", "scriptSource » $scriptSource")
-                    } else {
-                        val platform = matchResult.groupValues[1]
-                        val vidId    = matchResult.groupValues[2]
+    // Önce vidmoly gibi doğrudan eşleşmeyi dene
+    val matchResult = Regex("""(vidmoly)\('([\d\w]+)','""").find(scriptSource)
 
-                        iframe       = when(platform) {
-                            "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
-                            "okru"     -> "https://odnoklassniki.ru/videoembed/${vidId}"
-                            "filemoon" -> "https://filemoon.sx/e/${vidId}"
-                            else       -> null
-                        }
-                    }
-                } else if (iframe.contains(mainUrl)) {
+    if (matchResult != null) {
+        val platform = matchResult.groupValues[1]
+        val vidId = matchResult.groupValues[2]
+
+        iframe = when (platform) {
+            "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
+            else -> null
+        }
+    } else {
+        // Eğer vidmoly yoksa, _0x5c93 tanımı var mı diye kontrol et
+        val hasDzen = Regex("""var\s+_0x5c93\s*=""").containsMatchIn(scriptSource)
+        if (hasDzen) {
+            val dzenMatch = Regex("""var\s+vid\s*=\s*['"]([^'"]+)['"]""").find(scriptSource)
+            val videoId = dzenMatch?.groupValues?.get(1)
+            if (videoId != null) {
+                iframe = "https://dzen.ru/embed/$videoId"
+            }
+        } else {
+            Log.d("WBTI", "scriptSource » $scriptSource")
+        }
+    }
+}
+
+					if (iframe != null) {
                     Log.d("WBTI", "iframe » $iframe")
-                    val iSource = app.get(iframe, referer=data).text
-
-                    val encoded  = Regex("""file": "([^"]+)""").find(iSource)?.groupValues?.get(1) ?: continue
-                    val bytes    = encoded.split("\\x").filter { str -> str.isNotEmpty() }.map { char -> char.toInt(16).toByte() }.toByteArray()
-                    val m3uLink = String(bytes, Charsets.UTF_8)
-                    Log.d("WBTI", "m3uLink » $m3uLink")
-
-                    val trackStr = Regex("""tracks = \[([^]]+)""").find(iSource)?.groupValues?.get(1)
-                    if (trackStr != null) {
-                        val tracks:List<Track> = jacksonObjectMapper().readValue("[${trackStr}]")
-
-                        for (track in tracks) {
-                            if (track.file == null || track.label == null) continue
-                            if (track.label.contains("Forced")) continue
-
-                            subtitleCallback.invoke(
-                                SubtitleFile(
-                                    lang = track.label.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç"),
-                                    url  = fixUrl(track.file).replace("\\", "")
-                                )
-                            )
-                        }
-                    }
-
-                    callback.invoke(
-                        newExtractorLink(
-                            source  = "$dilAd - ${this.name}",
-                            name    = "$dilAd - ${this.name}",
-                            url     = m3uLink,
-                            ExtractorLinkType.M3U8
-                        ) {
-                            this.referer = "${mainUrl}/"
-                            this.quality = getQualityFromName("1440p")
-                        }
-                    )
-
-                    continue
-                } else if (iframe.contains("playerjs-three.vercel.app") || iframe.contains("cstkcstk.github.io")) {
-                    val decoded = iframe.substringAfter("&v=").let { query ->
-                        val hexString = query.replace("\\x", "")
-                        val bytes     = hexString.chunked(2).map { chunk -> chunk.toInt(16).toByte() }.toByteArray()
-
-                        bytes.toString(Charsets.UTF_8)
-                    }
-
-                    callback.invoke(
-                        newExtractorLink(
-                            source  = "$dilAd - ${this.name}",
-                            name    = "$dilAd - ${this.name}",
-                            url     = fixUrl(decoded),
-                            ExtractorLinkType.M3U8
-                        ) {
-                            this.referer = "${mainUrl}/"
-                            this.quality = Qualities.Unknown.value
-                        }
-                    )
-                }
-
-                if (iframe != null) {
-                    Log.d("WBTI", "iframe » $iframe")
-                    loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
-                        callback.invoke(
-                            ExtractorLink(
-                                source        = "$dilAd - ${link.name}",
-                                name          = "$dilAd - ${link.name}",
-                                url           = link.url,
-                                referer       = link.referer,
-                                quality       = link.quality,
-                                headers       = link.headers,
-                                extractorData = link.extractorData,
-                                type          = link.type
-                            )
-                        )
-                    }
-                }
+                    loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+					}
             }
         }
-
-
         return true
     }
 }
