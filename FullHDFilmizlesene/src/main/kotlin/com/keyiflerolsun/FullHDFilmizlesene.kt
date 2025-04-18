@@ -135,7 +135,7 @@ class FullHDFilmizlesene : MainAPI() {
 
         val scxData         = Regex("scx = (.*?);").find(scriptContent)?.groupValues?.get(1) ?: return emptyList()
         val scxMap: SCXData = jacksonObjectMapper().readValue(scxData)
-        val keys             = listOf("atom", "advid", "advidprox", "proton", "fast", "fastly", "tr", "en")
+        val keys             = listOf("atom", "advid", "advidprox", "proton", "fast", "fastly", "turbo", "tr", "en")
 
         val linkList = mutableListOf<Map<String, String>>()
 
@@ -147,6 +147,7 @@ class FullHDFilmizlesene : MainAPI() {
                 "proton"    -> scxMap.proton?.sx?.t
                 "fast"      -> scxMap.fast?.sx?.t
                 "fastly"    -> scxMap.fastly?.sx?.t
+                "turbo"    -> scxMap.turbo?.sx?.t
                 "tr"        -> scxMap.tr?.sx?.t
                 "en"        -> scxMap.en?.sx?.t
                 else        -> null
@@ -183,8 +184,8 @@ class FullHDFilmizlesene : MainAPI() {
         for (videoMap in videoLinks) {
             for ((key, value) in videoMap) {
                 val videoUrl = fixUrlNull(value) ?: continue
-                if (videoUrl.contains("turbo.imgz.me")) {
-                    loadExtractor("${key}||${videoUrl}", "${mainUrl}/", subtitleCallback, callback)
+                if (videoUrl.contains("watch.turkeyplayer.com")) {
+                    loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
                 } else {
                     loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
                 }
@@ -202,6 +203,7 @@ class FullHDFilmizlesene : MainAPI() {
         @JsonProperty("proton")    val proton: AtomData?    = null,
         @JsonProperty("fast")      val fast: AtomData?      = null,
         @JsonProperty("fastly")    val fastly: AtomData?    = null,
+        @JsonProperty("turbo")    val turbo: AtomData?    = null,
         @JsonProperty("tr")        val tr: AtomData?        = null,
         @JsonProperty("en")        val en: AtomData?        = null,
     )
