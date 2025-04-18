@@ -186,7 +186,7 @@ class FullHDFilmizlesene : MainAPI() {
                 if (videoUrl.contains("turbo.imgz.me")) {
                     loadExtractor("${key}||${videoUrl}", "${mainUrl}/", subtitleCallback, callback)
                 } else {
-                    loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
+                    loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
                 }
             }
         }
