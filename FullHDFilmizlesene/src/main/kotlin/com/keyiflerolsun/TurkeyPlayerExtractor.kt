@@ -32,7 +32,7 @@ open class TurkeyPlayer : ExtractorApi() {
             newExtractorLink(
                 source  = this.name,
                 name    = this.name,
-                url     = videoLink,
+                url     = masterUrl,
                 type = ExtractorLinkType.M3U8
             ) {
                 quality = Qualities.Unknown.value
