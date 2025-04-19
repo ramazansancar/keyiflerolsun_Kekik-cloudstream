@@ -57,13 +57,13 @@ class FilmMakinesi : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val aTag      = this.selectFirst("a.item") ?: return null
-        println("FLMM", "aTag: $aTag")
+        Log.d("FLMM", "aTag: $aTag")
         val title     = aTag.attr("data-title") ?: return null
         val href      = fixUrlNull(aTag.attr("href")) ?: return null
         val posterUrl = fixUrlNull(aTag.selectFirst("img")?.attr("src"))
-        println("FLMM", "title: $title")
-        println("FLMM", "href: $href")
-        println("FLMM", "posterUrl: $posterUrl")
+        Log.d("FLMM", "title: $title")
+        Log.d("FLMM", "href: $href")
+        Log.d("FLMM", "posterUrl: $posterUrl")
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
