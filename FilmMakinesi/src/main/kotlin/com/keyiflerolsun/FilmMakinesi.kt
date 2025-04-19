@@ -50,20 +50,20 @@ class FilmMakinesi : MainAPI() {
 
     override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${sayfa}/").document
-        val home     = if (request.data.contains("/film-izle/")) {
-            document.select("div.item-relative").mapNotNull { it.toSearchResult() }
-        } else {
-            document.select("div.item-relative").mapNotNull { it.toSearchResult() }
-        }
+        val home     = document.select("div.item-relative").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
         val aTag      = this.selectFirst("a.item") ?: return null
+        println("FLMM", "aTag: $aTag")
         val title     = aTag.attr("data-title") ?: return null
         val href      = fixUrlNull(aTag.attr("href")) ?: return null
         val posterUrl = fixUrlNull(aTag.selectFirst("img")?.attr("src"))
+        println("FLMM", "title: $title")
+        println("FLMM", "href: $href")
+        println("FLMM", "posterUrl: $posterUrl")
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
