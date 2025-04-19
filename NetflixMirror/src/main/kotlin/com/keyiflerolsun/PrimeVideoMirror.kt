@@ -18,7 +18,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class PrimeVideoMirror : MainAPI() {
-    override var mainUrl              = "https://netfree.cc"
+    override var mainUrl              = "https://netfree2.cc/mobile"
     override var name                 = "PrimeVideoMirror"
     override val hasMainPage          = true
     override var lang                 = "hi"
