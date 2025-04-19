@@ -25,7 +25,7 @@ class FilmMakinesi : MainAPI() {
     override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/sayfa/"                                        to "Son Filmler",
+        "${mainUrl}/filmler/sayfa/"                                to "Son Filmler",
         "${mainUrl}/film-izle/olmeden-izlenmesi-gerekenler/sayfa/" to "Ölmeden İzle",
         "${mainUrl}/film-izle/aksiyon-filmleri-izle/sayfa/"        to "Aksiyon",
         "${mainUrl}/film-izle/bilim-kurgu-filmi-izle/sayfa/"       to "Bilim Kurgu",
@@ -36,20 +36,20 @@ class FilmMakinesi : MainAPI() {
         "${mainUrl}/film-izle/fantastik-filmler-izle/sayfa/"       to "Fantastik",
         "${mainUrl}/film-izle/polisiye-filmleri-izle/sayfa/"       to "Polisiye Suç",
         "${mainUrl}/film-izle/korku-filmleri-izle-hd/sayfa/"       to "Korku",
-        // "${mainUrl}/film-izle/savas/sayfa/"                        to "Tarihi ve Savaş",
-        // "${mainUrl}/film-izle/gerilim-filmleri-izle/sayfa/"        to "Gerilim Heyecan",
-        // "${mainUrl}/film-izle/gizemli/sayfa/"                      to "Gizem",
-        // "${mainUrl}/film-izle/aile-filmleri/sayfa/"                to "Aile",
-        // "${mainUrl}/film-izle/animasyon-filmler/sayfa/"            to "Animasyon",
-        // "${mainUrl}/film-izle/western/sayfa/"                      to "Western",
-        // "${mainUrl}/film-izle/biyografi/sayfa/"                    to "Biyografik",
-        // "${mainUrl}/film-izle/dram/sayfa/"                         to "Dram",
-        // "${mainUrl}/film-izle/muzik/sayfa/"                        to "Müzik",
-        // "${mainUrl}/film-izle/spor/sayfa/"                         to "Spor"
+        // "${mainUrl}/film-izle/savas/sayfa/"                     to "Tarihi ve Savaş",
+        // "${mainUrl}/film-izle/gerilim-filmleri-izle/sayfa/"     to "Gerilim Heyecan",
+        // "${mainUrl}/film-izle/gizemli/sayfa/"                   to "Gizem",
+        // "${mainUrl}/film-izle/aile-filmleri/sayfa/"             to "Aile",
+        // "${mainUrl}/film-izle/animasyon-filmler/sayfa/"         to "Animasyon",
+        // "${mainUrl}/film-izle/western/sayfa/"                   to "Western",
+        // "${mainUrl}/film-izle/biyografi/sayfa/"                 to "Biyografik",
+        // "${mainUrl}/film-izle/dram/sayfa/"                      to "Dram",
+        // "${mainUrl}/film-izle/muzik/sayfa/"                     to "Müzik",
+        // "${mainUrl}/film-izle/spor/sayfa/"                      to "Spor"
     )
 
     override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}${sayfa}").document
+        val document = app.get("${request.data}${sayfa}/").document
         val home     = if (request.data.contains("/film-izle/")) {
             document.select("div.item-relative").mapNotNull { it.toSearchResult() }
         } else {
@@ -63,7 +63,7 @@ class FilmMakinesi : MainAPI() {
         val aTag      = this.selectFirst("a.item") ?: return null
         val title     = aTag.attr("data-title") ?: return null
         val href      = fixUrlNull(aTag.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl = fixUrlNull(aTag.selectFirst("img")?.attr("src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
