@@ -184,8 +184,8 @@ class FullHDFilmizlesene : MainAPI() {
         for (videoMap in videoLinks) {
             for ((key, value) in videoMap) {
                 val videoUrl = fixUrlNull(value) ?: continue
-                if (videoUrl.contains("watch.turkeyplayer.com")) {
-                    loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
+                if (videoUrl.contains("turbo.imgz.me")) {
+                    loadExtractor("${key}||${videoUrl}", "${mainUrl}/", subtitleCallback, callback)
                 } else {
                     loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
                 }
