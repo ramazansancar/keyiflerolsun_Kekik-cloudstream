@@ -170,7 +170,7 @@ class HDFilmCehennemi2 : MainAPI() {
             }
         } else {
             val episodes = mutableListOf<Episode>()
-            document.select("div.seasonsTabs-tabContent div").forEach { szn ->
+            document.select("nav card-nav horizontal nav-slider").forEach { szn ->
                 val epSzn = szn.attr("id").substringAfter("seasons-").toIntOrNull()
                 szn.select("div.card-list-item").forEach {
                     val epHref = it.selectFirst("a")?.attr("href") ?: ""
