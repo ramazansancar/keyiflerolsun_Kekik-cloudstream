@@ -13,5 +13,6 @@ class FullHDFilmizlesenePlugin: Plugin() {
         registerExtractorAPI(VidMoxy())
         registerExtractorAPI(Sobreatsesuyp())
         registerExtractorAPI(TurboImgz())
+        registerExtractorAPI(TurkeyPlayer())
     }
 }
