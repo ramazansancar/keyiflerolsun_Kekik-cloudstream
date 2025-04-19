@@ -50,7 +50,7 @@ class FilmMakinesi : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.col-6 div.item-relative").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.film-list div.item-relative").mapNotNull { it.toSearchResult() }
 		Log.d("FLMM", "home: $home")
 
         return newHomePageResponse(request.name, home)
@@ -80,7 +80,7 @@ class FilmMakinesi : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}?s=${query}").document
 
-        return document.select("div.item-relative").mapNotNull { it.toSearchResult() }
+        return document.select("div.film-list div.item-relative").mapNotNull { it.toSearchResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
@@ -103,7 +103,7 @@ class FilmMakinesi : MainAPI() {
             0
         }
 
-        val recommendations = document.select("div.item-relative").mapNotNull { it.toRecommendResult() }
+        val recommendations = document.select("div.film-list div.item-relative").mapNotNull { it.toRecommendResult() }
         val actors          = document.selectFirst("dt:contains(Oyuncular:) + dd")?.text()?.split(", ")?.map {
             Actor(it.trim())
         }
