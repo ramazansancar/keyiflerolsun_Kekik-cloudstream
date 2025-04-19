@@ -184,8 +184,8 @@ class FullHDFilmizlesene : MainAPI() {
         for (videoMap in videoLinks) {
             for ((key, value) in videoMap) {
                 val videoUrl = fixUrlNull(value) ?: continue
-                if (videoUrl.contains("ezb")) {
-                    loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
+                if (videoUrl.contains("watch.turkeyplayer.com")) {
+                    loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
                 } else {
                     loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
                 }
@@ -203,7 +203,7 @@ class FullHDFilmizlesene : MainAPI() {
         @JsonProperty("proton")    val proton: AtomData?    = null,
         @JsonProperty("fast")      val fast: AtomData?      = null,
         @JsonProperty("fastly")    val fastly: AtomData?    = null,
-        @JsonProperty("turbo")    val turbo: AtomData?    = null,
+        @JsonProperty("turbo")     val turbo: AtomData?     = null,
         @JsonProperty("tr")        val tr: AtomData?        = null,
         @JsonProperty("en")        val en: AtomData?        = null,
     )
