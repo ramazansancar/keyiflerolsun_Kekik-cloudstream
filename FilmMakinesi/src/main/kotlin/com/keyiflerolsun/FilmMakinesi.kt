@@ -51,18 +51,18 @@ class FilmMakinesi : MainAPI() {
     override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${sayfa}").document
         val home     = if (request.data.contains("/film-izle/")) {
-            document.select("section#film_posts article").mapNotNull { it.toSearchResult() }
+            document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
         } else {
-            document.select("section#film_posts div.tooltip").mapNotNull { it.toSearchResult() }
+            document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
         }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("h6 a")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("h6 a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val title     = this.selectFirst("a.data-title")?.text() ?: return null
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src")) ?: fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
@@ -70,7 +70,7 @@ class FilmMakinesi : MainAPI() {
     private fun Element.toRecommendResult(): SearchResponse? {
         val title     = this.select("a").last()?.text() ?: return null
         val href      = fixUrlNull(this.select("a").last()?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
@@ -78,7 +78,7 @@ class FilmMakinesi : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}?s=${query}").document
 
-        return document.select("section#film_posts article").mapNotNull { it.toSearchResult() }
+        return document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
