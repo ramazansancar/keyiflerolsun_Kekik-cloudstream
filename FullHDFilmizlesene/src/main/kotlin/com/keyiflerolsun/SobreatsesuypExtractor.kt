@@ -41,10 +41,10 @@ open class Sobreatsesuyp : ExtractorApi() {
                     name    = "${this.name} - ${item.title}",
                     url     = videoData,
                     type    = INFER_TYPE
-                ) {
-                    this.referer = extRef
-                    this.quality = Qualities.Unknown.value
-                }
+					            ) {
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to extRef)
+            }
             )
         }
     }

@@ -51,10 +51,10 @@ open class VidMoxy : ExtractorApi() {
                 source  = this.name,
                 name    = this.name,
                 url     = decoded,
-                ExtractorLinkType.M3U8
+				type = ExtractorLinkType.M3U8
             ) {
-                this.referer = extRef
-                this.quality = Qualities.Unknown.value
+                quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to extRef)
             }
         )
     }

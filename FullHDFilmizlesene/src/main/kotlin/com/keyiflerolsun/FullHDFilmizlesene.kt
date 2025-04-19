@@ -48,7 +48,7 @@ class FullHDFilmizlesene : MainAPI() {
         "${mainUrl}/filmizle/savas-filmleri-izle-2/"            to "Savaş Filmleri",
         "${mainUrl}/filmizle/suc-filmleri-izle-3/"              to "Suç Filmleri",
         "${mainUrl}/filmizle/tarih-filmleri-izle/"              to "Tarih Filmleri",
-        "${mainUrl}/filmizle/western-filmler-hd-izle-2/"            to "Western Filmler",
+        "${mainUrl}/filmizle/western-filmleri-izle/"            to "Western Filmler",
         "${mainUrl}/filmizle/yerli-filmler-izle-3/"             to "Yerli Filmler",
     )
 
@@ -135,7 +135,7 @@ class FullHDFilmizlesene : MainAPI() {
 
         val scxData         = Regex("scx = (.*?);").find(scriptContent)?.groupValues?.get(1) ?: return emptyList()
         val scxMap: SCXData = jacksonObjectMapper().readValue(scxData)
-        val keys             = listOf("atom", "advid", "advidprox", "proton", "fast", "fastly", "tr", "en")
+        val keys             = listOf("atom", "advid", "advidprox", "proton", "fast", "fastly", "turbo", "tr", "en")
 
         val linkList = mutableListOf<Map<String, String>>()
 
@@ -147,6 +147,7 @@ class FullHDFilmizlesene : MainAPI() {
                 "proton"    -> scxMap.proton?.sx?.t
                 "fast"      -> scxMap.fast?.sx?.t
                 "fastly"    -> scxMap.fastly?.sx?.t
+                "turbo"    -> scxMap.turbo?.sx?.t
                 "tr"        -> scxMap.tr?.sx?.t
                 "en"        -> scxMap.en?.sx?.t
                 else        -> null
@@ -186,7 +187,7 @@ class FullHDFilmizlesene : MainAPI() {
                 if (videoUrl.contains("turbo.imgz.me")) {
                     loadExtractor("${key}||${videoUrl}", "${mainUrl}/", subtitleCallback, callback)
                 } else {
-                    loadExtractor(videoUrl, "${mainUrl}/", subtitleCallback, callback)
+                    loadExtractor(videoUrl, videoUrl, subtitleCallback, callback)
                 }
             }
         }
@@ -202,6 +203,7 @@ class FullHDFilmizlesene : MainAPI() {
         @JsonProperty("proton")    val proton: AtomData?    = null,
         @JsonProperty("fast")      val fast: AtomData?      = null,
         @JsonProperty("fastly")    val fastly: AtomData?    = null,
+        @JsonProperty("turbo")     val turbo: AtomData?     = null,
         @JsonProperty("tr")        val tr: AtomData?        = null,
         @JsonProperty("en")        val en: AtomData?        = null,
     )
