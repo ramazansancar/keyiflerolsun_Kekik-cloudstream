@@ -50,7 +50,7 @@ class FilmMakinesi : MainAPI() {
 
     override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${sayfa}/").document
-        val home     = document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.content div.item-relative").mapNotNull { it.toSearchResult() }
 		Log.d("FLMM", "home: $home")
 
         return newHomePageResponse(request.name, home)
