@@ -14,18 +14,19 @@ open class TurkeyPlayer : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef = referer ?: ""
         val pageContent = app.get(url, referer = extRef).text
-        Log.d("Kekik_${this.name}", "PageContent » $pageContent")
+        Log.d("Kekik_${this.name}", "PageContent Alındı")
 
-        // ID'yi al
-        val id = Regex("""id=(\d+)""").find(url)?.groupValues?.get(1)
-            ?: Regex("""data-id=['"]?(\d+)['"]?""").find(pageContent)?.groupValues?.get(1)
-            ?: throw ErrorLoadingException("Video ID bulunamadı")
+        // JavaScript içindeki video değişkenini çek
+        val videoJsonRaw = Regex("""var\s+video\s*=\s*(\{.*?\});""", RegexOption.DOT_MATCHES_ALL)
+            .find(pageContent)?.groupValues?.get(1)
+            ?: throw ErrorLoadingException("Video nesnesi bulunamadı")
 
-        // md5 hash'i çek
-        val hash = Regex("""/m3u8/8/([a-fA-F0-9]{32})/master\.txt""").find(pageContent)?.groupValues?.get(1)
-            ?: throw ErrorLoadingException("MD5 hash bulunamadı")
+        // JSON'a parse et
+        val videoJson = JSONObject(videoJsonRaw)
+        val id = videoJson.getString("id")
+        val md5 = videoJson.getString("md5")
 
-        val masterUrl = "https://watch.turkeyplayer.com/m3u8/8/$hash/master.txt?s=1&id=$id&cache=1"
+        val masterUrl = "https://watch.turkeyplayer.com/m3u8/8/$md5/master.txt?s=1&id=$id&cache=1"
         Log.d("Kekik_${this.name}", "masterUrl » $masterUrl")
 
         callback.invoke(
