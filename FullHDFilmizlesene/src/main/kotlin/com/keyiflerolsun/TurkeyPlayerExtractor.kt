@@ -14,31 +14,33 @@ open class TurkeyPlayer : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef = referer ?: ""
         val pageContent = app.get(url, referer = extRef).text
-        Log.d("Kekik_${this.name}", "PageContent Alındı")
 
-        // JavaScript içindeki video değişkenini çek
+        // video = {...} içeriğini bul
         val videoJsonRaw = Regex("""var\s+video\s*=\s*(\{.*?\});""", RegexOption.DOT_MATCHES_ALL)
             .find(pageContent)?.groupValues?.get(1)
             ?: throw ErrorLoadingException("Video nesnesi bulunamadı")
 
-        // JSON'a parse et
-        val videoJson = JSONObject(videoJsonRaw)
-        val id = videoJson.getString("id")
-        val md5 = videoJson.getString("md5")
+        // Cloudstream'e özel parseJson metodu
+        val videoJson = parseJson<VideoData>(videoJsonRaw)
 
-        val masterUrl = "https://watch.turkeyplayer.com/m3u8/8/$md5/master.txt?s=1&id=$id&cache=1"
+        val masterUrl = "https://watch.turkeyplayer.com/m3u8/8/${videoJson.md5}/master.txt?s=1&id=${videoJson.id}&cache=1"
         Log.d("Kekik_${this.name}", "masterUrl » $masterUrl")
 
         callback.invoke(
             newExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = masterUrl,
-                type = ExtractorLinkType.M3U8
+                source = this.name,
+                name   = this.name,
+                url    = masterUrl,
+                type   = ExtractorLinkType.M3U8
             ) {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to extRef)
             }
         )
     }
+
+    data class VideoData(
+        val id: String,
+        val md5: String
+    )
 }
