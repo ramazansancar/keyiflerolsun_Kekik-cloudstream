@@ -27,16 +27,16 @@ class FilmMakinesi : MainAPI() {
     override val mainPage = mainPageOf(
         "${mainUrl}/filmler/sayfa/"                                to "Son Filmler",
         "${mainUrl}/film-izle/olmeden-izlenmesi-gerekenler/sayfa/" to "Ölmeden İzle",
-        "${mainUrl}/film-izle/aksiyon-filmleri-izle/sayfa/"        to "Aksiyon",
-        "${mainUrl}/film-izle/bilim-kurgu-filmi-izle/sayfa/"       to "Bilim Kurgu",
-        "${mainUrl}/film-izle/macera-filmleri/sayfa/"              to "Macera",
-        "${mainUrl}/film-izle/komedi-filmi-izle/sayfa/"            to "Komedi",
-        "${mainUrl}/film-izle/romantik-filmler-izle/sayfa/"        to "Romantik",
-        "${mainUrl}/film-izle/belgesel/sayfa/"                     to "Belgesel",
-        "${mainUrl}/film-izle/fantastik-filmler-izle/sayfa/"       to "Fantastik",
-        "${mainUrl}/film-izle/polisiye-filmleri-izle/sayfa/"       to "Polisiye Suç",
-        "${mainUrl}/film-izle/korku-filmleri-izle-hd/sayfa/"       to "Korku",
-        // "${mainUrl}/film-izle/savas/sayfa/"                     to "Tarihi ve Savaş",
+        "${mainUrl}/tur/aksiyon/film/sayfa/"                       to "Aksiyon",
+        "${mainUrl}/tur/bilim-kurgu/film/sayfa/"                   to "Bilim Kurgu",
+        "${mainUrl}/tur/macera/film/sayfa/"                        to "Macera",
+        "${mainUrl}/tur/komedi/film/sayfa/"                        to "Komedi",
+        "${mainUrl}/tur/romantik/film/sayfa/"                      to "Romantik",
+        "${mainUrl}/tur/belgesel/sayfa/"                           to "Belgesel",
+        "${mainUrl}/tur/fantastik/film/sayfa/"                     to "Fantastik",
+        "${mainUrl}/tur/polisiye/film/sayfa/"                      to "Polisiye Suç",
+        "${mainUrl}/tur/korku/film/sayfa/"                         to "Korku",
+        // "${mainUrl}/tur/savas/film/sayfa/"                      to "Tarihi ve Savaş",
         // "${mainUrl}/film-izle/gerilim-filmleri-izle/sayfa/"     to "Gerilim Heyecan",
         // "${mainUrl}/film-izle/gizemli/sayfa/"                   to "Gizem",
         // "${mainUrl}/film-izle/aile-filmleri/sayfa/"             to "Aile",
@@ -79,7 +79,7 @@ class FilmMakinesi : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}?s=${query}").document
 
-        return document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
+        return document.select("div.item-relative").mapNotNull { it.toSearchResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
@@ -102,7 +102,7 @@ class FilmMakinesi : MainAPI() {
             0
         }
 
-        val recommendations = document.select("div.hidden-mobile li").mapNotNull { it.toRecommendResult() }
+        val recommendations = document.select("div.item-relative").mapNotNull { it.toRecommendResult() }
         val actors          = document.selectFirst("dt:contains(Oyuncular:) + dd")?.text()?.split(", ")?.map {
             Actor(it.trim())
         }
