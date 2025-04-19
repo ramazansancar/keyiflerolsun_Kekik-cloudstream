@@ -51,9 +51,9 @@ class FilmMakinesi : MainAPI() {
     override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${sayfa}").document
         val home     = if (request.data.contains("/film-izle/")) {
-            document.select("div.item-relative"").mapNotNull { it.toSearchResult() }
+            document.select("div.item-relative").mapNotNull { it.toSearchResult() }
         } else {
-            document.select("div.item-relative"").mapNotNull { it.toSearchResult() }
+            document.select("div.item-relative").mapNotNull { it.toSearchResult() }
         }
 
         return newHomePageResponse(request.name, home)
