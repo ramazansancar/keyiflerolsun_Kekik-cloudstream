@@ -51,18 +51,19 @@ class FilmMakinesi : MainAPI() {
     override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${sayfa}").document
         val home     = if (request.data.contains("/film-izle/")) {
-            document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
+            document.select("div.item-relative"").mapNotNull { it.toSearchResult() }
         } else {
-            document.select("div.content div.col-6").mapNotNull { it.toSearchResult() }
+            document.select("div.item-relative"").mapNotNull { it.toSearchResult() }
         }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("a.data-title")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src")) ?: fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val aTag      = this.selectFirst("a.item") ?: return null
+        val title     = aTag.attr("data-title") ?: return null
+        val href      = fixUrlNull(aTag.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
@@ -86,9 +87,9 @@ class FilmMakinesi : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
 
-        val title           = document.selectFirst("div#film_izle h1")?.text()?.trim() ?: return null
+        val title           = document.selectFirst("h1")?.text()?.trim() ?: return null
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
-        val description     = document.select("section#film_single article p").last()?.text()?.trim()
+        val description     = document.select("div.info-description p").last()?.text()?.trim()
         val tags            = document.selectFirst("dt:contains(Tür:) + dd")?.text()?.split(", ")
         val rating          = document.selectFirst("dt:contains(IMDB Puanı:) + dd")?.text()?.trim()?.toRatingInt()
         val year            = document.selectFirst("dt:contains(Yapım Yılı:) + dd")?.text()?.trim()?.toIntOrNull()
@@ -125,7 +126,7 @@ class FilmMakinesi : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("FLMM", "data » $data")
         val document      = app.get(data).document
-        val iframe = document.selectFirst("iframe")?.attr("src") ?: ""
+        val iframe = document.selectFirst("iframe")?.attr("data-src") ?: ""
         Log.d("FLMM", iframe)
 
         loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
