@@ -153,12 +153,12 @@ jobs:
           if ! jq -e '.[] | select(.internalName == "YerelDiziler")' plugins.json > /dev/null; then
             jq '. += [{
               "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 2,
+              "apiVersion": 3,
               "status": 1,
               "language": "tr",
               "authors": ["kerimmkirac"],
               "tvTypes": ["Tv"],
-              "version": 1,
+              "version": 2,
               "internalName": "YerelDiziler",
               "description": "YerelDiziler için CloudStream eklentisi",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/YerelDiziler.cs3",
