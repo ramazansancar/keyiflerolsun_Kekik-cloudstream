@@ -48,8 +48,8 @@ class FilmMakinesi : MainAPI() {
         // "${mainUrl}/film-izle/spor/sayfa/"                      to "Spor"
     )
 
-    override suspend fun getMainPage(sayfa: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data.trimEnd('/')}/${sayfa}/").document
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        val document = app.get("${request.data}${page}").document
         val home     = document.select("div.content div.item-relative").mapNotNull { it.toSearchResult() }
 		Log.d("FLMM", "home: $home")
 
