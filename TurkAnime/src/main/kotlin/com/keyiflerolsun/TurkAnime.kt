@@ -189,7 +189,7 @@ class TurkAnime : MainAPI() {
             loadExtractor(subLink, "${mainUrl}/", subtitleCallback, callback)
         }
     }
-   override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
     Log.d("TRANM", "data » $data")
     val document = app.get(data).document
 
@@ -197,15 +197,39 @@ class TurkAnime : MainAPI() {
     val iframe = fixUrlNull(iframeElement?.attr("src"))
 
     if (iframe == null || iframe.contains("a-ads.com")) {
-        
         val buttons = document.select("button[onclick*='IndexIcerik']")
 
         for (button in buttons) {
             val onclickAttr = button.attr("onclick")
-            val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'").takeIf { it.isNotBlank() }?.let { fixUrlNull(it) } ?: continue
+            val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'")
+                .takeIf { it.isNotBlank() }
+                ?.let { fixUrlNull(it) } ?: continue
 
             Log.d("TRANM", "Extra seçici ile alınan link: $subLink")
-            val subDoc = app.get(subLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest")).document
+
+            val subResponse = app.get(subLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest"))
+            val subHtml = subResponse.body?.string().orEmpty()
+
+            val subDoc = org.jsoup.Jsoup.parse(subHtml, subLink)
+
+            // Önce artplayer-app içindeki data-url kontrol edilir
+            val dataUrl = subDoc.selectFirst(".artplayer-app")?.attr("data-url")
+            if (dataUrl != null && dataUrl.endsWith(".m3u8")) {
+                Log.d("TRANM", "M3U8 data-url bulundu: $dataUrl")
+                callback(
+                    ExtractorLink(
+                        name = "TurkAnime",
+                        source = "TurkAnime",
+                        url = dataUrl,
+                        referer = subLink,
+                        quality = Qualities.Unknown.value,
+                        isM3u8 = true
+                    )
+                )
+                continue
+            }
+
+            // Eğer data-url yoksa iframe'e fallback yap
             val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
             Log.d("TRANM", "subFrame » $subFrame")
 
@@ -216,5 +240,5 @@ class TurkAnime : MainAPI() {
     }
 
     return true
-} 
+}
 }
