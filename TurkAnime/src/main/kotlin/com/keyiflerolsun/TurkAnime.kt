@@ -205,14 +205,12 @@ class TurkAnime : MainAPI() {
             val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'").takeIf { it.isNotBlank() }?.let { fixUrlNull(it) } ?: continue
 
             Log.d("TRANM", "Extra seçici ile alınan link: $subLink")
-        /*
             val subDoc = app.get(subLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest")).document
             val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
             Log.d("TRANM", "subFrame » $subFrame")
 
             iframe2Load(subDoc, subFrame, subtitleCallback, callback)
         }
-        */
     } else {
         iframe2Load(document, iframe, subtitleCallback, callback)
     }
