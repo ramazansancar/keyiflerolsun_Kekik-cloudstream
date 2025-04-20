@@ -213,7 +213,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             val subDoc = org.jsoup.Jsoup.parse(subHtml, subLink)
 
             // Önce artplayer-app içindeki data-url kontrol edilir
-            val dataUrl = subDoc.selectFirst(".artplayer-app")?.attr("data-url")
+            val dataUrl = subDoc.selectFirst("div.artplayer-app")?.attr("data-url")
             if (dataUrl != null && dataUrl.endsWith(".m3u8")) {
                 Log.d("TRANM", "M3U8 data-url bulundu: $dataUrl")
                 callback(
