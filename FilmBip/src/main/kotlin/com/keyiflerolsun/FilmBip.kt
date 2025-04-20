@@ -49,8 +49,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     private fun Element.toSearchResult(): SearchResponse? {
     val title = this.selectFirst("a.block img")?.attr("alt")?.trim() ?: return null
     val href = fixUrlNull(this.selectFirst("a.block")?.attr("href")) ?: return null
-    val posterUrl = fixUrlNull(this.selectFirst("a.block img")?.attr("src")
-    ?: this.selectFirst("a.block img")?.attr("data-src")) ?: return null
+    val posterUrl = fixUrlNull(this.selectFirst("a.block img")?.attr("src")) ?: return null
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
