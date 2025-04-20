@@ -189,8 +189,7 @@ class TurkAnime : MainAPI() {
             loadExtractor(subLink, "${mainUrl}/", subtitleCallback, callback)
         }
     }
-
-override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+   override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
     Log.d("TRANM", "data » $data")
     val document = app.get(data).document
 
@@ -198,6 +197,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     val iframe = fixUrlNull(iframeElement?.attr("src"))
 
     if (iframe == null || iframe.contains("a-ads.com")) {
+        /*
         val buttons = document.select("button[onclick*='IndexIcerik']")
 
         for (button in buttons) {
@@ -212,10 +212,11 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
 
             iframe2Load(subDoc, subFrame, subtitleCallback, callback)
         }
+        */
     } else {
         iframe2Load(document, iframe, subtitleCallback, callback)
     }
 
     return true
-}
+} 
 }
