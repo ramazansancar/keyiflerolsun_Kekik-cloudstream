@@ -199,13 +199,13 @@ class TurkAnime : MainAPI() {
     if (iframe == null || iframe.contains("a-ads.com")) {
         
         val buttons = document.select("button[onclick*='IndexIcerik']")
-/*
+
         for (button in buttons) {
             val onclickAttr = button.attr("onclick")
             val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'").takeIf { it.isNotBlank() }?.let { fixUrlNull(it) } ?: continue
 
             Log.d("TRANM", "Extra seçici ile alınan link: $subLink")
-
+        /*
             val subDoc = app.get(subLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest")).document
             val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
             Log.d("TRANM", "subFrame » $subFrame")
