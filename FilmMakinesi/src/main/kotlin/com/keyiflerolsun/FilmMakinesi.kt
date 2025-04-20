@@ -50,7 +50,9 @@ class FilmMakinesi : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
     val url = "${request.data.trimEnd('/')}/${page}/"
-    val document = app.get(url, headers = getHeaders(mainUrl)).document
+    val document = app.get(url, headers = mapOf(
+            "User-Agent" to USER_AGENT,
+            "Referer" to mainUrl)).document
 
     val home = document.select("div.film-list div.item-relative")
         .mapNotNull { it.toSearchResult() }
