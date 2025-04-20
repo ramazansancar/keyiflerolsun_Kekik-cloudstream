@@ -197,9 +197,9 @@ class TurkAnime : MainAPI() {
     val iframe = fixUrlNull(iframeElement?.attr("src"))
 
     if (iframe == null || iframe.contains("a-ads.com")) {
-        /*
+        
         val buttons = document.select("button[onclick*='IndexIcerik']")
-
+/*
         for (button in buttons) {
             val onclickAttr = button.attr("onclick")
             val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'").takeIf { it.isNotBlank() }?.let { fixUrlNull(it) } ?: continue
