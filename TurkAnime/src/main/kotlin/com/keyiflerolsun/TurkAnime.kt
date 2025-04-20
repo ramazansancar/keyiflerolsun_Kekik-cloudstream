@@ -223,7 +223,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
                         url = dataUrl,
                         type = ExtractorLinkType.M3U8
                         ) {
-                        quality = Qualities.Unknown.value,
+                        quality = Qualities.Unknown.value
                         headers = mapOf("Referer" to subLink)
             }
                 )
