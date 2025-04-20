@@ -217,14 +217,15 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             if (dataUrl != null && dataUrl.endsWith(".m3u8")) {
                 Log.d("TRANM", "M3U8 data-url bulundu: $dataUrl")
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         name = "TurkAnime",
                         source = "TurkAnime",
                         url = dataUrl,
-                        referer = subLink,
+                        type = ExtractorLinkType.M3U8
+                        ) {
                         quality = Qualities.Unknown.value,
-                        isM3u8 = true
-                    )
+                        headers = mapOf("Referer" to subLink)
+            }
                 )
                 continue
             }
