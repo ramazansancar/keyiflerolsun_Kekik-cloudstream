@@ -61,7 +61,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
         val title  = document.selectFirst("div.page-title h1")?.text()?.trim() ?: return null
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
 
-        return newTvSeriesLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
         }
     }
