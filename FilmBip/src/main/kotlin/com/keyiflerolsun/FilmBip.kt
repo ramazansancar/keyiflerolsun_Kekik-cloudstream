@@ -46,13 +46,33 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
     return newHomePageResponse(request.name, home)
 }
 
-    private fun Element.toSearchResult(): SearchResponse? {
+private fun Element.toSearchResult(): SearchResponse? {
     val title = this.selectFirst("a.block img")?.attr("alt")?.trim() ?: return null
     val href = fixUrlNull(this.selectFirst("a.block")?.attr("href")) ?: return null
-    val posterUrl = fixUrlNull(this.selectFirst("a.block img")?.attr("src")) ?: return null
-
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+    
+    val imgElement = this.selectFirst("a.block img")
+    if (imgElement == null) {
+        Log.d("FLB", "imgElement is null")
+        return null
     }
+
+    val posterUrl = when {
+        imgElement.hasAttr("src") && imgElement.attr("src").isNotBlank() -> {
+            Log.d("FLB", "Using src: ${imgElement.attr("src")}")
+            fixUrlNull(imgElement.attr("src"))
+        }
+        imgElement.hasAttr("data-src") && imgElement.attr("data-src").isNotBlank() -> {
+            Log.d("FLB", "Using data-src: ${imgElement.attr("data-src")}")
+            fixUrlNull(imgElement.attr("data-src"))
+        }
+        else -> {
+            Log.d("FLB", "No valid src or data-src found")
+            null
+        }
+    } ?: return null
+
+    return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+}
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
