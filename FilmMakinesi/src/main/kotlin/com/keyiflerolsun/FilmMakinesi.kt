@@ -48,27 +48,6 @@ class FilmMakinesi : MainAPI() {
         // "${mainUrl}/film-izle/spor/sayfa/"                      to "Spor"
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.film-list div.item-relative").mapNotNull { it.toSearchResult() }
-		Log.d("FLMM", "home: $home")
-
-        return newHomePageResponse(request.name, home)
-    }
-
-    private fun Element.toSearchResult(): SearchResponse? {
-        val aTag      = this.selectFirst("a.item") ?: return null
-        Log.d("FLMM", "aTag: $aTag")
-        val title     = aTag.attr("data-title") ?: return null
-        val href      = fixUrlNull(aTag.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(aTag.selectFirst("img")?.attr("src"))
-        Log.d("FLMM", "title: $title")
-        Log.d("FLMM", "href: $href")
-        Log.d("FLMM", "posterUrl: $posterUrl")
-
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
-    }
-
     private fun Element.toRecommendResult(): SearchResponse? {
         val title     = this.select("a").last()?.text() ?: return null
         val href      = fixUrlNull(this.select("a").last()?.attr("href")) ?: return null
