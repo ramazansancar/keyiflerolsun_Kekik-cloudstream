@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
-class DiziMom : MainAPI() {
+class FilmBip : MainAPI() {
     override var mainUrl              = "https://filmbip.com/"
     override var name                 = "FilmBip"
     override val hasMainPage          = true
@@ -61,7 +61,7 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
         val title  = document.selectFirst("div.page-title h1")?.text()?.trim() ?: return null
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
 
-        return newTvSeriesLoadResponse(title, url, TvType.Movie) {
+        return newTvSeriesLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
         }
     }
