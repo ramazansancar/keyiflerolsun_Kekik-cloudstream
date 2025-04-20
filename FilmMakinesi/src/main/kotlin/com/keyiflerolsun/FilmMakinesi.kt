@@ -49,10 +49,17 @@ class FilmMakinesi : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-    val url = if (page > 1) "${request.data}/$page" else request.data
-    val document = app.get(url, headers = mapOf(
-            "User-Agent" to USER_AGENT,
-            "Referer" to mainUrl)).document
+val cleanedUrl = request.data.removeSuffix("/")
+val url = if (page > 1) {
+    "$cleanedUrl/$page"
+} else {
+    cleanedUrl.replace(Regex("/sayfa/?$"), "")
+}
+
+val document = app.get(url, headers = mapOf(
+    "User-Agent" to USER_AGENT,
+    "Referer" to mainUrl
+)).document
 
     val home = document.select("div.film-list div.item-relative")
         .mapNotNull { it.toSearchResult() }
