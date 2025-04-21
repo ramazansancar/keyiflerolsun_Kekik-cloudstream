@@ -10,22 +10,22 @@ import org.jsoup.nodes.Document
 
 class Tlctr : MainAPI() {
     override var name                 = "TLCtr"
-    override var mainUrl              = "https://www.tlctv.com.tr"
+    override var mainUrl              = "https://www.tlctv.com.tr/kesfet"
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.TvSeries, TvType.Movie)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/kesfet/a-z"                              to "a-z",
-        "${mainUrl}/kesfet/sira-disi-hayatlar"               to "Sıra Dışı Hayatlar",
-        "${mainUrl}/kesfet/ev-dekorasyon"                    to "Ev Dekorasyon",
-        "${mainUrl}/kesfet/suc-arastirma"                    to "Suç Araştırma",
-        "${mainUrl}/kesfet/yasam"                            to "Yaşam",
-        "${mainUrl}/kesfet/evlilik"                          to "Evlilik",
-        "${mainUrl}/kesfet/yemek"                            to "Yemek",
-        "${mainUrl}/kesfet/belgesel"                         to "Belgesel",
-        "${mainUrl}/kesfet/korelendik"                       to "Korelendik",
+        "${mainUrl}/a-z"                              to "a-z",
+        "${mainUrl}/sira-disi-hayatlar"               to "Sıra Dışı Hayatlar",
+        "${mainUrl}/ev-dekorasyon"                    to "Ev Dekorasyon",
+        "${mainUrl}/suc-arastirma"                    to "Suç Araştırma",
+        "${mainUrl}/yasam"                            to "Yaşam",
+        "${mainUrl}/evlilik"                          to "Evlilik",
+        "${mainUrl}/yemek"                            to "Yemek",
+        "${mainUrl}/belgesel"                         to "Belgesel",
+        "${mainUrl}/korelendik"                       to "Korelendik",
     )
 	
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -96,7 +96,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         val regex = Regex("referenceId\\s*:\\s*['\"](EHD_\\d+)['\"]")
         val referenceId = regex.find(res)?.groupValues?.get(1) ?: return false
 
-        val metaUrl = "$mainUrl/player/info?referenceId=$referenceId"
+        val metaUrl = "${mainUrl.replace("/kesfet", "")}/player/info?referenceId=$referenceId"
 		Log.d("TLC", "metaUrl » $metaUrl")
         val json = app.get(metaUrl).parsedSafe<TLCMeta>() ?: return false
 		Log.d("TLC", "json » $json")
