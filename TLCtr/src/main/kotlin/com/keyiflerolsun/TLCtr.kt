@@ -94,10 +94,10 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
 
         // referenceId’yi JS içinden yakala
         val regex = Regex("referenceId\\s*:\\s*['\"](EHD_\\d+)['\"]")
-        val referenceId = regex.find(res)?.groupValues?.get(1) ?: return
+        val referenceId = regex.find(res)?.groupValues?.get(1) ?: return false
 
         val metaUrl = "$mainUrl/player/info?referenceId=$referenceId"
-        val json = app.get(metaUrl).parsedSafe<TLCMeta>() ?: return
+        val json = app.get(metaUrl).parsedSafe<TLCMeta>() ?: return false
 
         json.sources?.forEach { source ->
             val file = source.file ?: return@forEach
@@ -115,6 +115,8 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             )
         }
     }
+	return true
+}
 
     data class TLCMeta(
         val sources: List<TLCSource>?
