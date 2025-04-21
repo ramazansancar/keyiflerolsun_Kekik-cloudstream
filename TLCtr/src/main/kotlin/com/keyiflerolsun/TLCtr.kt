@@ -91,15 +91,13 @@ override suspend fun load(url: String): LoadResponse {
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         val res = app.get(data).text
-		Log.d("TLC", "res » $res")
 
         // referenceId’yi JS içinden yakala
         val regex = Regex("referenceId\\s*:\\s*['\"](EHD_\\d+)['\"]")
         val referenceId = regex.find(res)?.groupValues?.get(1) ?: return false
 		Log.d("TLC", "referenceId » $referenceId")
 
-        val baseUrl = mainUrl.substringBefore("/kesfet")
-        val metaUrl = "$baseUrl/player/info?referenceId=$referenceId"
+        val metaUrl = "https://www.tlctv.com.tr/player/info?referenceId=$referenceId"
 		Log.d("TLC", "metaUrl » $metaUrl")
         val json = app.get(metaUrl).parsedSafe<TLCMeta>() ?: return false
 		Log.d("TLC", "json » $json")
