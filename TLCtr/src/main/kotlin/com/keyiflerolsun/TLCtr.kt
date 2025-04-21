@@ -33,7 +33,7 @@ class Tlctr : MainAPI() {
         // Poster ve başlıkları içeren grid yapısının elemanlarını çek
         val items = doc.select("section.grid.dyn-content div.poster")
             .mapNotNull {
-                val href = it.parent()?.attr("href") ?: return@mapNotNull null
+                val href = it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
                 val img = it.selectFirst("img")?.attr("src") ?: return@mapNotNull null
                 val title = it.selectFirst("img")?.attr("alt") ?: return@mapNotNull null
                 MovieSearchResponse(
