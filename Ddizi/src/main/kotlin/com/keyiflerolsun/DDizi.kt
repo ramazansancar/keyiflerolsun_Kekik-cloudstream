@@ -20,7 +20,7 @@ class DDizi : MainAPI() {
     override val mainPage = mainPageOf(
         "$mainUrl/yeni-eklenenler1"  to "Son Eklenen Bölümler",
         "$mainUrl/yabanci-dizi-izle" to "Yabancı Diziler",
-        "$mainUrl/mbara"             to "Yerli Diziler",
+        "$mainUrl/arama/"            to "Yerli Diziler",
         "$mainUrl/eski.diziler"      to "Eski Diziler"
     )
 

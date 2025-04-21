@@ -37,13 +37,14 @@ open class HDPlayerSystem : ExtractorApi() {
 
         val videoResponse = response.parsedSafe<SystemResponse>() ?: throw ErrorLoadingException("failed to parse response")
         val m3uLink       = videoResponse.securedLink
+        Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
         callback.invoke(
             newExtractorLink(
                 source = this.name,
-                name = this.name,
-                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                type = ExtractorLinkType.M3U8
+                name   = this.name,
+                url    = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                type   = ExtractorLinkType.M3U8
             ) {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to url)
