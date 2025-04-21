@@ -52,17 +52,17 @@ class HDFilmCehennemi : MainAPI() {
         "${mainUrl}/load/page/sayfano/categories/nette-ilk-filmler/" to "Nette İlk Filmler",
         "${mainUrl}/load/page/sayfano/home-series/" to "Yeni Eklenen Diziler",
         "${mainUrl}/load/page/sayfano/categories/tavsiye-filmler-izle2/" to "Tavsiye Filmler",
-        "${mainUrl}/load/page/sayfano/imdb7//" to "IMDB 7+ Filmler",
-        "${mainUrl}/load/page/sayfano/mostCommented//" to "En Çok Yorumlananlar",
-        "${mainUrl}/load/page/sayfano/mostLiked//" to "En Çok Beğenilenler",
+        "${mainUrl}/load/page/sayfano/imdb7/" to "IMDB 7+ Filmler",
+        "${mainUrl}/load/page/sayfano/mostCommented/" to "En Çok Yorumlananlar",
+        "${mainUrl}/load/page/sayfano/mostLiked/" to "En Çok Beğenilenler",
         "${mainUrl}/load/page/sayfano/genres/aile-filmleri-izleyin-6/" to "Aile Filmleri",
-        "${mainUrl}/load/page/sayfano/genres/aksiyon-filmleri-izleyin-4/" to "Aksiyon Filmleri",
-        "${mainUrl}/load/page/sayfano/genres/animasyon-filmlerini-izleyin-4/" to "Animasyon Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/aksiyon-filmleri-izleyin-5/" to "Aksiyon Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/animasyon-filmlerini-izleyin-5/" to "Animasyon Filmleri",
         "${mainUrl}/load/page/sayfano/genres/belgesel-filmlerini-izle-1/" to "Belgesel Filmleri",
-        "${mainUrl}/load/page/sayfano/genres/bilim-kurgu-filmlerini-izleyin-2/" to "Bilim Kurgu Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/bilim-kurgu-filmlerini-izleyin-3/" to "Bilim Kurgu Filmleri",
         "${mainUrl}/load/page/sayfano/genres/komedi-filmlerini-izleyin-1/" to "Komedi Filmleri",
-        "${mainUrl}/load/page/sayfano/genres/korku-filmlerini-izle-3/" to "Korku Filmleri",
-        "${mainUrl}/load/page/sayfano/genres/romantik-filmleri-izle-1/" to "Romantik Filmleri"
+        "${mainUrl}/load/page/sayfano/genres/korku-filmlerini-izle-4/" to "Korku Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/romantik-filmleri-izle-2/" to "Romantik Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -71,6 +71,7 @@ class HDFilmCehennemi : MainAPI() {
         val url = request.data.replace("sayfano", page.toString())
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
             "Accept" to "*/*", "X-Requested-With" to "fetch"
         )
         val doc = app.get(url, headers = headers, referer = mainUrl)

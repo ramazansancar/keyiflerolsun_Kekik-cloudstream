@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.Episode
 import com.lagradost.cloudstream3.ErrorLoadingException
@@ -35,6 +36,7 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 
+
 class Dizilla : MainAPI() {
     override var mainUrl = "https://dizilla.nl"
     override var name = "Dizilla"
@@ -45,7 +47,7 @@ class Dizilla : MainAPI() {
 
 
     override val mainPage = mainPageOf(
-        //"${mainUrl}/tum-bolumler" to "Altyazılı Bölümler",
+        "${mainUrl}/tum-bolumler" to "Altyazılı Bölümler",
         "${mainUrl}/arsiv" to "Yeni Eklenen Diziler",
         "${mainUrl}/dizi-turu/aile" to "Aile",
         "${mainUrl}/dizi-turu/aksiyon" to "Aksiyon",
@@ -60,27 +62,57 @@ class Dizilla : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        var document = app.get(request.data).document
-        val home = if (request.data.contains("dizi-turu")) {
-            document.select("span.watchlistitem-").mapNotNull { it.diziler() }
+        val yil = Calendar.getInstance().get(Calendar.YEAR)
+        val url = "$mainUrl/api/bg/findSeries?releaseYearStart=1900&releaseYearEnd=$yil&imdbPointMin=5&imdbPointMax=10&categoryIdsComma=KATID&countryIdsComma=&orderType=date_desc&languageId=-1&currentPage=$page&currentPageCount=24&queryStr=&categorySlugsComma=&countryCodesComma="
+        if (request.data.contains("dizi-turu")) {
+            if (page > 1) {
+                val document = app.get(request.data).document
+                document.selectFirst("div.radio-toolbar")?.select("label")?.forEachIndexed { index, element ->
+                    if (element.text() == request.name) {
+                        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+                        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        val catId = document.selectFirst("div.radio-toolbar")?.select("input")!![index].attr("value")
+                        val encodedDoc = app.post(url.replace("KATID", catId))
+                        val encoded: SearchResult = objectMapper.readValue(encodedDoc.toString())
+                        val decodedJson = Base64.decode(encoded.response, Base64.DEFAULT)
+                        val decoded: PageData = objectMapper.readValue(decodedJson.decodeToString())
+                        val diziler = decoded.result?.map { it.sayfalar() }
+                        return newHomePageResponse(request.name, diziler!!)
+                    }
+                }
+                return newHomePageResponse(request.name, listOf())
+            } else {
+                val document = app.get(request.data).document
+                val diziler = document.select("span.watchlistitem-").mapNotNull { it.diziler() }
+                return newHomePageResponse(request.name, diziler)
+            }
         } else if (request.data.contains("/arsiv")) {
-            val yil = Calendar.getInstance().get(Calendar.YEAR)
             val sayfa = "?page=sayi&tab=1&sort=date_desc&filterType=2&imdbMin=5&imdbMax=10&yearMin=1900&yearMax=$yil"
             val replace = sayfa.replace("sayi", page.toString())
-            document = app.get("${request.data}${replace}").document
-            document.select("a.w-full").mapNotNull { it.yeniEklenenler() }
+            val document = app.get("${request.data}${replace}").document
+            val yeniEklenenler = document.select("a.w-full").mapNotNull { it.yeniEklenenler() }
+            return newHomePageResponse(request.name, yeniEklenenler)
         } else {
-            document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
+            val document = app.get(request.data).document
+            val sonBolumler = document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
+            return newHomePageResponse(request.name, sonBolumler)
         }
-
-        return newHomePageResponse(request.name, home)
     }
 
     private fun Element.diziler(): SearchResponse {
-        val title = this.selectFirst("span.font-normal")?.text() ?: "return null"
-        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: "return null"
+        val title = this.selectFirst("span.font-normal")?.text() ?: ""
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: ""
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
+        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+            this.posterUrl = posterUrl
+        }
+    }
+
+    private fun PageItem.sayfalar(): SearchResponse {
+        val title = this.originalTitle ?: ""
+        val href = fixUrlNull(this.slug) ?: ""
+        val posterUrl = fixUrlNull(this.posterUrl?.replace("images-macellan-online.cdn.ampproject.org/i/s/", ""))
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
             this.posterUrl = posterUrl
         }
@@ -95,7 +127,7 @@ class Dizilla : MainAPI() {
             this.posterUrl = posterUrl
         }
     }
-    private suspend fun Element.sonBolumler(): SearchResponse {
+    private suspend fun Element.sonBolumler(): SearchResponse? {
         val name = this.selectFirst("h2")?.text() ?: ""
         val epName = this.selectFirst("div.opacity-80")!!.text().replace(". Sezon ", "x")
             .replace(". Bölüm", "")
@@ -104,9 +136,9 @@ class Dizilla : MainAPI() {
 
         val epDoc = fixUrlNull(this.attr("href"))?.let { app.get(it).document }
 
-        val href = fixUrlNull(epDoc?.selectFirst("div.poster a")?.attr("href")) ?: "return null"
+        val href = fixUrlNull(epDoc?.select("nav a")?.last()?.attr("href")) ?: return null
 
-        val posterUrl = fixUrlNull(epDoc?.selectFirst("div.poster img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
             this.posterUrl = posterUrl
