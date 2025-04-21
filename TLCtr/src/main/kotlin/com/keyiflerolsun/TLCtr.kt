@@ -101,9 +101,8 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         val json = app.get(metaUrl).parsedSafe<TLCMeta>() ?: return false
 		Log.d("TLC", "json » $json")
 
-        json.sources?.forEach { source ->
-            val file = source.file ?: return@forEach
-            val label = source.label ?: "Default"
+        val file = json.flavors?.hls
+          if (file != null) {
             callback.invoke(
                 newExtractorLink(
                     name = "tlctr",
@@ -126,5 +125,4 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     data class TLCFlavors(
         val hls: String?
     )
-
 }
