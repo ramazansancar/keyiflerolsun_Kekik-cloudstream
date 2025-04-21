@@ -89,13 +89,7 @@ override suspend fun load(url: String): LoadResponse {
     )
 }
 
-
-    override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
+override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         val res = app.get(data).text
 
         // referenceId’yi JS içinden yakala
