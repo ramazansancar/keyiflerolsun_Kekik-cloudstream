@@ -180,7 +180,7 @@ jobs:
               "language": "tr",
               "authors": ["kerimmkirac"],
               "tvTypes": ["Tv,Cartoon"],
-              "version": 1,
+              "version": 2,
               "internalName": "CizgiVeDizi",
               "description": "CizgiVeDizi için CloudStream eklentisi",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/CizgiVeDizi.cs3",
