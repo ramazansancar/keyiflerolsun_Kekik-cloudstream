@@ -114,9 +114,8 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
                 }
             )
         }
+	    return true
     }
-	return true
-}
 
     data class TLCMeta(
         val sources: List<TLCSource>?
@@ -126,4 +125,3 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         val file: String?,
         val label: String?
     )
-}
