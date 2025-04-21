@@ -65,10 +65,9 @@ class Tlctr : MainAPI() {
 
 override suspend fun load(url: String): LoadResponse {
     val doc = app.get(url).document
-    // Başlığı doğru şekilde almak için <div class="slide-title text-uppercase"> içinde bulunan <h1> etiketini kullanıyoruz
     val title = doc.selectFirst("div.slide-title h1")?.text() ?: "Bilinmeyen Başlık"
-    val poster = doc.selectFirst("div.slide-overlay")?.attr("data-src")
-    val description = doc.selectFirst("div.slide-description p")?.attr("full")
+    val poster = doc.selectFirst("div.slide-background")?.attr("data-mobile-src")
+    val description = doc.selectFirst("div.slide-description p")?.text()
 
     val episodes = listOf(
         Episode(
@@ -97,7 +96,9 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         val referenceId = regex.find(res)?.groupValues?.get(1) ?: return false
 
         val metaUrl = "$mainUrl/player/info?referenceId=$referenceId"
+		Log.d("TLC", "metaUrl » $metaUrl")
         val json = app.get(metaUrl).parsedSafe<TLCMeta>() ?: return false
+		Log.d("TLC", "json » $json")
 
         json.sources?.forEach { source ->
             val file = source.file ?: return@forEach
