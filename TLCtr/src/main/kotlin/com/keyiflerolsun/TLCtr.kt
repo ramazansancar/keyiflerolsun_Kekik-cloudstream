@@ -120,11 +120,11 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     }
 
     data class TLCMeta(
-        val sources: List<TLCSource>?
+        val flavors: TLCFlavors?
     )
 
-    data class TLCSource(
-        val file: String?,
-        val label: String?
+    data class TLCFlavors(
+        val hls: String?
     )
+
 }
