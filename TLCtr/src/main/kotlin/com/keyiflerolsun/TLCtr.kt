@@ -2,6 +2,7 @@
 
 package com.keyiflerolsun
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
@@ -103,7 +104,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         json.sources?.forEach { source ->
             val file = source.file ?: return@forEach
             val label = source.label ?: "Default"
-            callback(
+            callback.invoke(
                 newExtractorLink(
                     name = "tlctr",
                     source = "TLC",
