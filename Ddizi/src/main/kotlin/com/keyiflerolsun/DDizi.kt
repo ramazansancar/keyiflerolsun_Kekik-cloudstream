@@ -18,9 +18,10 @@ class DDizi : MainAPI() {
     override val supportedTypes       = setOf(TvType.TvSeries)
 
     override val mainPage = mainPageOf(
-        "$mainUrl/yeni-eklenenler1" to "Son Eklenen Bölümler",
+        "$mainUrl/yeni-eklenenler1"  to "Son Eklenen Bölümler",
         "$mainUrl/yabanci-dizi-izle" to "Yabancı Diziler",
-        "$mainUrl/eski.diziler" to "Eski Diziler"
+        "$mainUrl/mbara"             to "Yerli Diziler",
+        "$mainUrl/eski.diziler"      to "Eski Diziler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
