@@ -50,7 +50,7 @@ class SinemaCX : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title     = this.selectFirst("div.yanac span")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("div.yanac a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("a.resim img")?.attr("src")) ?: fixUrlNull(this.selectFirst("a.resim img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("a.resim img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("a.resim img")?.attr("src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
