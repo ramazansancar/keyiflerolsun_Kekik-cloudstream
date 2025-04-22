@@ -31,10 +31,11 @@ class Tlctr : MainAPI() {
     )
 	
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val doc = app.get(mainUrl).document
+        val doc = app.get(request.data).document
 
         // Poster ve başlıkları içeren grid yapısının elemanlarını çek
-        val home = doc.select("section.grid.dyn-content div.poster").mapNotNull{ it.toSearchResult() }
+        val home = doc.select("section.grid.dyn-content div.poster")
+		.mapNotNull { it.toSearchResult() }
 
     return newHomePageResponse(request.name, home)
 }
