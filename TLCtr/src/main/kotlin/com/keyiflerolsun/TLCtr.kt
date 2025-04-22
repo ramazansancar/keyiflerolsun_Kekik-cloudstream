@@ -5,49 +5,65 @@ package com.keyiflerolsun
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.jsoup.nodes.Document
-import com.fasterxml.jackson.annotation.JsonProperty
 
 class Tlctr : MainAPI() {
+    override var mainUrl              = "https://www.tlctv.com.tr"
     override var name                 = "TLCtr"
-    override var mainUrl              = "https://www.tlctv.com.tr/kesfet"
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.TvSeries)
+    private val headers = mapOf(
+        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
+        "Accept" to "*/*",
+        "Accept-Language" to "en-US,en;q=0.5",
+        "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-Requested-With" to "XMLHttpRequest",
+        "Origin" to mainUrl,
+        "DNT" to "1",
+        "Sec-GPC" to "1",
+        "Connection" to "keep-alive",
+        "Referer" to mainUrl,
+        "Sec-Fetch-Dest" to "empty",
+        "Sec-Fetch-Mode" to "cors",
+        "Sec-Fetch-Site" to "same-origin",
+        "Priority" to "u=0"
+    )
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/a-z"                              to "a-z",
-        "${mainUrl}/sira-disi-hayatlar"               to "Sıra Dışı Hayatlar",
-        "${mainUrl}/ev-dekorasyon"                    to "Ev Dekorasyon",
-        "${mainUrl}/suc-arastirma"                    to "Suç Araştırma",
-        "${mainUrl}/yasam"                            to "Yaşam",
-        "${mainUrl}/evlilik"                          to "Evlilik",
-        "${mainUrl}/yemek"                            to "Yemek",
-        "${mainUrl}/belgesel"                         to "Belgesel",
-        "${mainUrl}/korelendik"                       to "Korelendik",
+        "${mainUrl}/kesfet"                         to "Öne Çıkanlar",
+        "${mainUrl}/kesfet/a-z"                     to "A-Z",
+        "${mainUrl}/kesfet/sira-disi-hayatlar"      to "Sıra Dışı Hayatlar",
+        "${mainUrl}/kesfet/ev-dekorasyon"           to "Ev & Dekorasyon",
+        "${mainUrl}/kesfet/suc-arastirma"           to "Suç & Araştırma",
+        "${mainUrl}/kesfet/yasam"                   to "Yaşam",
+        "${mainUrl}/kesfet/evlilik"                 to "Evlilik",
+        "${mainUrl}/kesfet/yemek"                   to "Yemek",
+        "${mainUrl}/kesfet/belgesel"                to "Belgesel",
+        "${mainUrl}/kesfet/korelendik"              to "Korelendik",
     )
-	
+
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val doc = app.get(request.data).document
-
-        // Poster ve başlıkları içeren grid yapısının elemanlarını çek
-        val home = doc.select("section.grid.dyn-content div.poster")
-		.mapNotNull { it.toSearchResult() }
-
-    return newHomePageResponse(request.name, home)
-}
-
-    private fun Element.toSearchResult(): SearchResponse? {
-                val href = this.selectFirst("a")?.attr("href") ?: "return null"
-                val img = this.selectFirst("img")?.attr("src") ?: "return null"
-                val title = this.selectFirst("img")?.attr("alt") ?: "return null"
-				
-                return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                    this.posterUrl = img
+        if (page > 1) {
+            val url = "$mainUrl/ajax/more"
+            val pageDocument = app.post(url, headers = headers, data = mapOf("type" to "discover",
+                "slug" to request.data.split("/").last(), "page" to page.toString())).document
+            val home     = pageDocument.select("div.poster").mapNotNull { it.toMainPageResult() }
+            return newHomePageResponse(request.name, home)
         }
+        val document = app.get(request.data).document
+        val home     = document.select("section.grid.dyn-content div.poster").mapNotNull { it.toMainPageResult() }
+
+        return newHomePageResponse(request.name, home)
+    }
+
+    private fun Element.toMainPageResult(): SearchResponse? {
+        val title     = this.selectFirst("img")?.attr("alt") ?: return null
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+
+        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -100,28 +116,25 @@ class Tlctr : MainAPI() {
             this.plot = description
         }
 
-override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        val res = app.get(data).text
+    }
 
-        // referenceId’yi JS içinden yakala
-        val regex = Regex("referenceId\\s*:\\s*['\"](EHD_\\d+)['\"]")
-        val referenceId = regex.find(res)?.groupValues?.get(1) ?: return false
-		Log.d("TLC", "referenceId » $referenceId")
-
-        val videoUrl = "https://dygvideo.dygdigital.com/api/redirect?PublisherId=20&ReferenceId=$referenceId&SecretKey=NtvApiSecret2014*&.m3u8"
-        Log.d("TLC", "videoUrl » $videoUrl")
-		
-            callback.invoke(
-                newExtractorLink(
-                    name = "tlctr",
-                    source = "TLC",
-                    url = videoUrl,
-                    type   = ExtractorLinkType.M3U8
-                ) {
-                   quality = Qualities.Unknown.value
-                   headers = mapOf("Referer" to data)
-                }
-            )
-	    return true
+    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        Log.d("TLC", "data » $data")
+        val document = app.get(data).document
+        val videoCode = document.selectFirst("div.videp-player-container div")?.attr("data-video-code")
+        Log.d("TLC", "videoCode » $videoCode")
+        val vidUrl = "https://dygvideo.dygdigital.com/api/redirect?PublisherId=20&ReferenceId=$videoCode&SecretKey=NtvApiSecret2014*"
+        callback.invoke(
+            newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = vidUrl,
+                ExtractorLinkType.M3U8
+            ) {
+                this.referer = "$mainUrl/"
+                this. quality = Qualities.Unknown.value
+            }
+        )
+        return true
     }
 }
