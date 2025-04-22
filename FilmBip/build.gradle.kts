@@ -1,9 +1,9 @@
-version = 3
+version =   1
 
 cloudstream {
     authors     = listOf("kerimmkirac")
     language    = "tr"
-    description = "Yabancı Dizi izle, Tüm yabancı dizilerin yeni ve eski sezonlarını full hd izleyebileceğiniz elit site."
+    description = "Binlerce yerli yabancı dizi arşivi, tüm sezonlar, kesintisiz bölümler. Filmbip heryerde seninle!"
 
     /**
      * Status int as the following:
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("TvSeries")
-    iconUrl = "https://www.google.com/s2/favicons?domain=www.dizibox.de&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=www.filmbip.com/&sz=%size%"
 }
