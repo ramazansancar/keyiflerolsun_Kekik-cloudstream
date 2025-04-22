@@ -72,12 +72,33 @@ override suspend fun load(url: String): LoadResponse {
     val poster = doc.selectFirst("div.slide-background")?.attr("data-mobile-src")
     val description = doc.selectFirst("div.slide-description p")?.text()
 
-    val episodes = listOf(
-        Episode(
-            data = url,
-            name = title
-        )
-    )
+    val seasonOptions = doc.select("select#video-filter-changer option")
+
+    val episodes = mutableListOf<Episode>()
+
+    for (option in seasonOptions) {
+        val seasonNum = option.attr("value")
+        val seasonUrl = "$url?season=$seasonNum"
+
+        val seasonDoc = app.get(seasonUrl).document
+
+        seasonDoc.select("div.item-meta").forEach { epEl ->
+            val epTitle = epEl.selectFirst("div.item-meta-title")?.text()?.trim() ?: return@forEach
+            val epDesc = epEl.selectFirst("div.item-meta-description")?.text()?.trim()
+            val epNum = epTitle.extractEpisodeNumber()
+            val epName = epTitle.removeSeasonPrefix()
+
+            episodes.add(
+                Episode(
+                    data = seasonUrl,
+                    name = epName,
+                    season = seasonNum.toIntOrNull(),
+                    episode = epNum,
+                    description = epDesc
+                )
+            )
+        }
+    }
 
     return TvSeriesLoadResponse(
         name = title,
@@ -115,4 +136,12 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             )
 	    return true
     }
+}
+
+fun String.extractEpisodeNumber(): Int? {
+    return Regex("(\\d+)\\.\\s*Bölüm").find(this)?.groupValues?.get(1)?.toIntOrNull()
+}
+
+fun String.removeSeasonPrefix(): String {
+    return this.replace(Regex("^\\d+\\.\\s*Sezon\\s*"), "").trim()
 }
