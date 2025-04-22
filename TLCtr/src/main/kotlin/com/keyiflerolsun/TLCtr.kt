@@ -7,6 +7,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import com.fasterxml.jackson.annotation.JsonProperty
 
 class Tlctr : MainAPI() {
     override var name                 = "TLCtr"
@@ -14,7 +15,7 @@ class Tlctr : MainAPI() {
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = false
-    override val supportedTypes       = setOf(TvType.TvSeries, TvType.Movie)
+    override val supportedTypes       = setOf(TvType.TvSeries)
 
     override val mainPage = mainPageOf(
         "${mainUrl}/a-z"                              to "a-z",
@@ -32,20 +33,19 @@ class Tlctr : MainAPI() {
         val doc = app.get(mainUrl).document
 
         // Poster ve başlıkları içeren grid yapısının elemanlarını çek
-        val items = doc.select("section.grid.dyn-content div.poster")
-            .mapNotNull {
+        val home = doc.select("section.grid.dyn-content div.poster").mapNotNull{ it.toSearchResult() }
+
+    return newHomePageResponse(request.name, home)
+}
+
+    private fun Element.toSearchResult(): SearchResponse? {
                 val href = it.selectFirst("a")?.attr("href") ?: return@mapNotNull null
                 val img = it.selectFirst("img")?.attr("src") ?: return@mapNotNull null
                 val title = it.selectFirst("img")?.attr("alt") ?: return@mapNotNull null
-                MovieSearchResponse(
-                    name = title,
-                    url = href,
-                    apiName = this.name,
-                    type = TvType.TvSeries,
-                    posterUrl = img
-                )
-            }
-        return HomePageResponse(listOf(HomePageList("Bölümler", items)))
+				
+                return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                    this.posterUrl = img
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -120,11 +120,14 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     }
 
     data class TLCMeta(
-        val flavors: List<TLCFlavor>?
+        @JsonProperty("flavors")
+        val flavors: List<TLCFlavor>? = null
     )
 
     data class TLCFlavor(
-        val format: String?,
-        val url: String?
+        @JsonProperty("format")
+        val format: String? = null,
+        @JsonProperty("url")
+        val url: String? = null
     )
 }
