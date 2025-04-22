@@ -6,6 +6,7 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import org.jsoup.nodes.Document
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -39,9 +40,9 @@ class Tlctr : MainAPI() {
 }
 
     private fun Element.toSearchResult(): SearchResponse? {
-                val href = this.selectFirst("a")?.attr("href") ?: return@mapNotNull null
-                val img = this.selectFirst("img")?.attr("src") ?: return@mapNotNull null
-                val title = this.selectFirst("img")?.attr("alt") ?: return@mapNotNull null
+                val href = this.selectFirst("a")?.attr("href") ?: "return null"
+                val img = this.selectFirst("img")?.attr("src") ?: "return null"
+                val title = this.selectFirst("img")?.attr("alt") ?: "return null"
 				
                 return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
                     this.posterUrl = img
