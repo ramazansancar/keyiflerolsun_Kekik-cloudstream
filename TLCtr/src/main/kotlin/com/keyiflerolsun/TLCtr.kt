@@ -123,7 +123,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         val flavors: List<TLCFlavor>?
     )
 
-    data class TLCFlavors(
+    data class TLCFlavor(
         val format: String?,
         val url: String?
     )
