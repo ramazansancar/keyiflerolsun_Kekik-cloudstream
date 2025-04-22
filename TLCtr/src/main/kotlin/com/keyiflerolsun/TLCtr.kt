@@ -73,39 +73,35 @@ override suspend fun load(url: String): LoadResponse {
     val poster = doc.selectFirst("div.slide-background")?.attr("data-mobile-src")
     val description = doc.selectFirst("div.slide-description p")?.text()
 
-    val seasons = mutableListOf<SeasonData>()
+    val episodes = mutableListOf<Episode>()
 
-    // Sezon bilgilerini al
-    val seasonOptions = doc.select("select#video-filter-changer > option")
+    // Sezon seçeneklerini al
+    val seasonOptions = doc.select("select#video-filter-changer option")
 
-    for (season in seasonOptions) {
-        val seasonNum = season.attr("value")
-        val seasonName = season.text()
-
+    for (seasonOption in seasonOptions) {
+        val seasonNum = seasonOption.attr("value")
         val seasonUrl = "$url?season=$seasonNum"
         val seasonDoc = app.get(seasonUrl).document
 
-        val episodeElements = seasonDoc.select("div.item-meta")
+        // Her bölümün <a> etiketi ve ref-id'li video divi
+        val items = seasonDoc.select("div.items div.item")
 
-        val episodes = episodeElements.mapIndexedNotNull { index, epEl ->
-            val episodeName = epEl.selectFirst("div.item-meta-title strong")?.text()
-            val episodeDesc = epEl.selectFirst("div.item-meta-description")?.text()
+        for (item in items) {
+            val link = item.selectFirst("a")?.attr("href")?.let { fixUrl(it) } ?: continue
+            val refId = item.selectFirst("div[data-ref-id]")?.attr("data-ref-id")?.toIntOrNull()
+            val name = item.selectFirst("div.item-meta-title strong")?.text()?.trim()
+            val episodeNumber = Regex("(\\d+)\\. Bölüm").find(name ?: "")?.groupValues?.get(1)?.toIntOrNull()
 
-            Episode(
-                data = seasonUrl,
-                name = episodeName?.trim() ?: "Bölüm ${index + 1}",
-                episode = index + 1,
-                season = seasonNum.toIntOrNull(),
-                description = episodeDesc?.trim()
+            episodes.add(
+                Episode(
+                    data = link, // Bu link extract() içinde kullanılacak
+                    name = name ?: "Bölüm",
+                    season = seasonNum.toIntOrNull(),
+                    episode = episodeNumber
+                )
             )
         }
-
-        if (episodes.isNotEmpty()) {
-            seasons += SeasonData(seasonNum.toIntOrNull() ?: 1, episodes)
-        }
     }
-
-    val allEpisodes = seasons.flatMap { it.episodes }
 
     return TvSeriesLoadResponse(
         name = title,
@@ -115,15 +111,9 @@ override suspend fun load(url: String): LoadResponse {
         posterUrl = poster,
         year = null,
         plot = description,
-        episodes = allEpisodes
+        episodes = episodes
     )
 }
-
-// Yardımcı sınıf
-data class SeasonData(
-    val number: Int,
-    val episodes: List<Episode>
-)
 
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
@@ -145,7 +135,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
                     type   = ExtractorLinkType.M3U8
                 ) {
                    quality = Qualities.Unknown.value
-                   headers = mapOf("Referer" to url)
+                   headers = mapOf("Referer" to data)
                 }
             )
 	    return true
