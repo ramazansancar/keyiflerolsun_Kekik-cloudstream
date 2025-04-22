@@ -51,70 +51,54 @@ class Tlctr : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val doc = app.get("$mainUrl/arama?q=$query").document
-        return doc.select("a.block").mapNotNull {
-            val href = it.attr("href")
-            val img = it.selectFirst("img")?.attr("data-src") ?: return@mapNotNull null
-            val title = it.selectFirst("div.title")?.text() ?: return@mapNotNull null
-            MovieSearchResponse(
-                name = title,
-                url = href,
-                apiName = this.name,
-                type = TvType.TvSeries,
-                posterUrl = img
-            )
+
+        val doc = app.post("$mainUrl/ajax/search", headers = headers, data = mapOf("query" to query)).document
+        return doc.select("section.posters div.poster").mapNotNull {
+            it.toMainPageResult()
         }
     }
 
-override suspend fun load(url: String): LoadResponse {
-    val doc = app.get(url).document
+    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
-    val title = doc.selectFirst("div.slide-title h1")?.text() ?: "Bilinmeyen Başlık"
-    val poster = doc.selectFirst("div.slide-background")?.attr("data-mobile-src")
-    val description = doc.selectFirst("div.slide-description p")?.text()
-
-    val episodes = mutableListOf<Episode>()
-
-    // Sezon seçeneklerini al
-    val seasonOptions = doc.select("select#video-filter-changer option")
-
-    for (seasonOption in seasonOptions) {
-        val seasonNum = seasonOption.attr("value")
-        val seasonUrl = "$url?season=$seasonNum"
-        val seasonDoc = app.get(seasonUrl).document
-
-        // Her bölümün <a> etiketi ve ref-id'li video divi
-        val items = seasonDoc.select("div.items div.item")
-
-        for (item in items) {
-            val link = item.selectFirst("a")?.attr("href")?.let { fixUrl(it) } ?: continue
-            val refId = item.selectFirst("div[data-ref-id]")?.attr("data-ref-id")?.toIntOrNull()
-            val name = item.selectFirst("div.item-meta-title strong")?.text()?.trim()
-            val episodeNumber = Regex("(\\d+)\\. Bölüm").find(name ?: "")?.groupValues?.get(1)?.toIntOrNull()
-
-            episodes.add(
-                Episode(
-                    data = link, // Bu link extract() içinde kullanılacak
-                    name = name ?: "Bölüm",
-                    season = seasonNum.toIntOrNull(),
-                    episode = episodeNumber
-                )
-            )
+    override suspend fun load(url: String): LoadResponse {
+        val doc = app.get(url).document
+        val title = doc.selectFirst("div.slide-title h1")?.text() ?: "Bilinmeyen Başlık"
+        val poster = doc.selectFirst("div.slide-background")?.attr("data-mobile-src")
+        val description = doc.selectFirst("div.slide-description p")?.text()
+        val programId = doc.selectFirst("li.current a")?.attr("data-program-id") ?: ""
+        val episodeses = mutableListOf<Episode>()
+        (doc.select("select#video-filter-changer option")).forEach { it ->
+            val szn = it.attr("value").toIntOrNull()
+            val page = app.post("$mainUrl/ajax/more", headers = headers, data =
+            mapOf("type" to "episodes", "program_id" to programId.toString(), "page" to "0", "season" to szn.toString())).document
+            val hre = page.selectFirst("div.item a")?.attr("href")
+            val href = hre?.split("-")
+            val epNum = href?.get(href.size-2)?.toIntOrNull() ?: 1
+            for (i in epNum downTo 1) {
+                val hree = hre?.replace(epNum.toString(), i.toString())
+                episodeses.add(newEpisode(hree) {
+                    this.season = szn
+                    this.episode = i
+                })
+            }
         }
-    }
+        if (episodeses.size == 0) {
+            val docu = app.get("$url/kisa-videolar").document
+            docu.select("div.items a").forEach { it ->
+                val href = it.attr("href")
+                val img = it.selectFirst("img")?.attr("src")
+                val epName = it.selectFirst("strong")?.text() + " - Kısa Video"
+                episodeses.add(newEpisode(href) {
+                    this.posterUrl = img
+                    this.name = epName
+                })
+            }
+        }
 
-    return TvSeriesLoadResponse(
-        name = title,
-        url = url,
-        apiName = this.name,
-        type = TvType.TvSeries,
-        posterUrl = poster,
-        year = null,
-        plot = description,
-        episodes = episodes
-    )
-}
-
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
+            this.posterUrl = poster
+            this.plot = description
+        }
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         val res = app.get(data).text
@@ -140,12 +124,4 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             )
 	    return true
     }
-}
-
-fun String.extractEpisodeNumber(): Int? {
-    return Regex("(\\d+)\\.\\s*Bölüm").find(this)?.groupValues?.get(1)?.toIntOrNull()
-}
-
-fun String.removeSeasonPrefix(): String {
-    return this.replace(Regex("^\\d+\\.\\s*Sezon\\s*"), "").trim()
 }
