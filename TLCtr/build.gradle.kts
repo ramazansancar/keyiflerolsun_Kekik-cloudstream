@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie")
-    iconUrl = "https://www.google.com/s2/favicons?domain=www.tlc.com.tr&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=www.tlctv.com.tr&sz=%size%"
 }

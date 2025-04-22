@@ -52,9 +52,9 @@ class Tlctr : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val doc = app.get("$mainUrl/arama?q=$query").document
         return doc.select("a.block").mapNotNull {
-            val href = this.attr("href")
-            val img = this.selectFirst("img")?.attr("data-src") ?: return@mapNotNull null
-            val title = this.selectFirst("div.title")?.text() ?: return@mapNotNull null
+            val href = it.attr("href")
+            val img = it.selectFirst("img")?.attr("data-src") ?: return@mapNotNull null
+            val title = it.selectFirst("div.title")?.text() ?: return@mapNotNull null
             MovieSearchResponse(
                 name = title,
                 url = href,
