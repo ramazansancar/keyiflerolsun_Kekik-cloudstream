@@ -68,37 +68,44 @@ class Tlctr : MainAPI() {
 
 override suspend fun load(url: String): LoadResponse {
     val doc = app.get(url).document
+
     val title = doc.selectFirst("div.slide-title h1")?.text() ?: "Bilinmeyen Başlık"
     val poster = doc.selectFirst("div.slide-background")?.attr("data-mobile-src")
     val description = doc.selectFirst("div.slide-description p")?.text()
 
-    val seasonOptions = doc.select("select#video-filter-changer option")
+    val seasons = mutableListOf<SeasonData>()
 
-    val episodes = mutableListOf<Episode>()
+    // Sezon bilgilerini al
+    val seasonOptions = doc.select("select#video-filter-changer > option")
 
-    for (option in seasonOptions) {
-        val seasonNum = option.attr("value")
+    for (season in seasonOptions) {
+        val seasonNum = season.attr("value")
+        val seasonName = season.text()
+
         val seasonUrl = "$url?season=$seasonNum"
-
         val seasonDoc = app.get(seasonUrl).document
 
-        seasonDoc.select("div.item-meta").forEach { epEl ->
-            val epTitle = epEl.selectFirst("div.item-meta-title")?.text()?.trim() ?: return@forEach
-            val epDesc = epEl.selectFirst("div.item-meta-description")?.text()?.trim()
-            val epNum = epTitle.extractEpisodeNumber()
-            val epName = epTitle.removeSeasonPrefix()
+        val episodeElements = seasonDoc.select("div.item-meta")
 
-            episodes.add(
-                Episode(
-                    data = seasonUrl,
-                    name = epName,
-                    season = seasonNum.toIntOrNull(),
-                    episode = epNum,
-                    description = epDesc
-                )
+        val episodes = episodeElements.mapIndexedNotNull { index, epEl ->
+            val episodeName = epEl.selectFirst("div.item-meta-title strong")?.text()
+            val episodeDesc = epEl.selectFirst("div.item-meta-description")?.text()
+
+            Episode(
+                data = seasonUrl,
+                name = episodeName?.trim() ?: "Bölüm ${index + 1}",
+                episode = index + 1,
+                season = seasonNum.toIntOrNull(),
+                description = episodeDesc?.trim()
             )
         }
+
+        if (episodes.isNotEmpty()) {
+            seasons += SeasonData(seasonNum.toIntOrNull() ?: 1, episodes)
+        }
     }
+
+    val allEpisodes = seasons.flatMap { it.episodes }
 
     return TvSeriesLoadResponse(
         name = title,
@@ -108,9 +115,16 @@ override suspend fun load(url: String): LoadResponse {
         posterUrl = poster,
         year = null,
         plot = description,
-        episodes = episodes
+        episodes = allEpisodes
     )
 }
+
+// Yardımcı sınıf
+data class SeasonData(
+    val number: Int,
+    val episodes: List<Episode>
+)
+
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         val res = app.get(data).text
