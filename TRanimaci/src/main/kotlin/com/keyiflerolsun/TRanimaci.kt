@@ -106,13 +106,11 @@ class TRanimaci : MainAPI() {
             Log.d("ANI", "jsonMatch » $jsonMatch")
 
             if (jsonMatch != null) {
-                try {
                     // Parse the JSON array
                     val jsonArray = JSONArray(jsonMatch)
                     for (i in 0 until jsonArray.length()) {
                         val jsonObject = jsonArray.getJSONObject(i)
                         val url = jsonObject.getString("url")
-                        }
 
         callback.invoke(
             newExtractorLink(
@@ -128,5 +126,6 @@ class TRanimaci : MainAPI() {
     }
         return true
     }
+	}
 	}
 }
