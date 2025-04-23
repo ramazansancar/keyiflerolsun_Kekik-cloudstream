@@ -7,6 +7,8 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.Document
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import org.json.*
+import org.jsoup.Jsoup
 
 class TRanimaci : MainAPI() {
     override var mainUrl              = "https://tranimaci.com"
@@ -93,15 +95,30 @@ class TRanimaci : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("ANI", "data » $data")
         val document = app.get(data).document
-        val iframe = document.selectFirst("iframe")?.attr("src")
-        Log.d("ANI", "iframe » $iframe")
 
-    if (iframe != null) {
+        val script = document.select("script").firstOrNull { it.html().contains("video_source") }
+        Log.d("ANI", "script » ${script?.html()}")
+
+        if (script != null) {
+            // Extract the JSON string from the script
+            val scriptContent = script.html()
+            val jsonMatch = Regex("""video_source\s*=\s*`(\[.*?\])`""").find(scriptContent)?.groups?.get(1)?.value
+            Log.d("ANI", "jsonMatch » $jsonMatch")
+
+            if (jsonMatch != null) {
+                try {
+                    // Parse the JSON array
+                    val jsonArray = JSONArray(jsonMatch)
+                    for (i in 0 until jsonArray.length()) {
+                        val jsonObject = jsonArray.getJSONObject(i)
+                        val url = jsonObject.getString("url")
+                        }
+
         callback.invoke(
             newExtractorLink(
                 source = this.name,
                 name = this.name,
-                url = iframe,
+                url = url,
                 ExtractorLinkType.VIDEO
             ) {
                 this.referer = "$mainUrl/"
@@ -111,4 +128,5 @@ class TRanimaci : MainAPI() {
     }
         return true
     }
+	}
 }
