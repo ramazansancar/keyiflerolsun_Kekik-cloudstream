@@ -96,35 +96,35 @@ class TRanimaci : MainAPI() {
         Log.d("ANI", "data » $data")
         val document = app.get(data).document
 
-        val script = document.select("script").firstOrNull { it.html().contains("video_source") }
-        Log.d("ANI", "script » ${script?.html()}")
+    val script = document.select("script").firstOrNull { it.html().contains("video_source") }
+    Log.d("ANI", "script » ${script?.html()}")
 
-        if (script != null) {
-            // Extract the JSON string from the script
-            val scriptContent = script.html()
-            val jsonMatch = Regex("""video_source\s*=\s*`(\[.*?\])`""").find(scriptContent)?.groups?.get(1)?.value
-            Log.d("ANI", "jsonMatch » $jsonMatch")
+    if (script != null) {
+        val scriptContent = script.html()
+        val jsonMatch = Regex("""video_source\s*=\s*`(\[.*?\])`""").find(scriptContent)?.groups?.get(1)?.value
+        Log.d("ANI", "jsonMatch » $jsonMatch")
 
-            if (jsonMatch != null) {
-                    // Parse the JSON array
-                    val jsonArray = JSONArray(jsonMatch)
-                    for (i in 0 until jsonArray.length()) {
-                        val jsonObject = jsonArray.getJSONObject(i)
-                        val url = jsonObject.getString("url")
+        if (jsonMatch != null) {
+            val jsonArray = JSONArray(jsonMatch)
+            for (i in 0 until jsonArray.length()) {
+                val jsonObject = jsonArray.getJSONObject(i)
+                val url = jsonObject.getString("url")
 
-        callback.invoke(
-            newExtractorLink(
-                source = this.name,
-                name = this.name,
-                url = url,
-                ExtractorLinkType.VIDEO
-            ) {
-                this.referer = "$mainUrl/"
-                this. quality = Qualities.Unknown.value
+                callback.invoke(
+                    newExtractorLink(
+                        source = this.name,
+                        name = this.name,
+                        url = url,
+                        type = ExtractorLinkType.VIDEO
+                    ) {
+                        this.referer = "$mainUrl/"
+                        this.quality = Qualities.Unknown.value
+                    }
+                )
             }
-        )
+            return true
+        }
     }
-        return true
-    }
-	}
+    return false
+}
 }
