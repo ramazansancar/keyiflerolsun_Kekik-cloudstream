@@ -44,7 +44,7 @@ class TRanimaci : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.ts-post-image img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.ts-post-image img")?.attr("src"))?.let { "$mainUrl/$it" }
 
         return newAnimeSearchResponse(title, href, TvType.Anime) { this.posterUrl = posterUrl }
     }
@@ -89,7 +89,7 @@ class TRanimaci : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("ANI", "data » $data")
         val document = app.get(data).document
-        val iframe = document.selectFirst("div.player-embed iframe")?.attr("src")
+        val iframe = document.selectFirst("iframe")?.attr("src")
         Log.d("ANI", "iframe » $iframe")
 
     if (iframe != null) {
