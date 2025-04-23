@@ -78,7 +78,6 @@ class TRanimaci : MainAPI() {
                 }
                 episodeses.add(newEpisode)
             }
-        }
 
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
             this.posterUrl = poster
