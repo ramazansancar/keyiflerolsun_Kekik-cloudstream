@@ -92,6 +92,7 @@ class TRanimaci : MainAPI() {
         val iframe = document.selectFirst("div.player-embed iframe")?.attr("src")
         Log.d("ANI", "iframe » $iframe")
 
+    if (iframe != null) {
         callback.invoke(
             newExtractorLink(
                 source = this.name,
@@ -103,6 +104,7 @@ class TRanimaci : MainAPI() {
                 this. quality = Qualities.Unknown.value
             }
         )
+    }
         return true
     }
 }
