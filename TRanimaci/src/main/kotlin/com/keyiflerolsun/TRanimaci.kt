@@ -50,7 +50,7 @@ class TRanimaci : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.ts-post-image img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img.ts-post-image")?.attr("src"))
 
         return newAnimeSearchResponse(title, href, TvType.Anime) { this.posterUrl = posterUrl }
     }
