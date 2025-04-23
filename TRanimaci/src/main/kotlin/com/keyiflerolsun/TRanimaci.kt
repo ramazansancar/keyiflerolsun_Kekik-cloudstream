@@ -51,7 +51,7 @@ class TRanimaci : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}/search?name=${query}").document
-${mainUrl}/search?name=
+
         return document.select("article.bs div.bsx").mapNotNull { it.toMainPageResult() }
     }
 
