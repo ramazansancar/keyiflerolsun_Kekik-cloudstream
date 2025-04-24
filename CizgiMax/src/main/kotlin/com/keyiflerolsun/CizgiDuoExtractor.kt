@@ -30,10 +30,11 @@ open class CizgiDuo : ExtractorApi() {
                 this.name,
                 this.name,
                 m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                url,
-                Qualities.Unknown.value,
-                isM3u8 = true
-            )
+            ) {
+                this.referer = url
+                this.quality = Qualities.Unknown.value
+                this.isM3u8 = true
+            }
         )
     }
 }

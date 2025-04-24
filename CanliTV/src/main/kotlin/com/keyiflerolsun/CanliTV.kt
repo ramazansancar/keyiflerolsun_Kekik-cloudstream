@@ -129,11 +129,12 @@ class CanliTV : MainAPI() {
                 this.name,
                 this.name,
                 loadData.url,
-                kanal.headers["referrer"] ?: "",
-                Qualities.Unknown.value,
-                true,
-                kanal.headers
-            )
+            ) {
+                this.referer = kanal.headers["referrer"] ?: ""
+                this.quality = Qualities.Unknown.value
+                this.isM3u8 = true
+                this.headers = kanal.headers
+            }
         )
 
         return true
