@@ -20,13 +20,13 @@ open class SibNet : ExtractorApi() {
         Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
         callback.invoke(
-            ExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = m3uLink,
-                referer = url,
-                quality = Qualities.Unknown.value,
-                type    = INFER_TYPE
+            newExtractorLink(
+                this.name,
+                this.name,
+                m3uLink,
+                url,
+                Qualities.Unknown.value,
+                INFER_TYPE
             )
         )
     }
