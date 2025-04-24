@@ -32,7 +32,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle (GolgeTV.cs3,AnimeciX.cs3 ve Sinewix.cs3 hariç)
-        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'CizgiVeDizi.cs3' ! -name 'WebDramaTurkey.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3' ! -name 'Tabii.cs3' ! -name 'IPTVProvider.cs3' -delete
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'GolgeTV.cs3' ! -name 'AnimeciX.cs3' ! -name 'CizgiVeDizi.cs3' ! -name 'CanliTvTurksat.cs3' ! -name 'WebDramaTurkey.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3' ! -name 'Tabii.cs3' ! -name 'IPTVProvider.cs3' -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -189,6 +189,28 @@ jobs:
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "CizgiVeDizi zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+      - name: CanliTvTurksat Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "CanliTvTurksat")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["Live"],
+              "version": 1,
+              "internalName": "CanliTvTurksat",
+              "description": "CanliTvTurksat için CloudStream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/CanliTvTurksat.cs3",
+              "name": "CanliTvTurksat",
+              "iconUrl": "https://www.google.com/s2/favicons?domain=tr.canlitv.team&sz=%size%"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "CanliTvTurksat zaten plugins.json'da mevcut, eklenmedi."
           fi
 
 
