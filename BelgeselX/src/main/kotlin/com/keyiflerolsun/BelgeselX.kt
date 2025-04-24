@@ -153,10 +153,11 @@ class BelgeselX : MainAPI() {
                             thisName,
                             thisName,
                             videoUrl,
-                            data,
-                            getQualityFromName(quality),
-                            INFER_TYPE
-                        )
+                        ) {
+                            this.referer = data
+                            this.quality = getQualityFromName(quality)
+                            this.type = INFER_TYPE
+                        }
                     )
                 }
             } else {

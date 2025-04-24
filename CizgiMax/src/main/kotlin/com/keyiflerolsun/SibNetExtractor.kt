@@ -24,10 +24,11 @@ open class SibNet : ExtractorApi() {
                 this.name,
                 this.name,
                 m3uLink,
-                url,
-                Qualities.Unknown.value,
-                INFER_TYPE
-            )
+            ) {
+                this.referer = url
+                this.quality = Qualities.Unknown.value
+                this.type = INFER_TYPE
+            }
         )
     }
 }
