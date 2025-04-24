@@ -122,7 +122,7 @@ override suspend fun loadLinks(
         Log.d("ANI", "apiUrl » $apiUrl")
 
         // 4. API sayfasını çek
-        val apiHtml = app.get(apiUrl).text
+        val apiHtml = app.get(apiUrl, headers = mapOf("Referer" to "https://tranimaci.com/")).text
         val apiDoc = Jsoup.parse(apiHtml)
         Log.d("ANI", "apiDoc » $apiDoc")
 
