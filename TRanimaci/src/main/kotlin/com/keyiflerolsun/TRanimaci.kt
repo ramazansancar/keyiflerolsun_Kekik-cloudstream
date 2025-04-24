@@ -124,7 +124,7 @@ override suspend fun loadLinks(
                     url = url,
                     type = ExtractorLinkType.VIDEO
                 ) {
-                    this.referer = "$mainUrl/"
+                    this.referer = "https://api.animeuzayi.com/"
                     this.quality = quality
                 }
             )
