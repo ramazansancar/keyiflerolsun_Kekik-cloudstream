@@ -124,6 +124,7 @@ override suspend fun loadLinks(
         // 4. API sayfasını çek
         val apiHtml = app.get(apiUrl).text
         val apiDoc = Jsoup.parse(apiHtml)
+        Log.d("ANI", "apiDoc » $apiDoc")
 
         // 5. const sources = [...] içeren <script> bul
         val sourcesScript = apiDoc.select("script").firstOrNull {
@@ -138,6 +139,7 @@ override suspend fun loadLinks(
 
         // 6. MP4 linklerini JSON olarak parse et
         val mp4Array = JSONArray(sourcesArrayRaw)
+        Log.d("ANI", "mp4Array » $mp4Array")
 
         for (j in 0 until mp4Array.length()) {
             val mp4 = mp4Array.getJSONObject(j)
