@@ -19,8 +19,8 @@ class TRanimaci : MainAPI() {
     override val supportedTypes       = setOf(TvType.Anime)
 
     override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 250L  // ? 0.25 saniye
-    override var sequentialMainPageScrollDelay = 250L  // ? 0.25 saniye
+    override var sequentialMainPageDelay       = 500L  // ? 0.5 saniye
+    override var sequentialMainPageScrollDelay = 500L  // ? 0.5 saniye
 
     override val mainPage = mainPageOf(
         "${mainUrl}/category/action"                                   to "Aksiyon",
