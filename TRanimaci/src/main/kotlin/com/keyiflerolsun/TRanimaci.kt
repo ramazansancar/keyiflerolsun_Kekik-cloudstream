@@ -92,39 +92,47 @@ class TRanimaci : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("ANI", "data » $data")
-        val document = app.get(data).document
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("ANI", "data » $data")
+    val document = app.get(data).document
 
-    val script = document.select("script").firstOrNull { it.html().contains("video_source") }
-    Log.d("ANI", "script » ${script?.html()}")
+    // Sayfadaki script içinde api.animeuzayi.com URL'sini çek
+    val script = document.select("script").firstOrNull { it.html().contains("api.animeuzayi.com") }
+    val apiUrl = Regex("""https:\/\/api\.animeuzayi\.com[^\"]+""").find(script?.html() ?: "")?.value
 
-    if (script != null) {
-        val scriptContent = script.html()
-        val jsonMatch = Regex("""video_source\s*=\s*`(\[.*?\])`""").find(scriptContent)?.groups?.get(1)?.value
-        Log.d("ANI", "jsonMatch » $jsonMatch")
+    Log.d("ANI", "apiUrl » $apiUrl")
 
-        if (jsonMatch != null) {
-            val jsonArray = JSONArray(jsonMatch)
-            for (i in 0 until jsonArray.length()) {
-                val jsonObject = jsonArray.getJSONObject(i)
-                val url = jsonObject.getString("url")
+    if (apiUrl != null) {
+        // API'den mp4 listesini al
+        val jsonText = app.get(apiUrl).text
+        val jsonArray = JSONArray(jsonText)
 
-                callback.invoke(
-                    newExtractorLink(
-                        source = this.name,
-                        name = this.name,
-                        url = url,
-                        type = ExtractorLinkType.VIDEO
-                    ) {
-                        this.referer = "$mainUrl/"
-                        this.quality = Qualities.Unknown.value
-                    }
-                )
-            }
-            return true
+        for (i in 0 until jsonArray.length()) {
+            val jsonObject = jsonArray.getJSONObject(i)
+            val url = jsonObject.getString("src")
+            val quality = jsonObject.optInt("size", Qualities.Unknown.value)
+
+            callback.invoke(
+                newExtractorLink(
+                    source = this.name,
+                    name = "${this.name} - ${quality}p",
+                    url = url,
+                    type = ExtractorLinkType.VIDEO
+                ) {
+                    this.referer = "$mainUrl/"
+                    this.quality = quality
+                }
+            )
         }
+
+        return true
     }
+
     return false
 }
 }
