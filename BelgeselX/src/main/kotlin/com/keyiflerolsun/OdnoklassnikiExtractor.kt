@@ -27,9 +27,9 @@ open class Odnoklassniki : ExtractorApi() {
         for (video in videos) {
             Log.d("Kekik_${this.name}", "video » $video")
 
-            val videoUrl  = if (video.url.startsWith("//")) "https:${video.url}" else video.url
+            var videoUrl  = if (video.url.startsWith("//")) "https:${video.url}" else video.url
 
-            val quality   = video.name.uppercase()
+            var quality   = video.name.uppercase()
                 .replace("MOBILE", "144p")
                 .replace("LOWEST", "240p")
                 .replace("LOW",    "360p")
