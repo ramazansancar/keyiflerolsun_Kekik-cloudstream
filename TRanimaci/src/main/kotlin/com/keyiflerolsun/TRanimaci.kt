@@ -101,38 +101,50 @@ override suspend fun loadLinks(
     Log.d("ANI", "data » $data")
     val document = app.get(data).document
 
-    // Sayfadaki script içinde api.animeuzayi.com URL'sini çek
-    val script = document.select("script").firstOrNull { it.html().contains("api.animeuzayi.com") }
-    val apiUrl = Regex("""https:\/\/api\.animeuzayi\.com[^\"]+""").find(script?.html() ?: "")?.value
+    // 1. src'si "api.animeuzayi.com" olan <script> tagini bul
+    val scriptTag = document.select("script[src]").firstOrNull { 
+        it.attr("src").contains("api.animeuzayi.com") 
+    }
 
-    Log.d("ANI", "apiUrl » $apiUrl")
+    val apiJsUrl = scriptTag?.attr("src")?.let { fixUrl(it) }
 
-    if (apiUrl != null) {
-        // API'den mp4 listesini al
-        val jsonText = app.get(apiUrl).text
-        val jsonArray = JSONArray(jsonText)
+    Log.d("ANI", "apiJsUrl » $apiJsUrl")
 
-        for (i in 0 until jsonArray.length()) {
-            val jsonObject = jsonArray.getJSONObject(i)
-            val url = jsonObject.getString("src")
-            val quality = jsonObject.optInt("size", Qualities.Unknown.value)
+    if (apiJsUrl != null) {
+        // 2. script dosyasını indir
+        val scriptContent = app.get(apiJsUrl).text
 
-            callback.invoke(
-                newExtractorLink(
-                    source = this.name,
-                    name = "${this.name} - ${quality}p",
-                    url = url,
-                    type = ExtractorLinkType.VIDEO
-                ) {
-                    this.referer = "https://api.animeuzayi.com/"
-                    this.quality = quality
-                }
-            )
+        // 3. const sources = [...] içeriğini regex ile al
+        val jsonMatch = Regex("""const\s+sources\s*=\s*(\[[\s\S]*?])""").find(scriptContent)?.groups?.get(1)?.value
+
+        Log.d("ANI", "jsonMatch » $jsonMatch")
+
+        if (jsonMatch != null) {
+            val jsonArray = JSONArray(jsonMatch)
+
+            for (i in 0 until jsonArray.length()) {
+                val jsonObject = jsonArray.getJSONObject(i)
+                val url = jsonObject.getString("src")
+                val quality = jsonObject.optInt("size", Qualities.Unknown.value)
+
+                callback.invoke(
+                    newExtractorLink(
+                        source = this.name,
+                        name = "${this.name} - ${quality}p",
+                        url = url,
+                        type = ExtractorLinkType.VIDEO
+                    ) {
+                        this.referer = "https://api.animeuzayi.com/"
+                        this.quality = quality
+                    }
+                )
+            }
+
+            return true
         }
-
-        return true
     }
 
     return false
 }
+
 }
