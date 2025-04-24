@@ -139,7 +139,7 @@ class JetFilmizle : MainAPI() {
                 type = ExtractorLinkType.M3U8,
             ) {
                 quality = Qualities.Unknown.value
-                headers = mapOf("Referer" to iframe)
+                headers = mapOf("Referer" to mainUrl)
             }
         )
     }
