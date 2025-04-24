@@ -3,11 +3,10 @@
 package com.keyiflerolsun
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class DiziMom : MainAPI() {
     override var mainUrl              = "https://www.dizimom.plus"
@@ -136,7 +135,24 @@ class DiziMom : MainAPI() {
 
         for (iframe in iframes) {
             Log.d("DZM", "iframe » $iframe")
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+            if (iframe.contains("youtube.com")) {
+                val id = iframe.substringAfter("/embed/").substringBefore("?")
+                callback(
+                    newExtractorLink(
+                        "Youtube",
+                        "Youtube",
+                        "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
+                        ExtractorLinkType.DASH
+                    ) {
+                        this.referer = ""
+                        this.headers = mapOf()
+                        this.quality = Qualities.Unknown.value
+                        this.extractorData = null
+                    }
+                )
+            } else {
+                loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+            }
         }
 
         return true
