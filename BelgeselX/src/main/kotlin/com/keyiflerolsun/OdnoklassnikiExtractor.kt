@@ -29,7 +29,7 @@ open class Odnoklassniki : ExtractorApi() {
 
             var videoUrl  = if (video.url.startsWith("//")) "https:${video.url}" else video.url
 
-            var quality   = video.name.uppercase()
+            val quality   = video.name.uppercase()
                 .replace("MOBILE", "144p")
                 .replace("LOWEST", "240p")
                 .replace("LOW",    "360p")

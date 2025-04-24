@@ -124,7 +124,7 @@ class CanliTV : MainAPI() {
         val kanal    = kanallar.items.first { it.url == loadData.url }
         Log.d("IPTV", "kanal » $kanal")
 
-        var referer = kanal.headers["referrer"] ?: ""
+        val referer = kanal.headers["referrer"] ?: ""
         
         callback.invoke(
             newExtractorLink(

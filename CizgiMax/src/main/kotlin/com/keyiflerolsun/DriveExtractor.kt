@@ -37,7 +37,6 @@ open class Drive : ExtractorApi() {
             ) {
                 this.referer = url
                 this.quality = Qualities.Unknown.value
-                this.type = INFER_TYPE
             }
         )
     }
