@@ -156,7 +156,7 @@ class BelgeselX : MainAPI() {
                         ) {
                             this.referer = data
                             this.quality = getQualityFromName(quality)
-                            this.type = INFER_TYPE
+                            this.type = INFER_TYPE ?: ExtractorLinkType.VIDEO
                         }
                     )
                 }

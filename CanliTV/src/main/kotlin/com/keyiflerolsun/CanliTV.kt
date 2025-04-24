@@ -124,13 +124,15 @@ class CanliTV : MainAPI() {
         val kanal    = kanallar.items.first { it.url == loadData.url }
         Log.d("IPTV", "kanal » $kanal")
 
+        var referer = kanal.headers["referrer"] ?: ""
+        
         callback.invoke(
             newExtractorLink(
                 this.name,
                 this.name,
                 loadData.url,
             ) {
-                this.referer = kanal.headers["referrer"] ?: ""
+                this.referer = referer
                 this.quality = Qualities.Unknown.value
                 this.isM3u8 = true
                 this.headers = kanal.headers
