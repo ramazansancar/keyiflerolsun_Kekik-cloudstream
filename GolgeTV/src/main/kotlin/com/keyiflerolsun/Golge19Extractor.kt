@@ -5,10 +5,7 @@ import com.lagradost.api.Log
 import com.lagradost.cloudstream3.ErrorLoadingException
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.utils.AppUtils
-import com.lagradost.cloudstream3.utils.ExtractorApi
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.*
 import java.nio.charset.StandardCharsets
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -38,15 +35,16 @@ open class Golge19 : ExtractorApi() {
         val resp = app.get(link, headers = headers).text
         val chUrl = getChUrl(resp)
         Log.d("GOLGE19", "chUrl: $chUrl")
-        callback.invoke(ExtractorLink(
+        callback.invoke(newExtractorLink(
             source = this.name,
             name = content.isim,
             url = chUrl,
-            referer = "https://google.com",
-            quality = Qualities.Unknown.value,
-            isM3u8 = true,
-            headers = mapOf("origin" to "https://google.com")
-        ))
+            type    = ExtractorLinkType.M3U8
+        ){
+            this.referer = "https://google.com"
+            this.quality = Qualities.Unknown.value
+            this.headers = mapOf("origin" to "https://google.com")
+        })
     }
 
     private fun getChUrl(data: String): String {

@@ -114,17 +114,14 @@ class YouTube : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         loadExtractor("https://youtube.com/watch?v=${data}", subtitleCallback, callback)
         callback(
-            ExtractorLink(
-                "YouTube",
-                "YouTube",
-                "${mainUrl}/api/manifest/dash/id/${data}",
-                "",
-                Qualities.Unknown.value,
-                false,
-                mapOf(),
-                null,
-                true
-            )
+            newExtractorLink(
+                source="YouTube",
+                name="YouTube",
+                url="${mainUrl}/api/manifest/dash/id/${data}",
+            ){
+                this.referer=""
+                this.quality=Qualities.Unknown.value
+            }
         )
         return true
     }

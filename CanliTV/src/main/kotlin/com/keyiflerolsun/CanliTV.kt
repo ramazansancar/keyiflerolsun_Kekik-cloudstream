@@ -128,14 +128,14 @@ class CanliTV : MainAPI() {
         
         callback.invoke(
             newExtractorLink(
-                this.name,
-                this.name,
-                loadData.url,
-            ) {
-                this.referer = referer
-                this.quality = Qualities.Unknown.value
-                this.isM3u8 = true
+                source  = this.name,
+                name    = this.name,
+                url     = loadData.url,
+                type = ExtractorLinkType.M3U8
+            ){
                 this.headers = kanal.headers
+                this.referer = kanal.headers["referrer"] ?: ""
+                this.quality = Qualities.Unknown.value
             }
         )
 

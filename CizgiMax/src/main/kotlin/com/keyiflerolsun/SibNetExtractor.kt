@@ -21,13 +21,13 @@ open class SibNet : ExtractorApi() {
 
         callback.invoke(
             newExtractorLink(
-                this.name,
-                this.name,
-                m3uLink,
+                source  = this.name,
+                name    = this.name,
+                url     = m3uLink,
+                type    = INFER_TYPE
             ) {
                 this.referer = url
                 this.quality = Qualities.Unknown.value
-                this.type = INFER_TYPE ?: ExtractorLinkType.VIDEO
             }
         )
     }

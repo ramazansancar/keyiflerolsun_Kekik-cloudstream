@@ -83,14 +83,15 @@ class xHamster : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         callback(
-            ExtractorLink(
+            newExtractorLink(
                 source  = name,
                 name    = name,
                 url     = fixUrl(app.get(url = data).document.selectXpath("//link[contains(@href,'.m3u8')]")[0].attr("href")),
-                referer = mainUrl,
-                quality = Qualities.Unknown.value,
-                isM3u8  = true
-            )
+                type    = ExtractorLinkType.M3U8
+            ){
+                this.referer = mainUrl
+                this.quality = Qualities.Unknown.value
+            }
         )
 
         return true

@@ -121,14 +121,15 @@ class SpankBang : MainAPI() {
         Log.d("SkBg", "videoUrl » $videoUrl")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = fixUrl(videoUrl),
-                referer = data,
-                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
-            )
+            ){
+                this.referer = data
+                this.quality = Qualities.Unknown.value
+            }
         )
 
         return true
