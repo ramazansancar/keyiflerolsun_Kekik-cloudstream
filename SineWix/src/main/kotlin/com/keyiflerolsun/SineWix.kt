@@ -166,14 +166,15 @@ class SineWix : MainAPI() {
                     loadExtractor(video.link, twitter, subtitleCallback, callback)
                 } else {
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = this.name,
                             name    = this.name,
                             url     = video.link,
-                            referer = twitter,
-                            quality = Qualities.Unknown.value,
                             type    = INFER_TYPE
-                        )
+                        ){
+                            this.referer = twitter
+                            this.quality = Qualities.Unknown.value
+                        }
                     )
                 }
 
@@ -184,14 +185,15 @@ class SineWix : MainAPI() {
                 loadExtractor(data.substringAfter("&source="), twitter, subtitleCallback, callback)
             } else {
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source  = this.name,
                         name    = this.name,
                         url     = data.substringAfter("&source="),
-                        referer = twitter,
-                        quality = Qualities.Unknown.value,
                         type    = INFER_TYPE
-                    )
+                    ){
+                        this.referer = twitter
+                        this.quality = Qualities.Unknown.value
+                    }
                 )
             }
 

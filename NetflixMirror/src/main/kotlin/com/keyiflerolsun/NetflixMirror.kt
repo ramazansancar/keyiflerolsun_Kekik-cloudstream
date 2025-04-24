@@ -13,6 +13,8 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.httpsify
 import com.lagradost.cloudstream3.utils.getQualityFromName
+import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -207,14 +209,15 @@ class NetflixMirror : MainAPI() {
         playlist.forEach { item ->
             item.sources.forEach {
                 callback.invoke(
-                    ExtractorLink(
-                        name,
-                        it.label,
-                        fixUrl(it.file),
-                        "${mainUrl}/",
-                        getQualityFromName(it.file.substringAfter("q=", "")),
-                        true
-                    )
+                    newExtractorLink(
+                        source=name,
+                        name=it.label,
+                        url=fixUrl(it.file),
+                        type    = ExtractorLinkType.M3U8
+                    ){
+                        this.referer="${mainUrl}/"
+                        this.quality=getQualityFromName(it.file.substringAfter("q=", ""))
+                    }
                 )
             }
 

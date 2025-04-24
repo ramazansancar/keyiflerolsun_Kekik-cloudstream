@@ -197,14 +197,15 @@ class DiziBox : MainAPI() {
             val vidUrl        = Regex("""file: '(.*)',""").find(decryptedDoc.html())?.groupValues?.get(1) ?: return false
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    referer = vidUrl,
-                    quality = getQualityFromName("4k"),
-                    isM3u8  = true
-                )
+                    type    = ExtractorLinkType.M3U8
+                ) {
+                    this.referer = vidUrl
+                    this.quality = getQualityFromName("4k")
+                }
             )
 
         } else if (iframe.contains("/player/moly/moly.php")) {

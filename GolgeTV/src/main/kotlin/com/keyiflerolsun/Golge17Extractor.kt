@@ -5,10 +5,7 @@ import com.lagradost.api.Log
 import com.lagradost.cloudstream3.ErrorLoadingException
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.utils.AppUtils
-import com.lagradost.cloudstream3.utils.ExtractorApi
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -49,21 +46,22 @@ open class Golge17 : ExtractorApi() {
         val streamLink = parseHtml(resp)
         Log.d("GOLGE17", "streamLink: $streamLink")
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = this.name,
                 name = content.isim,
                 url = streamLink,
-                referer = link,
-                quality = Qualities.Unknown.value,
-                isM3u8 = true,
-                headers = mapOf(
+                type    = ExtractorLinkType.M3U8
+            ){
+                this.referer = link
+                this.quality = Qualities.Unknown.value
+                this.headers = mapOf(
                     "origin" to link,
                     "Accept" to "*/*",
                     "Cache-Control" to "max-age=0",
                     "sec-ch-ua-platform" to """"Windows"""",
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
                 )
-            )
+            }
         )
     }
 
