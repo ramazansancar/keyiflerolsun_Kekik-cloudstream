@@ -23,7 +23,8 @@ open class CizgiDuo : ExtractorApi() {
         val encrypted    = AesHelper.cryptoAESHandler(bePlayerData, bePlayerPass.toByteArray(), false)?.replace("\\", "") ?: throw ErrorLoadingException("failed to decrypt")
         Log.d("Kekik_${this.name}", "encrypted » $encrypted")
 
-        m3uLink = Regex("""video_location":"([^"]+)""").find(encrypted)?.groupValues?.get(1)
+        val m3uLink = Regex("""video_location":"([^"]+)""").find(encrypted)?.groupValues?.get(1)
+                     ?: throw ErrorLoadingException("m3u link not found")
 
         callback.invoke(
             newExtractorLink(

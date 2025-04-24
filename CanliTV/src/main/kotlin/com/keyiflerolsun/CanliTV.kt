@@ -1,4 +1,5 @@
 // ! https://codeberg.org/cloudstream/cloudstream-extensions-multilingual/src/branch/master/FreeTVProvider/src/main/kotlin/com/lagradost/FreeTVProvider.kt
+// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
 package com.keyiflerolsun
 
@@ -8,6 +9,8 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
+import java.util.Locale
+import org.jsoup.nodes.Element
 
 class CanliTV : MainAPI() {
     override var mainUrl              = "https://raw.githubusercontent.com/keyiflerolsun/IPTV_YenirMi/main/Kanallar/KekikAkademi.m3u"
@@ -121,6 +124,8 @@ class CanliTV : MainAPI() {
         val kanal    = kanallar.items.first { it.url == loadData.url }
         Log.d("IPTV", "kanal » $kanal")
 
+        val referer = kanal.headers["referrer"] ?: ""
+        
         callback.invoke(
             newExtractorLink(
                 source  = this.name,
