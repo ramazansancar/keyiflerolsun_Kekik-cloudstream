@@ -56,6 +56,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
           git add .
           git commit --amend -m "$GITHUB_SHA 'nın Derlenmesi" || exit 0   # eğer commit edilecek bir şey yoksa hata verme
           git push --force
