@@ -13,8 +13,8 @@ on:
 
 jobs:
   DomainKontrol:
-    #runs-on: ubuntu-latest
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    #runs-on: self-hosted
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,7 +59,7 @@ jobs:
 
           git add -A
 
-          git commit --author="keyiflerolsun <keyiflerolsun@users.noreply.github.com>" \
+          git commit --author="Mahmut HIZAL <MahmutHizal@users.noreply.github.com>" \
             -m "♻️ Domain Değişikliği" \
             -m "🔄 Otomatik domain güncellemeleri yapıldı."
           BRANCH="domain-degisikligi"
