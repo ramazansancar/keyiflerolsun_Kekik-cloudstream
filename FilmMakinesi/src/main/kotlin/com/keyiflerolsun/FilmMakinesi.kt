@@ -32,7 +32,7 @@ class FilmMakinesi : MainAPI() {
         "${mainUrl}/tur/macera/film/sayfa/"                        to "Macera",
         "${mainUrl}/tur/komedi/film/sayfa/"                        to "Komedi",
         "${mainUrl}/tur/romantik/film/sayfa/"                      to "Romantik",
-        "${mainUrl}/tur/belgesel/sayfa/"                           to "Belgesel",
+        "${mainUrl}/tur/belgesel/film/sayfa/"                      to "Belgesel",
         "${mainUrl}/tur/fantastik/film/sayfa/"                     to "Fantastik",
         "${mainUrl}/tur/polisiye/film/sayfa/"                      to "Polisiye Suç",
         "${mainUrl}/tur/korku/film/sayfa/"                         to "Korku",
