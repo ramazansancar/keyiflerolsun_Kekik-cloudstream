@@ -138,7 +138,7 @@ private fun Element.toSearchResult(): SearchResponse? {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("FLMM", "data » $data")
         val document      = app.get(data).document
-        val iframe = document.selectFirst("iframe")?.attr("data-src") ?: ""
+        val iframeSrc = document.selectFirst("iframe")?.attr("data-src") ?: ""
 
         val videoUrls = document.select(".video-parts a[data-video_url]").map { it.attr("data-video_url") }
 
