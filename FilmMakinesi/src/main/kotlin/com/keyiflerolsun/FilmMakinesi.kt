@@ -139,10 +139,15 @@ private fun Element.toSearchResult(): SearchResponse? {
         Log.d("FLMM", "data » $data")
         val document      = app.get(data).document
         val iframe = document.selectFirst("iframe")?.attr("data-src") ?: ""
-        Log.d("FLMM", iframe)
 
-        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+        val videoUrls = document.select(".video-parts a[data-video_url]").map { it.attr("data-video_url") }
 
-        return true
-    }
+        val allUrls = (if (iframeSrc.isNotEmpty()) listOf(iframeSrc) else emptyList()) + videoUrls
+
+        allUrls.forEach { url ->
+            Log.d("FLMM", "Processing URL: $url")
+            loadExtractor(url, "${mainUrl}/", subtitleCallback, callback)
+        }
+        return allUrls.isNotEmpty()
+}
 }
