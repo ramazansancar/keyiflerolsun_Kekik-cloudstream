@@ -70,15 +70,22 @@ open class Ultrahd : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-            val response = app.get(url,referer="https://donghuastream.org/").document
-            val extractedpack =response.toString()
-            Log.d("DHS", "extractedpack » $extractedpack")
-            Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"").find(extractedpack)?.groupValues?.get(1)?.let { link ->
-                app.get(link).parsedSafe<Root>()?.sources?.map {
-                    val m3u8= httpsify( it.file)
+        val response = app.get(url, referer = "https://donghuastream.org/").document
+        val extractedpack = response.toString()
+        Log.d("DHS", "extractedpack » $extractedpack")
+
+        // Yeni regex ile <a href="..."> etiketlerini çıkar
+        Regex("""<a\s+href="([^"]+)"\s*[^>]*>""").findAll(extractedpack).forEach { match ->
+            val link = match.groupValues[1] // href değeri
+            Log.d("DHS", "extracted href » $link")
+
+            // Her href için AJAX çağrısı yap
+            app.get(link).parsedSafe<Root>()?.let { root ->
+                // Video kaynaklarını işle
+                root.sources?.map { source ->
+                    val m3u8 = httpsify(source.file)
                     Log.d("DHS", "m3u8 » $m3u8")
-                    if (m3u8.contains("streamplay"))
-                    {
+                    if (m3u8.contains("streamplay")) {
                         callback.invoke(
                             newExtractorLink(
                                 "Ultrahd Streamplay",
@@ -90,9 +97,7 @@ open class Ultrahd : ExtractorApi() {
                                 this.quality = getQualityFromName("")
                             }
                         )
-                    }
-                    else
-                    {
+                    } else {
                         M3u8Helper.generateM3u8(
                             this.name,
                             m3u8,
@@ -100,17 +105,20 @@ open class Ultrahd : ExtractorApi() {
                         ).forEach(callback)
                     }
                 }
-                app.get(link).parsedSafe<Root>()?.tracks?.map {
-                    val langurl=it.file
-                    val lang=it.label
+
+                // Altyazıları işle
+                root.tracks?.map { track ->
+                    val langurl = track.file
+                    val lang = track.label
                     subtitleCallback.invoke(
                         SubtitleFile(
-                            lang,  // Use label for the name
-                            langurl     // Use extracted URL
+                            lang, // Use label for the name
+                            langurl // Use extracted URL
                         )
                     )
                 }
             }
+        }
     }
 }
 
