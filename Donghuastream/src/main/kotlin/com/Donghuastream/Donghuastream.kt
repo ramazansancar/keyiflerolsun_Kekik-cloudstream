@@ -117,13 +117,13 @@ open class Donghuastream : MainAPI() {
                 val newurl=url.substringAfter("=\"").substringBefore("\"")
                 val link= "http:$newurl"
                 loadExtractor(link,referer = url,subtitleCallback, callback)
-            } else if(url.endsWith("mp4")) {
+            } else if(url.endsWith("streamplay")) {
                 callback.invoke(
                     newExtractorLink(
                         "All Sub Player",
                         "All Sub Player",
                         url = url,
-                        INFER_TYPE
+                        type = ExtractorLinkType.M3U8
                     ) {
                         this.referer = ""
                         this.quality = getQualityFromName("")
