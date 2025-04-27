@@ -28,7 +28,7 @@ open class SetPlay : ExtractorApi() {
                 source  = this.name,
                 name    = "${this.name} - $title",
                 url     = m3uLink,
-                type = ExtractorLinkType.VIDEO
+                type = ExtractorLinkType.DASH
             ) {
                 quality = Qualities.Unknown.value
                 headers = mapOf("Referer" to url)
