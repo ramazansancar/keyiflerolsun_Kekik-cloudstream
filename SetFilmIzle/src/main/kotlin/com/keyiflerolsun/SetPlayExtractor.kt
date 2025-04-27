@@ -5,6 +5,7 @@ package com.keyiflerolsun
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.INFER_TYPE
 
 open class SetPlay : ExtractorApi() {
     override val name            = "SetPlay"
