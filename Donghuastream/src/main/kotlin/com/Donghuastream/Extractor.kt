@@ -85,7 +85,7 @@ open class Ultrahd : ExtractorApi() {
                 root.sources?.map { source ->
                     val m3u8 = httpsify(source.file)
                     Log.d("DHS", "m3u8 » $m3u8")
-                    if (m3u8.contains("streamplay")) {
+                    if (m3u8.contains("hls")) {
                         callback.invoke(
                             newExtractorLink(
                                 "Ultrahd Streamplay",
