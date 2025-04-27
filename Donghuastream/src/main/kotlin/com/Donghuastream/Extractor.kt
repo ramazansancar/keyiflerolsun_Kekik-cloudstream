@@ -75,6 +75,7 @@ open class Ultrahd : ExtractorApi() {
             Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"").find(extractedpack)?.groupValues?.get(1)?.let { link ->
                 app.get(link).parsedSafe<Root>()?.sources?.map {
                     val m3u8= httpsify( it.file)
+                    Log.d("DHS", "m3u8 » $m3u8")
                     if (m3u8.contains("streamplay"))
                     {
                         callback.invoke(
@@ -131,6 +132,7 @@ class Rumble : ExtractorApi() {
                 ?.substringAfter("{\"mp4")?.substringBefore("\"evt\":{") ?:""
         val regex = """"url":"(.*?)"|h":(.*?)\}""".toRegex()
         val matches = regex.findAll(playerScript)
+        Log.d("DHS", "matches » $matches")
         for (match in matches) {
             val href = match.groupValues[1].replace("\\/", "/")
             callback.invoke(

@@ -112,6 +112,7 @@ open class Donghuastream : MainAPI() {
             val base64 = server.attr("value")
             val doc= base64Decode(base64).let { Jsoup.parse(it) }
             val url= httpsify(doc.select("iframe").attr("src"))
+            Log.d("DHS", "url » $url")
             if (url.contains("vidmoly"))
             {
                 val newurl=url.substringAfter("=\"").substringBefore("\"")
