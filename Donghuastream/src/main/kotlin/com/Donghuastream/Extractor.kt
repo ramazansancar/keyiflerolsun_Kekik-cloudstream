@@ -84,7 +84,7 @@ open class Ultrahd : ExtractorApi() {
                                 url = m3u8,
                                 type = ExtractorLinkType.M3U8
                             ) {
-                                this.referer = ""
+                                this.referer = url
                                 this.quality = getQualityFromName("")
                             }
                         )
