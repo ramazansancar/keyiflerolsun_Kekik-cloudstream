@@ -72,6 +72,7 @@ open class Ultrahd : ExtractorApi() {
     ) {
             val response = app.get(url,referer=mainUrl).document
             val extractedpack =response.toString()
+            Log.d("DHS", "extractedpack » $extractedpack")
             Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"").find(extractedpack)?.groupValues?.get(1)?.let { link ->
                 app.get(link).parsedSafe<Root>()?.sources?.map {
                     val m3u8= httpsify( it.file)
@@ -127,12 +128,12 @@ class Rumble : ExtractorApi() {
         val response = app.get(
             url, referer = referer ?: "$mainUrl/"
         )
+        Log.d("DHS", "response » $response")
         val playerScript =
             response.document.selectFirst("script:containsData(mp4)")?.data()
                 ?.substringAfter("{\"mp4")?.substringBefore("\"evt\":{") ?:""
         val regex = """"url":"(.*?)"|h":(.*?)\}""".toRegex()
         val matches = regex.findAll(playerScript)
-        Log.d("DHS", "matches » $matches")
         for (match in matches) {
             val href = match.groupValues[1].replace("\\/", "/")
             callback.invoke(
