@@ -70,7 +70,7 @@ open class Ultrahd : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-            val response = app.get(url,referer=mainUrl).document
+            val response = app.get(url,referer="https://donghuastream.org/").document
             val extractedpack =response.toString()
             Log.d("DHS", "extractedpack » $extractedpack")
             Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"").find(extractedpack)?.groupValues?.get(1)?.let { link ->
@@ -131,8 +131,8 @@ class Rumble : ExtractorApi() {
         Log.d("DHS", "response » $response")
         val playerScript =
             response.document.selectFirst("script:containsData(mp4)")?.data()
-                ?.substringAfter("{\"mp4")?.substringBefore("\"evt\":{") ?:""
-        val regex = """"url":"(.*?)"|h":(.*?)\}""".toRegex()
+                ?.substringAfter("\"url\": \"")?.substringBefore("\",") ?:""
+        val regex = """"url":"((?:[^\\"]|\\\/)*?)"|\"h\":(\d+)""".toRegex()
         val matches = regex.findAll(playerScript)
         for (match in matches) {
             val href = match.groupValues[1].replace("\\/", "/")
