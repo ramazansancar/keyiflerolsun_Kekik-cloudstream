@@ -82,7 +82,7 @@ open class Ultrahd : ExtractorApi() {
                                 "Ultrahd Streamplay",
                                 "Ultrahd Streamplay",
                                 url = m3u8,
-                                INFER_TYPE
+                                type = ExtractorLinkType.M3U8
                             ) {
                                 this.referer = ""
                                 this.quality = getQualityFromName("")
