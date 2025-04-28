@@ -82,8 +82,7 @@ open class Ultrahd : ExtractorApi() {
             Log.d("DHS", "extracted href » $link")
 
             // Her href için AJAX çağrısı yap
-            val linkResponse = app.get(link, referer = if (requiresReferer) "$mainUrl/" else null)
-                Log.d("DHS", "linkResponse » ${linkResponse.text}")
+            val linkResponse = app.get(link, referer = "$mainUrl/")
             linkResponse.parsedSafe<Root>()?.let { root ->
                 Log.d("DHS", "Parsed Root successfully: $root")
                 // Video kaynaklarını işle
