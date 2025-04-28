@@ -77,7 +77,7 @@ open class Ultrahd : ExtractorApi() {
             val unpacked = getAndUnpack(script ?: return)
             Log.d("DHS", "unpacked » $unpacked")
             // Regex to match href attributes in <a> tags within the servers list
-            Regex("""("""(?i)(?:window\.|var\s+)?downloadURL\s*=\s*["']([^"']+)["']""").findAll(extractedpack).forEach { match ->
+            Regex("""(?i)(?:window\.|var\s+)?downloadURL\s*=\s*["']([^"']+)["']""").findAll(extractedpack).forEach { match ->
             val link = match.groupValues[1]
                 Log.d("DHS", "Extracted link: $link")
                 app.get(link).parsedSafe<Root>()?.sources?.map {
@@ -120,6 +120,7 @@ open class Ultrahd : ExtractorApi() {
             }
     }
 }
+
 class Rumble : ExtractorApi() {
     override var name = "Rumble"
     override var mainUrl = "https://rumble.com"
