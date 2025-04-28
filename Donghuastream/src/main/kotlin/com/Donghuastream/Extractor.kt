@@ -85,15 +85,17 @@ open class Ultrahd : ExtractorApi() {
             app.get(link).parsedSafe<Root>()?.let { root ->
                 // Video kaynaklarını işle
                 root.sources?.map { source ->
-                    val m3u8 = httpsify(source.file)
+                    val hrefRegex = Regex("""<a\s+href="([^"]+)"\s*[^>]*>""")
+                    hrefRegex.findAll(source.file).forEach { hrefMatch ->
+                        val m3u8 = httpsify(hrefMatch.groupValues[1])
                     Log.d("DHS", "m3u8 » $m3u8")
-                    if (m3u8.contains("streamplay")) {
+                    if (m3u8.contains("/vid/")) {
                         callback.invoke(
                             newExtractorLink(
                                 "Ultrahd Streamplay",
                                 "Ultrahd Streamplay",
                                 url = m3u8,
-                                type = ExtractorLinkType.M3U8
+                                type = ExtractorLinkType.VIDEO
                             ) {
                                 this.referer = ""
                                 this.quality = getQualityFromName("")
