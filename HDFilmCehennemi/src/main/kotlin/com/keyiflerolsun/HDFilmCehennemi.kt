@@ -189,6 +189,7 @@ class HDFilmCehennemi : MainAPI() {
                 var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
                 if (iframe.contains("rapidrame")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
+				}
                 if (iframe.contains("rplayer")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("rplayer")
                 }else {
@@ -202,6 +203,7 @@ class HDFilmCehennemi : MainAPI() {
 
         return true
     }
+}
 
     private data class SubSource(
         @JsonProperty("file")  val file: String?  = null,
