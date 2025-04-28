@@ -74,7 +74,7 @@ open class Ultrahd : ExtractorApi() {
             val response = app.get(url,referer=mainUrl).document
             val extractedpack =response.toString()
 			// Regex to match href attributes in <a> tags within the servers list
-            Regex("<a\\s+href=\"(.*?)\"\\s+class=\"(?:active|)\">").findAll(extractedpack).forEach { match ->
+            Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"").findAll(extractedpack).forEach { match ->
                 val link = match.groupValues[1]
 				Log.d("DHS", "Extracted link: $link")
                 app.get(link).parsedSafe<Root>()?.sources?.map {
