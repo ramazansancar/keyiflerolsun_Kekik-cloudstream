@@ -86,7 +86,7 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home = document.select("article").mapNotNull {
+        val home = document.select("article, figure").mapNotNull {
         it.toMainPageResult()
     }
         return newHomePageResponse(request.name, home)
@@ -95,7 +95,8 @@ class DiziBox : MainAPI() {
 private fun Element.toMainPageResult(): SearchResponse? {
     val title = this.selectFirst("a")?.text()
     val href = fixUrlNull(this.selectFirst("a")?.attr("href"))
-    val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+    val posterUrl = selectFirst("img")
+        ?.let { fixUrlNull(it.attr("data-src") ?: it.attr("src")) }
 
     Log.d("toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
 
