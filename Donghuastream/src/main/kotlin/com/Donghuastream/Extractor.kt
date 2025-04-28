@@ -124,7 +124,6 @@ open class Ultrahd : ExtractorApi() {
             }
         }
     }
-}
 
 class Rumble : ExtractorApi() {
     override var name = "Rumble"
@@ -162,4 +161,5 @@ class Rumble : ExtractorApi() {
 
         }
     }
+}
 }
