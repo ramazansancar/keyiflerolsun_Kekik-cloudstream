@@ -124,7 +124,8 @@ open class Ultrahd : ExtractorApi() {
             }
         }
     }
-
+  }
+}
 class Rumble : ExtractorApi() {
     override var name = "Rumble"
     override var mainUrl = "https://rumble.com"
@@ -161,5 +162,4 @@ class Rumble : ExtractorApi() {
 
         }
     }
-}
 }
