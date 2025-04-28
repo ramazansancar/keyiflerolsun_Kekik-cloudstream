@@ -117,46 +117,18 @@ class JetFilmizle : MainAPI() {
             }
         }
 
-         iframes.forEach { iframe ->
-              Log.d("JTF", "iframe » $iframe")
+        for (iframe in iframes) {
+            if (iframe.contains("zupeo.com")) {
+                Log.d("JTF", "jetv » $iframe")
+                val jetvDoc    = app.get(iframe).document
+                val jetvIframe = fixUrlNull(jetvDoc.selectFirst("iframe")?.attr("src")) ?: continue
+                Log.d("JTF", "jetvIframe » $jetvIframe")
 
-         when {
-            iframe.contains("zupeo.com") -> {
-                val page = app.get(iframe, referer = iframe).document
-                Log.d("JTF", page.html())
-                // Videonun içeriği iframe'in içine gömülü
-                val m3u8Url = page.select("script").mapNotNull { script ->
-                Regex("""https.*?m3u8[^"'\s]*""").find(script.data())?.value
-				}.firstOrNull()
-				Log.d("JTF", "m3u8Url » $m3u8Url")
-
-    if (m3u8Url != null) {
-        callback.invoke(
-            newExtractorLink(
-                name = "zupeo",
-                source = "zupeo.com",
-                url = m3u8Url,
-                type = ExtractorLinkType.M3U8,
-            ) {
-                quality = Qualities.Unknown.value
-                headers = mapOf("Referer" to mainUrl)
+                loadExtractor(jetvIframe, "${mainUrl}/", subtitleCallback, callback)
+            } else {
+                loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
-        )
-    }
-}
-        else -> {
-            val iframeReferer = when {
-                iframe.contains("d2rs.com") -> iframe
-                iframe.contains("jetvid.top") -> iframe
-                iframe.contains("videolar.biz") -> iframe
-                iframe.contains("jtfi.buzz") -> iframe
-                else -> mainUrl
-            }
-
-            loadExtractor(iframe, iframeReferer, subtitleCallback, callback)
         }
-    }
-}
 
         return true
     }
