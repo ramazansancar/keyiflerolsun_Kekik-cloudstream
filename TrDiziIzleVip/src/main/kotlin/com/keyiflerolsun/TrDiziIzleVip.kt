@@ -1,0 +1,140 @@
+package com.keyiflerolsun
+
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.extractors.*
+import com.lagradost.cloudstream3.utils.*
+import org.jsoup.Jsoup
+
+class TrDiziIzleVip : MainAPI() {
+    override var name = "TrDiziIzleVip"
+    override var mainUrl = "https://www.trdiziizle.vip"
+    override val hasMainPage = true
+    override var lang = "tr"
+    override val hasQuickSearch       = false
+    override val supportedTypes = setOf(TvType.TvSeries)
+
+    override val mainPage = mainPageOf(
+        "${mainUrl}/tum-bolumler/" to "Tüm Bölümler",
+        "${mainUrl}/dizi-arsivi-01/" to "Dizi Arşivi",
+    )
+
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        val document = app.get(request.data + "/page/" + page).document
+        val items = document.select("a:has(img)").mapNotNull {
+            runCatching {
+                val title = it.attr("title") ?: it.selectFirst("img")?.attr("alt")
+                val link = fixUrl(it.attr("href"))
+                val poster = it.selectFirst("img")?.attr("data-src")
+                if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
+                else TvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
+            }.getOrNull()
+        }
+        return newHomePageResponse(items, hasNext = items.isNotEmpty())
+    }
+
+    override suspend fun search(query: String): List<SearchResponse> {
+        val url = "$mainUrl/?s=" + query
+        val document = app.get(url).document
+        return document.select("a:has(img)").mapNotNull {
+            runCatching {
+                val title = it.attr("title") ?: it.selectFirst("img")?.attr("alt")
+                val link = fixUrl(it.attr("href"))
+                val poster = it.selectFirst("img")?.attr("src")
+                if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
+                else TvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
+            }.getOrNull()
+        }
+    }
+
+    override suspend fun load(url: String): LoadResponse {
+        val document = app.get(url).document
+        val title = document.selectFirst("meta[property=og:title]")?.attr("content") ?: "Bölüm"
+        val poster = document.selectFirst("meta[property=og:image]")?.attr("content")
+
+        val seasons = mutableMapOf<Int, MutableList<Episode>>()
+
+        document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
+            val epLink = fixUrl(it.attr("href"))
+            val epTitle = it.attr("title") ?: it.text()
+            val seasonNum = Regex("([0-9]+)\.sezon", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 1
+            val episode = Episode(epLink, epTitle)
+            seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
+        }
+
+        val episodeList = seasons.toSortedMap().flatMap { it.value }
+
+        return TvSeriesLoadResponse(
+            title = title,
+            url = url,
+            apiName = name,
+            posterUrl = poster,
+            episodes = episodeList,
+            type = TvType.TvSeries,
+        )
+    }
+
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val document = app.get(data).document
+        document.select("iframe").apmap {
+            runCatching {
+                val iframeUrl = fixUrl(it.attr("src"))
+                if (iframeUrl.isNotBlank()) {
+                    val iframeHtml = app.get(iframeUrl, referer = mainUrl).text
+                    match = re.search(r'https?:[^"']+\.(m3u8|mp4)', iframe_html)
+
+                    if (m3u8Link != null) {
+                        callback.invoke(
+                            newExtractorLink(
+                                source = this@{class_name}.name,
+                                name = "M3U8 Player",
+                                url = m3u8Link,
+                                type = ExtractorLinkType.M3U8
+                            ) {
+                                quality = Qualities.P720.value
+                                headers = mapOf("Referer" to iframeUrl)
+                            }
+                        )
+                    } else if (mp4Link != null) {
+                        callback.invoke(
+                            newExtractorLink(
+                                source = this@{class_name}.name,
+                                name = "MP4 Player",
+                                url = mp4Link,
+                                type = ExtractorLinkType.VIDEO
+                            ) {
+                                quality = Qualities.P720.value
+                                headers = mapOf("Referer" to iframeUrl)
+                            }
+                        )
+                    } else {
+                        callback.invoke(
+                            newExtractorLink(
+                                source = this@{class_name}.name,
+                                name = "Embed Player",
+                                url = iframeUrl,
+                                type = ExtractorLinkType.VIDEO
+                            ) {
+                                quality = Qualities.Unknown.value
+                                headers = mapOf("Referer" to mainUrl)
+                            }
+                        )
+                    }
+
+                    subtitle_formats = [match.group(1) for match in re.finditer(r'(vtt|srt|ass)', iframe_html)]
+                    if subtitle_formats:
+                        Log.d("Bulunan altyazı formatları:", subtitle_formats)
+                    else:
+                        Log.d("Altyazı formatı bulunamadı.")
+                    }
+                }
+            }.onFailure {
+                Log.d("iframe çözümleme hatası: " + it.localizedMessage)
+            }
+        }
+    }
+}
