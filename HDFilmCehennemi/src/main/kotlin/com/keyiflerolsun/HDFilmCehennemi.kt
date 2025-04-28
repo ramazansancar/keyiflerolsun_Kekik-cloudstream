@@ -190,7 +190,7 @@ class HDFilmCehennemi : MainAPI() {
                 if (iframe.contains("?rapidrame_id=")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
                 }else {
-                    iframe = iframe + iframe.substringAfter("ah");
+                    iframe = iframe + "ah";
                 }
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
