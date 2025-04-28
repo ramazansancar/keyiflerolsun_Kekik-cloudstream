@@ -76,9 +76,9 @@ open class Ultrahd : ExtractorApi() {
 			Log.d("DHS", "extractedpack » $extractedpack")
             Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"").find(extractedpack)?.groupValues?.get(1)?.let { link ->
                 app.get(link).parsedSafe<Root>()?.sources?.map {
-				Log.d("DHS", "Parsed Root successfully: $Root")
                     val m3u8= httpsify( it.file)
 					Log.d("DHS", "m3u8 » $m3u8")
+					Log.d("DHS", "Mapped source: $it")
                     if (m3u8.contains(".mp4"))
                     {
                         callback.invoke(
