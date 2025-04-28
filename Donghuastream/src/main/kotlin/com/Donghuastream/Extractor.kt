@@ -73,8 +73,9 @@ open class Ultrahd : ExtractorApi() {
     ) {
         val response = app.get(url, referer = "$mainUrl/").document
         val extractedpack = response.toString()
-        val script = response.document.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
+        val script = response.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
         val unpacked = getAndUnpack(script ?: return)
+		Log.d("DHS", "extracted unpacked » $unpacked")
         // Yeni regex ile <a href="..."> etiketlerini çıkar
         Regex("""<a\s+href="([^"]+)"\s*[^>]*>""").findAll(unpacked).forEach { match ->
             val link = match.groupValues[1] // href değeri
