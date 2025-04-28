@@ -87,6 +87,9 @@ open class Ultrahd : ExtractorApi() {
             linkResponse.parsedSafe<Root>()?.let { root ->
                 Log.d("DHS", "Parsed Root successfully: $root")
                 // Video kaynaklarını işle
+	        val scriptdownload = response.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
+            val unpackeddownload = getAndUnpack(script ?: return)
+			Log.d("DHS", "unpackeddownload » $unpackeddownload")
                 root.sources?.forEach { source ->
                     val hrefRegex = Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"")
 					Log.d("DHS", "hrefRegex » $hrefRegex")
