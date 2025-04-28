@@ -1,4 +1,4 @@
-version = 32
+version = 33
 
 cloudstream {
     // All of these properties are optional, you can safely remove them
