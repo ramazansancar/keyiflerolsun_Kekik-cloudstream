@@ -15,6 +15,7 @@ import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.httpsify
+import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
 open class Vtbe : ExtractorApi() {
@@ -72,7 +73,7 @@ open class Ultrahd : ExtractorApi() {
     ) {
         val response = app.get(url, referer = "$mainUrl/").document
         val extractedpack = response.toString()
-        val script = res.document.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
+        val script = response.document.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
         val unpacked = getAndUnpack(script ?: return)
         // Yeni regex ile <a href="..."> etiketlerini çıkar
         Regex("""<a\s+href="([^"]+)"\s*[^>]*>""").findAll(unpacked).forEach { match ->
