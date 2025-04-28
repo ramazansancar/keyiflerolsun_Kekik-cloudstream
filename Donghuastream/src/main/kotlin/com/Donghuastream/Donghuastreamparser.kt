@@ -11,8 +11,6 @@ data class Root(
     val embedLink: String,
     @JsonProperty("download_url")
     val downloadLink: String,
-    @JsonProperty("request_link")
-    val requestLink: String,
     val title: String,
     val poster: String,
     val sources: List<Source>,
