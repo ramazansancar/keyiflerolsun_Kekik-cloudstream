@@ -88,8 +88,8 @@ open class Ultrahd : ExtractorApi() {
                 Log.d("DHS", "Parsed Root successfully: $root")
                 // Video kaynaklarını işle
                 root.sources?.forEach { source ->
-                Log.d("DHS", "Processing source: ${source.file}")
-                    val hrefRegex = Regex("""<a\s+href="([^"]+)"\s*[^>]*>""")
+                    val hrefRegex = Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"")
+					Log.d("DHS", "hrefRegex » $hrefRegex")
                     hrefRegex.findAll(source.file).forEach { hrefMatch ->
                         val m3u8 = httpsify(hrefMatch.groupValues[1])
                     Log.d("DHS", "m3u8 » $m3u8")
