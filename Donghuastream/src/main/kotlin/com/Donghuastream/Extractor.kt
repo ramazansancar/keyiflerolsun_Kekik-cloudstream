@@ -163,3 +163,4 @@ class Rumble : ExtractorApi() {
         }
     }
 }
+}
