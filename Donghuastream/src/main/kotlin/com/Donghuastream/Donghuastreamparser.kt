@@ -12,7 +12,7 @@ data class Root(
     val downloadLink: String,
     val title: String,
     val poster: String,
-    val filmstrip: String,
+    val filmstrip: String?,
     val sources: List<Source>,
     val tracks: List<Track>,
 )

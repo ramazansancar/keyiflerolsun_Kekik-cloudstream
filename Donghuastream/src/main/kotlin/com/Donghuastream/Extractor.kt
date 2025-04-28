@@ -75,62 +75,95 @@ open class Ultrahd : ExtractorApi() {
         val extractedpack = response.toString()
         val script = response.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
         val unpacked = getAndUnpack(script ?: return)
-		Log.d("DHS", "extracted unpacked » $unpacked")
-        // Yeni regex ile <a href="..."> etiketlerini çıkar
+        Log.d("DHS", "extracted unpacked » $unpacked")
+
+        // Yeni regex ile window.downloadURL değerini çıkar
         Regex("""(?i)(?:window\.|var\s+)?downloadURL\s*=\s*["']([^"']+)["']""").findAll(unpacked).forEach { match ->
-            val link = match.groupValues[1] // href değeri
+            val link = match.groupValues[1] // window.downloadURL değeri
             Log.d("DHS", "extracted href » $link")
 
             // Her href için AJAX çağrısı yap
-            val linkResponse = app.get(link, referer = "$mainUrl/")
-            linkResponse.parsedSafe<Root>()?.let {  root ->
-                Log.d("DHS", "Parsed Root successfully: $root")
-                // Video kaynaklarını işle
-	        val scriptdownload = response.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
-            val unpackeddownload = getAndUnpack(script ?: return)
-			Log.d("DHS", "unpackeddownload » $unpackeddownload")
-                root.sources?.forEach { source ->
-                    val hrefRegex = Regex("\\\$\\.\\s*ajax\\(\\s*\\{\\s*url:\\s*\"(.*?)\"")
-					Log.d("DHS", "hrefRegex » $hrefRegex")
-                    hrefRegex.findAll(source.file).forEach { hrefMatch ->
-                        val m3u8 = httpsify(hrefMatch.groupValues[1])
-                    Log.d("DHS", "m3u8 » $m3u8")
-                    if (m3u8.contains("/vid/")) {
-                        callback.invoke(
-                            newExtractorLink(
-                                "Ultrahd Streamplay",
-                                "Ultrahd Streamplay",
-                                url = m3u8,
-                                type = ExtractorLinkType.VIDEO
-                            ) {
-                                this.referer = ""
-                                this.quality = getQualityFromName("")
-                            }
-                        )
-                    } else {
-                        M3u8Helper.generateM3u8(
-                            this.name,
-                            m3u8,
-                            "$referer",
-                        ).forEach(callback)
-                    }
-                }
+            try {
+                val linkResponse = app.get(link, referer = "$mainUrl/")
+                Log.d("DHS", "linkResponse » ${linkResponse.text}")
+                linkResponse.parsedSafe<Root>()?.let { root ->
+                    Log.d("DHS", "Parsed Root successfully: $root")
 
-                // Altyazıları işle
-                root.tracks?.map { track ->
-                    val langurl = track.file
-                    val lang = track.label
-                    subtitleCallback.invoke(
-                        SubtitleFile(
-                            lang, // Use label for the name
-                            langurl // Use extracted URL
-                        )
-                    )
+                    // download_url'u kontrol et
+                    if (root.downloadLink.isNotBlank()) {
+                        Log.d("DHS", "downloadLink from Root » ${root.downloadLink}")
+                        val downloadM3u8 = httpsify(root.downloadLink)
+                        if (downloadM3u8.contains("/vid/")) {
+                            callback.invoke(
+                                newExtractorLink(
+                                    "Ultrahd Streamplay",
+                                    "Ultrahd Streamplay",
+                                    url = downloadM3u8,
+                                    type = ExtractorLinkType.M3U8
+                                ) {
+                                    this.referer = ""
+                                    this.quality = getQualityFromName(root.sources.firstOrNull()?.label ?: "")
+                                }
+                            )
+                        } else {
+                            M3u8Helper.generateM3u8(
+                                this.name,
+                                downloadM3u8,
+                                "$referer",
+                            ).forEach(callback)
+                        }
+                    }
+
+                    // Video kaynaklarını işle
+                    val scriptdownload = response.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data()
+                    val unpackeddownload = getAndUnpack(scriptdownload ?: return@let)
+                    Log.d("DHS", "unpackeddownload » $unpackeddownload")
+                    root.sources.forEach { source ->
+                        Log.d("DHS", "Processing source: ${source.file}")
+                        val m3u8 = httpsify(source.file) // source.file doğrudan bir URL içeriyor
+                        Log.d("DHS", "m3u8 » $m3u8")
+                        if (m3u8.contains("/vid/")) {
+                            callback.invoke(
+                                newExtractorLink(
+                                    "Ultrahd Streamplay",
+                                    "Ultrahd Streamplay",
+                                    url = m3u8,
+                                    type = ExtractorLinkType.M3U8
+                                ) {
+                                    this.referer = ""
+                                    this.quality = getQualityFromName(source.label)
+                                }
+                            )
+                        } else {
+                            M3u8Helper.generateM3u8(
+                                this.name,
+                                m3u8,
+                                "$referer",
+                            ).forEach(callback)
+                        }
+                    }
+
+                    // Altyazıları işle
+                    root.tracks.forEach { track ->
+                        val langurl = track.file
+                        val lang = track.label
+                        if (langurl.isNotBlank() && lang.isNotBlank()) {
+                            subtitleCallback.invoke(
+                                SubtitleFile(
+                                    lang,
+                                    langurl
+                                )
+                            )
+                        }
+                    }
+                } ?: run {
+                    Log.d("DHS", "Failed to parse Root from link response: ${linkResponse.text}")
                 }
+            } catch (e: Exception) {
+                Log.e("DHS", "Error fetching link: $link, error: ${e.message}")
             }
         }
     }
-  }
 }
 class Rumble : ExtractorApi() {
     override var name = "Rumble"
