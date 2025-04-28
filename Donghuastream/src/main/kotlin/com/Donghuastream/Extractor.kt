@@ -84,7 +84,7 @@ open class Ultrahd : ExtractorApi() {
             // Her href için AJAX çağrısı yap
             app.get(link).parsedSafe<Root>()?.let { root ->
                 // Video kaynaklarını işle
-                root.sources?.map { source ->
+                root.sources?.forEach { source ->
                     val hrefRegex = Regex("""<a\s+href="([^"]+)"\s*[^>]*>""")
                     hrefRegex.findAll(source.file).forEach { hrefMatch ->
                         val m3u8 = httpsify(hrefMatch.groupValues[1])
@@ -162,5 +162,4 @@ class Rumble : ExtractorApi() {
 
         }
     }
-}
 }
