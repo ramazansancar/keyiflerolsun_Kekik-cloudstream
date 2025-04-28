@@ -70,9 +70,8 @@ open class Ultrahd : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val response = app.get(url, referer = "https://donghuastream.org/").document
+        val response = app.get(url, referer = "$mainUrl/").document
         val extractedpack = response.toString()
-        Log.d("DHS", "extractedpack » $extractedpack")
 
         // Yeni regex ile <a href="..."> etiketlerini çıkar
         Regex("""<a\s+href="([^"]+)"\s*[^>]*>""").findAll(extractedpack).forEach { match ->
