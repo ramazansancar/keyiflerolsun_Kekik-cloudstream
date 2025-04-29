@@ -35,7 +35,9 @@ class TRasyalog : MainAPI() {
                 val link = fixUrl(it.attr("href"))
                 val poster = it.selectFirst("img")?.attr("src")
                 if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, link, TvType.TvSeries, fixUrl(poster))
+                else newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+            this.posterUrl = poster
+        }
             }.getOrNull()
         }
         return newHomePageResponse(request.name, items)
