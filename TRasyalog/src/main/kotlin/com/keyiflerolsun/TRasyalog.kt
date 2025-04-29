@@ -43,7 +43,7 @@ class TRasyalog : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src") ?: this.selectFirst("div.thumbnail img")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
@@ -87,74 +87,17 @@ override suspend fun load(url: String): LoadResponse? {
     }
 }
 
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    Log.d("TRAS", "data » $data")
-    val document = app.get(data).document
+     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        Log.d("TRAS", "data » $data")
+        val document = app.get(data).document
 
-    // 1. video_source içeren <script> etiketi
-    val scriptContent = document.select("script").firstOrNull {
-        it.html().contains("video_source")
-    }?.html() ?: return false
+        document.select("div#safirVideoWrapper").forEach {
+            val iframe = fixUrlNull(it.selectFirst("iframe")?.attr("src")) ?: return@forEach
+            Log.d("TRAS", "iframe » $iframe")
 
-    // 2. video_source içindeki JSON array’i çek
-    val videoSourceJson = Regex("""video_source\s*=\s*`(\[.*?])`""", RegexOption.DOT_MATCHES_ALL)
-        .find(scriptContent)
-        ?.groups?.get(1)
-        ?.value
-        ?: return false
-
-    val videoSourceArray = JSONArray(videoSourceJson)
-
-    // 3. Her bir API URL'sine istek at
-    for (i in 0 until videoSourceArray.length()) {
-        val source = videoSourceArray.getJSONObject(i)
-        val apiUrl = source.getString("url")
-        Log.d("TRAS", "apiUrl » $apiUrl")
-
-        // 4. API sayfasını çek
-        val apiHtml = app.get(apiUrl, headers = mapOf("Referer" to "https://trTRASmaci.com/")).text
-        val apiDoc = Jsoup.parse(apiHtml)
-        Log.d("TRAS", "apiDoc » $apiDoc")
-
-        // 5. const sources = [...] içeren <script> bul
-        val sourcesScript = apiDoc.select("script").firstOrNull {
-            it.html().contains("const sources")
-        } ?: continue
-
-        val sourcesArrayRaw = Regex("""const\s+sources\s*=\s*(\[[\s\S]*?])\s*;""")
-            .find(sourcesScript.html())
-            ?.groups?.get(1)
-            ?.value
-            ?: continue
-
-        // 6. MP4 linklerini JSON olarak parse et
-        val mp4Array = JSONArray(sourcesArrayRaw)
-        Log.d("TRAS", "mp4Array » $mp4Array")
-
-        for (j in 0 until mp4Array.length()) {
-            val mp4 = mp4Array.getJSONObject(j)
-            val videoUrl = mp4.getString("src")
-            val quality = mp4.optInt("size", Qualities.Unknown.value)
-
-            callback.invoke(
-                newExtractorLink(
-                    source = this.name,
-                    name = "${this.name} - ${quality}p",
-                    url = videoUrl,
-                    type = ExtractorLinkType.VIDEO
-                ) {
-                    this.referer = "https://api.TvSeriesuzayi.com/"
-                    this.quality = quality
-                }
-            )
+            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
         }
-    }
 
-    return true
-}
+        return true
+    }
 }
