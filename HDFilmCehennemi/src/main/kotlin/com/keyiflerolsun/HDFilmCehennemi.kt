@@ -202,8 +202,7 @@ class HDFilmCehennemi : MainAPI() {
         return true
     }
   }
-}
-}
+  }
     private data class SubSource(
         @JsonProperty("file")  val file: String?  = null,
         @JsonProperty("label") val label: String? = null,
