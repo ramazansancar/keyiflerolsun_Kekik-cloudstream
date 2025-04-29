@@ -4,7 +4,7 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.M3u8Helper
-import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.LoadResponse.CompTRASon.addTrailer
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
@@ -31,107 +31,124 @@ class TRasyalog : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}/page/$page").document
-        val items = document.select("a:has(img)").mapNotNull {
-            runCatching {
-                val title = it.attr("title") ?: it.selectFirst("img")?.attr("alt")
-                val link = fixUrl(it.attr("href"))
-                val poster = it.selectFirst("img")?.attr("src")
-                if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, link, TvType.TvSeries) {
-            this.posterUrl = poster
-        }
-            }.getOrNull()
-        }
-        return newHomePageResponse(request.name, items)
+        val home     = document.select("div.post-container").mapNotNull { it.toMainPageResult() }
+
+        return newHomePageResponse(request.name, home)
+    }
+
+    private fun Element.toMainPageResult(): SearchResponse? {
+        val title     = this.selectFirst("a")?.text() ?: return null
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("div.post-container img")?.attr("src"))
+
+        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val url = "$mainUrl/?s=$query"
-        val document = app.get(url).document
-        return document.select("a:has(img)").mapNotNull {
-            runCatching {
-                val title = it.attr("title") ?: it.selectFirst("img")?.attr("alt")
-                val link = fixUrl(it.attr("href"))
-                if (title.isNullOrBlank() || link.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, link, TvType.TvSeries)
-            }.getOrNull()
-        }
+        val document = app.get("${mainUrl}/search?name=${query}").document
+
+        return document.select("div.post-container").mapNotNull { it.toMainPageResult() }
     }
 
-    override suspend fun load(url: String): LoadResponse {
+    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
+
+    override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
-        val title = document.selectFirst("meta[property=og:title]")?.attr("content") ?: "Bölüm"
-        val posterUrl = document.selectFirst("meta[property=og:image]")?.attr("content")
-        val plot = document.selectFirst("div.entry-content p")?.text()
 
-        val seasons = mutableMapOf<Int, MutableList<Episode>>()
+        val title       = document.selectFirst("h1")?.text()?.trim() ?: return null
+        val poster      = fixUrlNull(document.selectFirst("div.aligncenter img")?.attr("src"))
+        val description = document.selectFirst("h2 p")?.text()?.trim()
+        val tags        = document.select("div#genxed a[href*='/category']").map { it.text() }
 
-        document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
-            val epLink = fixUrl(it.attr("href"))
-            val epTitle = it.attr("title") ?: it.text()
-            val epEpisode = Episode(epLink, epTitle)
-            val seasonNum = Regex("""([0-9]+)\.sezon""", RegexOption.IGNORE_CASE)
-                .find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: return@forEach
-            seasons.getOrPut(seasonNum) { mutableListOf() }.add(epEpisode)
-        }
+        val episodeses = mutableListOf<Episode>()
 
-        val episodes = seasons.toSortedMap().flatMap { it.value }
-
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-            this.posterUrl = posterUrl
-            this.plot = plot
-        }
-    }
-
-    override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ): Boolean {
-        val document = app.get(data).document
-        document.select("iframe").apmap {
-            runCatching {
-                val iframeUrl = fixUrl(it.attr("src"))
-                if (iframeUrl.isNotBlank()) {
-                    val iframeHtml = app.get(iframeUrl, referer = mainUrl).text
-                    val videoUrl = Regex("""https?:[^"']+\.(m3u8|mp4)""").find(iframeHtml)?.value
-
-                    if (videoUrl != null) {
-                        callback.invoke(
-                            newExtractorLink(
-                                source = name,
-                                name = if (videoUrl.endsWith(".m3u8")) "M3U8 Player" else "MP4 Player",
-                                url = videoUrl,
-                                type = if (videoUrl.endsWith(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                            ) {
-                                quality = Qualities.P720.value
-                                headers = mapOf("Referer" to iframeUrl)
-                            }
-                        )
-                    } else {
-                        callback.invoke(
-                            newExtractorLink(
-                                source = name,
-                                name = "Embed Player",
-                                url = iframeUrl,
-                                type = ExtractorLinkType.VIDEO
-                            ) {
-                                quality = Qualities.Unknown.value
-                                headers = mapOf("Referer" to mainUrl)
-                            }
-                        )
-                    }
-
-                    val subtitleFormats = Regex("""(vtt|srt|ass)""")
-                        .findAll(iframeHtml)
-                        .map { it.value }
-                        .toList()
-
-                    // (isteğe bağlı: altyazı işlemleri burada yapılabilir)
+        for (bolum in document.select("div.eplister ul li a")) {
+            val epHref = fixUrlNull(bolum.attr("href")) ?: continue
+            val epName = bolum.selectFirst(".epl-title")?.text()?.trim() ?: continue
+            val epEpisode = epName.replace("Bölüm", "").trim().toIntOrNull()
+	
+                val newEpisode = newEpisode(epHref) {
+                    this.name = epName
+                    this.episode = epEpisode
                 }
+                episodeses.add(newEpisode)
             }
+
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
+            this.posterUrl = poster
+            this.plot = description
+            this.tags = tags
         }
-        return true
     }
+
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("TRAS", "data » $data")
+    val document = app.get(data).document
+
+    // 1. video_source içeren <script> etiketi
+    val scriptContent = document.select("script").firstOrNull {
+        it.html().contains("video_source")
+    }?.html() ?: return false
+
+    // 2. video_source içindeki JSON array’i çek
+    val videoSourceJson = Regex("""video_source\s*=\s*`(\[.*?])`""", RegexOption.DOT_MATCHES_ALL)
+        .find(scriptContent)
+        ?.groups?.get(1)
+        ?.value
+        ?: return false
+
+    val videoSourceArray = JSONArray(videoSourceJson)
+
+    // 3. Her bir API URL'sine istek at
+    for (i in 0 until videoSourceArray.length()) {
+        val source = videoSourceArray.getJSONObject(i)
+        val apiUrl = source.getString("url")
+        Log.d("TRAS", "apiUrl » $apiUrl")
+
+        // 4. API sayfasını çek
+        val apiHtml = app.get(apiUrl, headers = mapOf("Referer" to "https://trTRASmaci.com/")).text
+        val apiDoc = Jsoup.parse(apiHtml)
+        Log.d("TRAS", "apiDoc » $apiDoc")
+
+        // 5. const sources = [...] içeren <script> bul
+        val sourcesScript = apiDoc.select("script").firstOrNull {
+            it.html().contains("const sources")
+        } ?: continue
+
+        val sourcesArrayRaw = Regex("""const\s+sources\s*=\s*(\[[\s\S]*?])\s*;""")
+            .find(sourcesScript.html())
+            ?.groups?.get(1)
+            ?.value
+            ?: continue
+
+        // 6. MP4 linklerini JSON olarak parse et
+        val mp4Array = JSONArray(sourcesArrayRaw)
+        Log.d("TRAS", "mp4Array » $mp4Array")
+
+        for (j in 0 until mp4Array.length()) {
+            val mp4 = mp4Array.getJSONObject(j)
+            val videoUrl = mp4.getString("src")
+            val quality = mp4.optInt("size", Qualities.Unknown.value)
+
+            callback.invoke(
+                newExtractorLink(
+                    source = this.name,
+                    name = "${this.name} - ${quality}p",
+                    url = videoUrl,
+                    type = ExtractorLinkType.VIDEO
+                ) {
+                    this.referer = "https://api.TvSeriesuzayi.com/"
+                    this.quality = quality
+                }
+            )
+        }
+    }
+
+    return true
+}
 }
