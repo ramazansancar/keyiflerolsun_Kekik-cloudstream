@@ -43,7 +43,7 @@ class TRasyalog : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src") ?: this.selectFirst("div.thumbnail img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src")
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
@@ -91,7 +91,7 @@ override suspend fun load(url: String): LoadResponse? {
         Log.d("TRAS", "data » $data")
         val document = app.get(data).document
 
-        document.select("div#safirVideoWrapper").forEach {
+        document.select("div.safirVideoWrapper").forEach {
             val iframe = fixUrlNull(it.selectFirst("iframe")?.attr("src")) ?: return@forEach
             Log.d("TRAS", "iframe » $iframe")
 
