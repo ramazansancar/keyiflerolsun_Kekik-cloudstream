@@ -10,9 +10,11 @@ import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
 
 class TRasyalog : MainAPI() {
-    override var name = "TRasyalog"
-    override var mainUrl = "https://asyalog.com"
-    override var lang = "tr"
+    override var mainUrl        = "https://asyalog.com"
+    override var name           = "TRasyalog"
+    override val hasMainPage    = true
+    override var lang           = "tr"
+    override val hasQuickSearch = false
     override val supportedTypes = setOf(TvType.TvSeries)
 
     override val mainPage = mainPageOf(
