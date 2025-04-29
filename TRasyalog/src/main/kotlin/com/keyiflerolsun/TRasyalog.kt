@@ -34,7 +34,7 @@ class TRasyalog : MainAPI() {
                 else TvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
             }.getOrNull()
         }
-        return newHomePageResponse(items, hasNext = items.isNotEmpty())
+        return newHomePageResponse(request.name, items)
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -61,7 +61,7 @@ class TRasyalog : MainAPI() {
         document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
             val epLink = fixUrl(it.attr("href"))
             val epTitle = it.attr("title") ?: it.text()
-            val seasonNum = Regex("([0-9]+)\.sezon", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 1
+            val seasonNum = Regex("([0-9]+)\.sezon", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull()
             val episode = Episode(epLink, epTitle)
             seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
         }
@@ -130,9 +130,6 @@ class TRasyalog : MainAPI() {
                     val subtitleFormats = Regex("""(vtt|srt|ass)""").findAll(iframeHtml).map { it.value }.toList()
                     }
                 }
-            }.onFailure {
-                println("iframe çözümleme hatası: " + it.localizedMessage)
             }
         }
     }
-}
