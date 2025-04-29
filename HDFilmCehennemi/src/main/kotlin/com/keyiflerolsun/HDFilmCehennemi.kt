@@ -197,7 +197,6 @@ class HDFilmCehennemi : MainAPI() {
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
                 invokeLocalSource(source, iframe, subtitleCallback, callback)
-            }
         }
 
         return true
@@ -214,3 +213,4 @@ class HDFilmCehennemi : MainAPI() {
     data class Results(
         @JsonProperty("results") val results: List<String> = arrayListOf()
     )
+}
