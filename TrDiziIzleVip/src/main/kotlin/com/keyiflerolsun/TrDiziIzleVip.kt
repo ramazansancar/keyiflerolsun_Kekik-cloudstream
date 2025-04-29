@@ -90,7 +90,7 @@ class TrDiziIzleVip : MainAPI() {
                     if (videoUrl != null) {
                         callback.invoke(
                             newExtractorLink(
-                                source = this@{class_name}.name,
+                                source = this.name,
                                 name = "M3U8 Player",
                                 url = videoUrl,
                                 type = ExtractorLinkType.M3U8
@@ -102,7 +102,7 @@ class TrDiziIzleVip : MainAPI() {
                     } else if (videoUrl != null) {
                         callback.invoke(
                             newExtractorLink(
-                                source = this@{class_name}.name,
+                                source = this.name,
                                 name = "MP4 Player",
                                 url = videoUrl,
                                 type = ExtractorLinkType.VIDEO
@@ -114,7 +114,7 @@ class TrDiziIzleVip : MainAPI() {
                     } else {
                         callback.invoke(
                             newExtractorLink(
-                                source = this@{class_name}.name,
+                                source = this}.name,
                                 name = "Embed Player",
                                 url = iframeUrl,
                                 type = ExtractorLinkType.VIDEO
@@ -126,10 +126,6 @@ class TrDiziIzleVip : MainAPI() {
                     }
 
                     val subtitleFormats = Regex("""(vtt|srt|ass)""").findAll(iframeHtml).map { it.value }.toList()
-                    if subtitle_formats:
-                        Log.d("Bulunan altyazı formatları:", subtitle_formats)
-                    else:
-                        Log.d("Altyazı formatı bulunamadı.")
                     }
                 }
             }.onFailure {

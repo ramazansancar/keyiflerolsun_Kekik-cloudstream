@@ -20,8 +20,8 @@ class TRasyalog : MainAPI() {
         "${mainUrl}/category/japon-dizileri/" to "Japon Diziler",
         "${mainUrl}/category/endonezya-dizileri/" to "Endonezya Diziler",
         "${mainUrl}/category/seri-diziler/" to "Seri Diziler",
-        "${mainUrl}/category/devam-eden-diziler/" to "Devam eden Diziler",
-
+        "${mainUrl}/category/devam-eden-diziler/" to "Devam eden Diziler"
+		)
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(request.data + "/page/" + page).document
@@ -92,7 +92,7 @@ class TRasyalog : MainAPI() {
                     if (videoUrl != null) {
                         callback.invoke(
                             newExtractorLink(
-                                source = this@{class_name}.name,
+                                source = this.name,
                                 name = "M3U8 Player",
                                 url = videoUrl,
                                 type = ExtractorLinkType.M3U8
@@ -104,7 +104,7 @@ class TRasyalog : MainAPI() {
                     } else if (videoUrl != null) {
                         callback.invoke(
                             newExtractorLink(
-                                source = this@{class_name}.name,
+                                source = this.name,
                                 name = "MP4 Player",
                                 url = videoUrl,
                                 type = ExtractorLinkType.VIDEO
@@ -116,7 +116,7 @@ class TRasyalog : MainAPI() {
                     } else {
                         callback.invoke(
                             newExtractorLink(
-                                source = this@{class_name}.name,
+                                source = this.name,
                                 name = "Embed Player",
                                 url = iframeUrl,
                                 type = ExtractorLinkType.VIDEO
@@ -128,10 +128,6 @@ class TRasyalog : MainAPI() {
                     }
 
                     val subtitleFormats = Regex("""(vtt|srt|ass)""").findAll(iframeHtml).map { it.value }.toList()
-                    if subtitle_formats:
-                        print("Bulunan altyazı formatları:", subtitle_formats)
-                    else:
-                        print("Altyazı formatı bulunamadı.")
                     }
                 }
             }.onFailure {
