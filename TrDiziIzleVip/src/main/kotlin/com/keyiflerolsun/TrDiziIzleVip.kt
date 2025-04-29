@@ -56,12 +56,11 @@ class TrDiziIzleVip : MainAPI() {
         document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
             val epLink = fixUrl(it.attr("href"))
             val epTitle = it.attr("title") ?: it.text()
-            val seasonNum = Regex("([0-9]+)\.sezon", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: return@forEach
-            val episode = Episode(epLink, epTitle)
+            val seasonNum = Regex("""([0-9]+)\.sezon""", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: return@forEach
             seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
         }
 
-        val episodeList = seasons.toSortedMap().flatMap { it.value }
+        val episodes = seasons.toSortedMap().flatMap { it.value }
 
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
             this.posterUrl = posterUrl
@@ -105,7 +104,7 @@ class TrDiziIzleVip : MainAPI() {
                     } else {
                         callback.invoke(
                             newExtractorLink(
-                                source = this}.name,
+                                source = this.name,
                                 name = "Embed Player",
                                 url = iframeUrl,
                                 type = ExtractorLinkType.VIDEO
@@ -120,5 +119,4 @@ class TrDiziIzleVip : MainAPI() {
                     }
                 }
             }
-    }
 }

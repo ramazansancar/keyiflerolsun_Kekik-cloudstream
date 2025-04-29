@@ -62,11 +62,10 @@ class TRasyalog : MainAPI() {
             val epLink = fixUrl(it.attr("href"))
             val epTitle = it.attr("title") ?: it.text()
             val seasonNum = Regex("""([0-9]+)\.sezon""", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: return@forEach
-            val episode = Episode(epLink, epTitle)
             seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
         }
 
-        val episodeList = seasons.toSortedMap().flatMap { it.value }
+        val episodes = seasons.toSortedMap().flatMap { it.value }
 
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
             this.posterUrl = posterUrl
@@ -126,5 +125,4 @@ class TRasyalog : MainAPI() {
                 }
             }
         }
-    }
 }
