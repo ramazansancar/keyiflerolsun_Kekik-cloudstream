@@ -62,11 +62,12 @@ override suspend fun load(url: String): LoadResponse? {
 
     val episodeses = mutableListOf<Episode>()
 
-    for (bolum in document.select("div.entry-content a[href*='-bolum']")) {
-        val epHref = fixUrlNull(bolum.attr("href")) ?: continue
+    for (bolum in document.select("span[data-url*='-bolum']")) {
+        val epPath = bolum.attr("data-url")?.trim() ?: continue
+        val epHref = fixUrlNull(mainUrl + epPath) ?: continue
         val epName = bolum.text()?.trim() ?: continue
-        // "Bölüm 1-4" için ilk numarayı (1) al, veya tek numara varsa onu kullan
-        val epEpisode = Regex("Bölüm\\s*(\\d+)(?:-\\d+)?").find(epName)?.groupValues?.get(1)?.toIntOrNull()
+        // "1-4. Bölüm" için ilk numarayı (1) al
+        val epEpisode = Regex("(\\d+)(?:-\\d+)?\\.\\s*Bölüm").find(epName)?.groupValues?.get(1)?.toIntOrNull()
 
         val newEpisode = newEpisode(epHref) {
             this.name = epName
