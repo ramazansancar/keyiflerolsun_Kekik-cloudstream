@@ -176,6 +176,7 @@ class HDFilmCehennemi : MainAPI() {
         }.forEach { (element, langCode) ->
             element.select("button.alternative-link").map { button ->
                 button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
+                Log.d("HDCH", "Found videoID: $videoID for source: $source")
             }.forEach { (source, videoID) ->
                 val apiGet = app.get(
                     "${mainUrl}/video/$videoID/",
@@ -193,7 +194,7 @@ class HDFilmCehennemi : MainAPI() {
                 if (iframe.contains("rplayer")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("rplayer")
                 }else {
-                    iframe = iframe.substringBefore("rapidrame_id")
+                    iframe = iframe.substringBefore("{rapidrame_id")
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
                 invokeLocalSource(source, iframe, subtitleCallback, callback)
