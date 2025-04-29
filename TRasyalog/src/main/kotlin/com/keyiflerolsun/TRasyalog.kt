@@ -87,41 +87,20 @@ override suspend fun load(url: String): LoadResponse? {
     }
 }
 
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    Log.d("TRAS", "data » $data")
-    val document = app.get(data, headers = mapOf("User-Agent" to "Mozilla/5.0")).document
-    Log.d("TRAS", "Document HTML: ${document.html()}")
+     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        Log.d("TRASYA", "data » $data")
+        val document = app.get(data).document
 
-    var iframe = document.selectFirst("iframe")?.attr("src")?.let { fixUrlNull(it) }
-    Log.d("TRAS", "iframe » $iframe")
+            val iframe = document.selectFirst("iframe")?.attr("src")
+            Log.d("TRAS", "iframe » $iframe")
 
-    if (iframe == null) {
-        val scripts = document.select("script")
-        for (script in scripts) {
-            val scriptContent = script.html()
-            Log.d("TRAS", "Script content: $scriptContent")
-
-            // Script içeriğinde iframe src arayın (örnek regex)
-            val iframeRegex = Regex("""iframe.*src=["'](.*?)["']""", RegexOption.IGNORE_CASE)
-            val match = iframeRegex.find(scriptContent)
-            if (match != null) {
-                iframe = fixUrlNull(match.groupValues[1])
-                Log.d("TRAS", "Found iframe in script: $iframe")
-            }
+         if (iframe != null) {
+                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+             } else {
+                Log.d("TRASYA", "Iframe bulunamadı")
+                return false
         }
-    }
 
-    return if (iframe != null) {
-        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-        true
-    } else {
-        Log.d("TRAS", "Iframe bulunamadı")
-        false
+        return true
     }
-}
 }
