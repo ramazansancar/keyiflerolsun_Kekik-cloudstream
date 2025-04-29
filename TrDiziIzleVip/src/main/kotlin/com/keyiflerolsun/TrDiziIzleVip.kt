@@ -56,18 +56,17 @@ class TrDiziIzleVip : MainAPI() {
         document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
             val epLink = fixUrl(it.attr("href"))
             val epTitle = it.attr("title") ?: it.text()
-            val seasonNum = Regex("""([0-9]+)\.sezon""", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull()
+            val seasonNum = Regex("([0-9]+)\.sezon", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: return@forEach
             val episode = Episode(epLink, epTitle)
             seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
         }
 
         val episodeList = seasons.toSortedMap().flatMap { it.value }
 
-        return TvSeriesLoadResponse(
-            posterUrl = poster,
-            episodes = episodeList,
-            type = TvType.TvSeries,
-        )
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+            this.posterUrl = posterUrl
+            this.plot = plot
+        }
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ): Boolean {
@@ -122,3 +121,4 @@ class TrDiziIzleVip : MainAPI() {
                 }
             }
     }
+}
