@@ -196,7 +196,7 @@ class HDFilmCehennemi : MainAPI() {
                     iframe = iframe.substringBefore("{rapidrame_id")
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
-                invokeLocalSource(source, iframe, subtitleCallback, callback")
+                invokeLocalSource(source, iframe, subtitleCallback, callback)
         }
     }
   }
