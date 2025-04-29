@@ -190,14 +190,13 @@ class HDFilmCehennemi : MainAPI() {
 				Log.d("HDCH", "$iframe » $iframe")
                 if (iframe.contains("rapidrame")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
-				}
-                if (iframe.contains("rplayer")) {
+				} else if (iframe.contains("rplayer")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("rplayer/")
                 }else {
                     iframe = iframe.substringBefore("{rapidrame_id")
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
-                invokeLocalSource(source, iframe, subtitleCallback, callback, referer = "https://www.hdfilmcehennemi.mobi/")
+                invokeLocalSource(source, iframe, subtitleCallback, callback")
         }
     }
   }
