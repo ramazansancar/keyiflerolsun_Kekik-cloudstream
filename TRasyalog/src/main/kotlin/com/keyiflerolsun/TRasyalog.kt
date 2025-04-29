@@ -91,12 +91,10 @@ override suspend fun load(url: String): LoadResponse? {
         Log.d("TRAS", "data » $data")
         val document = app.get(data).document
 
-        document.select("div.safirVideoWrapper").forEach {
-            val iframe = fixUrlNull(it.selectFirst("iframe")?.attr("src")) ?: return@forEach
+            val iframe = fixUrlNull(it.selectFirst("iframe")?.attr("src"))
             Log.d("TRAS", "iframe » $iframe")
 
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-        }
 
         return true
     }
