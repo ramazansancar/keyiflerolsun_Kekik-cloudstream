@@ -35,7 +35,7 @@ class TRasyalog : MainAPI() {
                 val link = fixUrl(it.attr("href"))
                 val poster = it.selectFirst("img")?.attr("src")
                 if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                else newTvSeriesSearchResponse(title, link, TvType.TvSeries) {
             this.posterUrl = poster
         }
             }.getOrNull()
@@ -50,9 +50,8 @@ class TRasyalog : MainAPI() {
             runCatching {
                 val title = it.attr("title") ?: it.selectFirst("img")?.attr("alt")
                 val link = fixUrl(it.attr("href"))
-                val poster = it.selectFirst("img")?.attr("src")
                 if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, link, TvType.TvSeries, fixUrl(poster))
+                else newTvSeriesSearchResponse(title, link, TvType.TvSeries)
             }.getOrNull()
         }
     }
