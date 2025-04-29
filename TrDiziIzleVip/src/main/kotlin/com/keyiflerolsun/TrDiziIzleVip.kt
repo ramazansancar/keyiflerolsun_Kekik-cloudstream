@@ -56,8 +56,9 @@ class TrDiziIzleVip : MainAPI() {
         document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
             val epLink = fixUrl(it.attr("href"))
             val epTitle = it.attr("title") ?: it.text()
+			val epEpisode = Episode(epLink, epTitle)
             val seasonNum = Regex("""([0-9]+)\.sezon""", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull() ?: return@forEach
-            seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
+            seasons.getOrPut(seasonNum) { mutableListOf() }.add(epEpisode)
         }
 
         val episodes = seasons.toSortedMap().flatMap { it.value }
