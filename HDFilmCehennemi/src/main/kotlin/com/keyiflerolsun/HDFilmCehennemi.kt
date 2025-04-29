@@ -193,7 +193,7 @@ class HDFilmCehennemi : MainAPI() {
                 if (iframe.contains("rplayer")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("rplayer")
                 }else {
-                    iframe = iframe.substringBefore("rapidrame_id") + "ah"
+                    iframe = iframe.substringBefore("rapidrame_id")
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
                 invokeLocalSource(source, iframe, subtitleCallback, callback)
