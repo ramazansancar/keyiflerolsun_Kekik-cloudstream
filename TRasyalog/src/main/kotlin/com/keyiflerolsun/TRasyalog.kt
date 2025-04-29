@@ -61,7 +61,7 @@ class TRasyalog : MainAPI() {
         document.select("a[href*=/bolum-], a[href*=/sezon-]").forEach {
             val epLink = fixUrl(it.attr("href"))
             val epTitle = it.attr("title") ?: it.text()
-            val seasonNum = Regex("([0-9]+)\.sezon", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull()
+            val seasonNum = Regex("""([0-9]+)\.sezon""", RegexOption.IGNORE_CASE).find(it.text())?.groupValues?.getOrNull(1)?.toIntOrNull()
             val episode = Episode(epLink, epTitle)
             seasons.getOrPut(seasonNum) { mutableListOf() }.add(episode)
         }
@@ -75,12 +75,7 @@ class TRasyalog : MainAPI() {
         )
     }
 
-    override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
+    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ): Boolean {
         val document = app.get(data).document
         document.select("iframe").apmap {
             runCatching {
