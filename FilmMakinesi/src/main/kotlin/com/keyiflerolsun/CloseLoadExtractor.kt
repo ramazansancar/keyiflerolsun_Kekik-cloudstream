@@ -45,16 +45,19 @@ open class CloseLoad : ExtractorApi() {
             Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
             callback.invoke(
-            newExtractorLink(
-                source = this.name,
-                name = this.name,
-                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                type = ExtractorLinkType.M3U8 // Tür olarak M3U8'yi belirtiyoruz
-            ) {
-                quality = Qualities.Unknown.value
-                headers = mapOf("Referer" to url)
-            }
+                newExtractorLink(
+                    source  = this.name,
+                    name    = this.name,
+                    url     = m3uLink,
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = mainUrl
+                    this.quality = Qualities.Unknown.value
+                }
             )
+        } else {
+            println("No match found")
         }
+
     }
 }

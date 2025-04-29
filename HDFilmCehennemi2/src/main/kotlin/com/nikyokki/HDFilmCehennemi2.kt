@@ -24,6 +24,8 @@ import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.fixUrl
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
@@ -170,7 +172,7 @@ class HDFilmCehennemi2 : MainAPI() {
             }
         } else {
             val episodes = mutableListOf<Episode>()
-            document.select("nav card-nav horizontal nav-slider").forEach { szn ->
+            document.select("div.seasonsTabs-tabContent div").forEach { szn ->
                 val epSzn = szn.attr("id").substringAfter("seasons-").toIntOrNull()
                 szn.select("div.card-list-item").forEach {
                     val epHref = it.selectFirst("a")?.attr("href") ?: ""
@@ -237,7 +239,7 @@ class HDFilmCehennemi2 : MainAPI() {
                             fixUrlNull(document.selectFirst("iframe")?.attr("data-src")) ?: ""
                         Log.d("HDC", "iframe » $iframe")
                         if (iframe.contains("vidload")) {
-                            vidloadExtract(iframe, name, callback)
+                            vidloadExtract(iframe, name, callback, subtitleCallback)
                         } else {
                             loadExtractor(iframe, url, subtitleCallback, callback)
                         }
@@ -246,7 +248,7 @@ class HDFilmCehennemi2 : MainAPI() {
                         val iframe = fixUrlNull(doc.selectFirst("iframe")?.attr("data-src")) ?: ""
                         Log.d("HDC", "iframe » $iframe")
                         if (iframe.contains("vidload")) {
-                            vidloadExtract(iframe, name, callback)
+                            vidloadExtract(iframe, name, callback, subtitleCallback)
                         } else {
                             loadExtractor(iframe, url, subtitleCallback, callback)
                         }
@@ -254,52 +256,64 @@ class HDFilmCehennemi2 : MainAPI() {
                 }
             }
         } else {
-            Log.d("HDC", "Tek alternatif var")
             val iframe = fixUrlNull(document.selectFirst("iframe")?.attr("data-src")) ?: ""
-            Log.d("HDC", "iframe » $iframe")
             val name =
                 document.selectFirst("div.card-body")?.selectFirst("li.nav-item a")?.text() ?: ""
             if (iframe.contains("vidload")) {
-                vidloadExtract(iframe, name, callback)
+                vidloadExtract(iframe, name, callback, subtitleCallback)
             } else {
                 loadExtractor(iframe, data, subtitleCallback, callback)
             }
+            document.select("div#videosdual a").forEachIndexed { index, element ->
+                if (index == 0) return@forEachIndexed
+                val url = element.attr("href")
+                val doc = app.get(url).document
+                val ifAlt = fixUrlNull(doc.selectFirst("iframe")?.attr("data-src")) ?: ""
+                if (ifAlt.contains("vidload")) {
+                    vidloadExtract(ifAlt, name, callback, subtitleCallback)
+                } else {
+                    loadExtractor(ifAlt, url, subtitleCallback, callback)
+                }
+            }
+
         }
         return true
     }
 
-    suspend fun vidloadExtract(iframe: String, name: String, callback: (ExtractorLink) -> Unit) {
+    suspend fun vidloadExtract(iframe: String, name: String, callback: (ExtractorLink) -> Unit, subtitleCallback: (SubtitleFile) -> Unit) {
         Log.d("HDC", "vidloadExtract » $iframe")
         if (iframe.contains("vidload")) {
-            val url = iframe.replace("/iframe/", "/ajax/")
-            Log.d("HDC", "vidloadExtract » $url")
+            //val url = iframe.replace("/iframe/", "/ajax/")
+            Log.d("HDC", "vidloadExtract » $iframe")
             val doc = app.get(
-                url,
+                iframe,
                 headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
-                    "Accept" to "*/*", "B52B04325F64A448D565566F5C151F9C" to "195.142.131.194"
-                ), referer = "https://vidload.lol/"
+                ), referer = mainUrl
             ).document
-            val json = ObjectMapper().readValue(doc.body().text(), Vidload::class.java)
-            val newUrl = json.file ?: ""
-            Log.d("HDC", "vidloadExtract » $newUrl")
-            val qualities = mutableListOf<String>()
-            qualities.add("360p")
-            qualities.add("480p")
-            qualities.add("720p")
-            qualities.add("1080p")
-
-            qualities.forEachIndexed { index, s ->
-                callback.invoke(
-                    newExtractorLink(
-                        source = this.name,
-                        name = "$s - Vidload - $name",
-                        url = newUrl.replace("playlist", s),
-                        ExtractorLinkType.M3U8
-                    ) {
-                        this.referer = "https://vidload.lol/"
-                        this.quality = getQualityFromName(s)
-                    }
+            val source = "https://vidload.site" + doc.selectFirst("source")?.attr("src")
+            callback.invoke(
+                newExtractorLink(
+                    source = "Vidload",
+                    name = "Vidload $name",
+                    url = source,
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = "https://vidload.site/"
+                    this.quality = Qualities.Unknown.value
+                }
+            )
+            val script = doc.select("script").find { it.data().contains("player.addRemoteTextTrack") }?.data() ?: ""
+            val regex = Regex("""src:\s*'([^']*)'.*?label:\s*'([^']*)'""", RegexOption.DOT_MATCHES_ALL)
+            val matches = regex.findAll(script)
+            for (match in matches) {
+                val src = match.groupValues[1]
+                val label = match.groupValues[2]
+                subtitleCallback.invoke(
+                    SubtitleFile(
+                        label,
+                        "https://vidload.site$src"
+                    )
                 )
             }
         }
