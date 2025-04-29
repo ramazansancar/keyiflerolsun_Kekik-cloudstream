@@ -55,17 +55,18 @@ class TRasyalog : MainAPI() {
 override suspend fun load(url: String): LoadResponse? {
     val document = app.get(url).document
 
-    val title       = document.selectFirst("h1")?.text()?.trim() ?: return null
-    val poster      = fixUrlNull(document.selectFirst("div.aligncenter img")?.attr("src"))
+    val title = document.selectFirst("h1")?.text()?.trim() ?: return null
+    val poster = fixUrlNull(document.selectFirst("div.aligncenter img")?.attr("src"))
     val description = document.selectFirst("div.entry-content > p")?.text()?.trim()
-    val tags        = document.select("div.post-meta a[href*='/category/']").map { it.text() }
+    val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
 
     val episodeses = mutableListOf<Episode>()
 
     for (bolum in document.select("div.entry-content a[href*='-bolum']")) {
         val epHref = fixUrlNull(bolum.attr("href")) ?: continue
         val epName = bolum.text()?.trim() ?: continue
-        val epEpisode = epName.replace(Regex("Bölüm\\s*(\\d+).*"), "$1").trim().toIntOrNull()
+        // "Bölüm 1-4" için ilk numarayı (1) al, veya tek numara varsa onu kullan
+        val epEpisode = Regex("Bölüm\\s*(\\d+)(?:-\\d+)?").find(epName)?.groupValues?.get(1)?.toIntOrNull()
 
         val newEpisode = newEpisode(epHref) {
             this.name = epName
