@@ -39,7 +39,7 @@ class TRasyalog : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.post-container img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
@@ -52,34 +52,34 @@ class TRasyalog : MainAPI() {
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
-    override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+override suspend fun load(url: String): LoadResponse? {
+    val document = app.get(url).document
 
-        val title       = document.selectFirst("h1")?.text()?.trim() ?: return null
-        val poster      = fixUrlNull(document.selectFirst("div.aligncenter img")?.attr("src"))
-        val description = document.selectFirst("h2 p")?.text()?.trim()
-        val tags        = document.select("div#genxed a[href*='/category']").map { it.text() }
+    val title       = document.selectFirst("h1")?.text()?.trim() ?: return null
+    val poster      = fixUrlNull(document.selectFirst("div.aligncenter img")?.attr("src"))
+    val description = document.selectFirst("div.entry-content > p")?.text()?.trim()
+    val tags        = document.select("div.post-meta a[href*='/category/']").map { it.text() }
 
-        val episodeses = mutableListOf<Episode>()
+    val episodeses = mutableListOf<Episode>()
 
-        for (bolum in document.select("div.eplister ul li a")) {
-            val epHref = fixUrlNull(bolum.attr("href")) ?: continue
-            val epName = bolum.selectFirst(".epl-title")?.text()?.trim() ?: continue
-            val epEpisode = epName.replace("Bölüm", "").trim().toIntOrNull()
-	
-                val newEpisode = newEpisode(epHref) {
-                    this.name = epName
-                    this.episode = epEpisode
-                }
-                episodeses.add(newEpisode)
-            }
+    for (bolum in document.select("div.entry-content a[href*='-bolum']")) {
+        val epHref = fixUrlNull(bolum.attr("href")) ?: continue
+        val epName = bolum.text()?.trim() ?: continue
+        val epEpisode = epName.replace(Regex("Bölüm\\s*(\\d+).*"), "$1").trim().toIntOrNull()
 
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
-            this.posterUrl = poster
-            this.plot = description
-            this.tags = tags
+        val newEpisode = newEpisode(epHref) {
+            this.name = epName
+            this.episode = epEpisode
         }
+        episodeses.add(newEpisode)
     }
+
+    return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
+        this.posterUrl = poster
+        this.plot = description
+        this.tags = tags
+    }
+}
 
 override suspend fun loadLinks(
     data: String,
