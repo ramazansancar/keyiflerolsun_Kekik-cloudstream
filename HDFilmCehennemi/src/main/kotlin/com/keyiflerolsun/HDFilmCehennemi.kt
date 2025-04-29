@@ -193,17 +193,14 @@ class HDFilmCehennemi : MainAPI() {
                 if (iframe.contains("rplayer")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("rplayer")
                 }else {
-                    iframe = iframe.substringBefore("rapidrame_id") + "ah";
+                    iframe = iframe.substringBefore("rapidrame_id") + "ah"
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
                 invokeLocalSource(source, iframe, subtitleCallback, callback)
         }
-
-        return true
     }
   }
-}
-}
+        return true
 }
     private data class SubSource(
         @JsonProperty("file")  val file: String?  = null,
@@ -214,3 +211,4 @@ class HDFilmCehennemi : MainAPI() {
     data class Results(
         @JsonProperty("results") val results: List<String> = arrayListOf()
     )
+}
