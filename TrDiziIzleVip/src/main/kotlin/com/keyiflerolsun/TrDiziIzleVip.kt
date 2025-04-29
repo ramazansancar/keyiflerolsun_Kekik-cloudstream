@@ -120,4 +120,6 @@ class TrDiziIzleVip : MainAPI() {
                     }
                 }
             }
+			return true
+		}
 }
