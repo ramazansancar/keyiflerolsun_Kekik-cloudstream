@@ -87,20 +87,58 @@ override suspend fun load(url: String): LoadResponse? {
     }
 }
 
-     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("TRAS", "data » $data")
-        val document = app.get(data).document
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("TRAS", "data » $data")
+    val document = app.get(data, headers = mapOf("User-Agent" to "Mozilla/5.0")).document
+    Log.d("TRAS", "Document HTML: ${document.html()}") // HTML'yi logla
 
-            val iframe = fixUrlNull(document.selectFirst("iframe")?.attr("src"))
-            Log.d("TRAS", "iframe » $iframe")
+    // Önce iframe'i kontrol et
+    var iframe = document.selectFirst("iframe")?.attr("src")?.let { fixUrlNull(it) }
+    Log.d("TRAS", "iframe » $iframe")
 
-         if (iframe != null) {
-                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-             } else {
-                Log.d("TRAS", "Iframe bulunamadı")
-                return false // veya uygun bir hata işleme
+    // Eğer iframe bulunamadıysa script'leri incele
+    if (iframe == null) {
+        val scripts = document.select("script")
+        for (script in scripts) {
+            val scriptContent = script.html() // veya script.data() eğer içeriği data olarak alıyorsanız
+            Log.d("TRAS", "Script content: $scriptContent")
+
+            // Script içeriğinde iframe src arayın (örnek regex)
+            val iframeRegex = Regex("""iframe.*src=["'](.*?)["']""", RegexOption.IGNORE_CASE)
+            val match = iframeRegex.find(scriptContent)
+            if (match != null) {
+                iframe = fixUrlNull(match.groupValues[1])
+                Log.d("TRAS", "Found iframe in script: $iframe")
+                break
+            }
+
+            // Alternatif olarak, başka bir URL kalıbı arayın (örneğin, video URL'si)
+            val urlRegex = Regex("""https?://[^\s"']+""") // Genel URL regex'i
+            val urls = urlRegex.findAll(scriptContent).map { it.value }.toList()
+            urls.forEach { url ->
+                Log.d("TRAS", "Found URL in script: $url")
+                // URL'nin iframe ile ilgili olduğunu doğrulamak için ek mantık eklenebilir
+                if (url.contains("embed") || url.contains("player")) { // Örnek filtre
+                    iframe = fixUrlNull(url)
+                    break
+                }
+            }
+            if (iframe != null) break
         }
-
-        return true
     }
+
+    // Iframe bulunursa loadExtractor'ı çağır
+    return if (iframe != null) {
+        loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+        true
+    } else {
+        Log.d("TRAS", "Iframe bulunamadı")
+        false
+    }
+}
 }
