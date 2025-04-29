@@ -43,7 +43,7 @@ class TRasyalog : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src")
+        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
