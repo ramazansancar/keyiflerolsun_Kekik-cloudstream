@@ -188,10 +188,10 @@ class HDFilmCehennemi : MainAPI() {
                 Log.d("HDCH", "Found videoID: $videoID")
                 var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
 				Log.d("HDCH", "$iframe » $iframe")
-                if (iframe.contains("rapidrame")) {
-                    iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
-				} else if (iframe.contains("rplayer")) {
+                if (iframe.contains("rplayer")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("rplayer/")
+				} else if  { (iframe.contains("rapidrame"))
+                    iframe =  "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
                 }else {
                     iframe = iframe.substringBefore("{rapidrame_id")
 
