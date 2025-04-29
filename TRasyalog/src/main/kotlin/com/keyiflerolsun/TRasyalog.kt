@@ -1,8 +1,12 @@
 package com.keyiflerolsun
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.extractors.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.M3u8Helper
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
 
 class TRasyalog : MainAPI() {
@@ -31,7 +35,7 @@ class TRasyalog : MainAPI() {
                 val link = fixUrl(it.attr("href"))
                 val poster = it.selectFirst("img")?.attr("src")
                 if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
+                else TvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
             }.getOrNull()
         }
         return newHomePageResponse(request.name, items)
@@ -46,7 +50,7 @@ class TRasyalog : MainAPI() {
                 val link = fixUrl(it.attr("href"))
                 val poster = it.selectFirst("img")?.attr("src")
                 if (title.isNullOrBlank() || link.isNullOrBlank() || poster.isNullOrBlank()) null
-                else newTvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
+                else TvSeriesSearchResponse(title, link, fixUrl(poster), TvType.TvSeries)
             }.getOrNull()
         }
     }
