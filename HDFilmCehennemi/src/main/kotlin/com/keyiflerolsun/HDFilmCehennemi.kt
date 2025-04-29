@@ -203,8 +203,8 @@ class HDFilmCehennemi : MainAPI() {
 
         return true
     }
+  }
 }
-
     private data class SubSource(
         @JsonProperty("file")  val file: String?  = null,
         @JsonProperty("label") val label: String? = null,
@@ -214,4 +214,3 @@ class HDFilmCehennemi : MainAPI() {
     data class Results(
         @JsonProperty("results") val results: List<String> = arrayListOf()
     )
-}
