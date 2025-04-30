@@ -77,20 +77,23 @@ override suspend fun load(url: String): LoadResponse? {
     // 2. Adım: Her sayfayı indir, iframe'leri sırayla bölüme çevir
     for (partUrl in partUrls) {
         val partDoc = app.get(partUrl).document
-        val iframes = partDoc.select("iframe[data-src]")
-
-        for (iframe in iframes) {
-            val iframeSrc = iframe.attr("data-src").trim()
-            val iframeUrl = if (iframeSrc.startsWith("http")) iframeSrc else "https:$iframeSrc"
-
-            val episode = newEpisode(iframeUrl) {
-                this.name = "$episodeCounter. Bölüm"
-                this.episode = episodeCounter
-            }
-            episodes.add(episode)
-            episodeCounter++
+    
+        // SADECE ilk iframe alınır
+        val iframe = partDoc.selectFirst("iframe[data-src], iframe[src]") ?: continue
+    
+        val iframeUrl = iframe.attr("data-src").ifBlank { iframe.attr("src") }.trim()
+        val fixedUrl = if (iframeUrl.startsWith("http")) iframeUrl else "https:$iframeUrl"
+    
+        val episodeNumber = episodeses.size + 1
+    
+        val episode = newEpisode(fixedUrl) {
+            this.name = "Bölüm $episodeNumber"
+            this.episode = episodeNumber
         }
+    
+        episodeses.add(episode)
     }
+    
 
     return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
         this.posterUrl = poster
