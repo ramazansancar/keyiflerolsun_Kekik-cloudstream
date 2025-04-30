@@ -71,78 +71,14 @@ override suspend fun load(url: String): LoadResponse? {
         val epPath = bolum.attr("data-url")?.trim() ?: continue
         val epHref = fixUrlNull(mainUrl + epPath) ?: continue
         val epName = bolum.text()?.trim() ?: continue
+        // "1-4. Bölüm" için ilk numarayı (1) al
+        val epEpisode = Regex("(\\d+)(?:-\\d+)?\\.\\s*Bölüm").find(epName)?.groupValues?.get(1)?.toIntOrNull()
 
-        // "1-5. Bölüm" için başlangıç ve bitiş numaralarını al
-        val episodeRangeMatch = Regex("(\\d+)-(\\d+)\\.\\s*Bölüm").find(epName)
-        if (episodeRangeMatch != null) {
-            val startEpisode = episodeRangeMatch.groupValues[1].toIntOrNull() ?: continue
-            val endEpisode = episodeRangeMatch.groupValues[2].toIntOrNull() ?: continue
-
-            // Bölüm sayfasını ziyaret et
-            val episodePageDoc = app.get(epHref).document
-
-            // Bölüm metinlerini ve iframe'leri al
-            val episodeElements = episodePageDoc.select("div.su-tabs-pane, div:contains(Bölüm)")
-            if (episodeElements.isEmpty()) {
-                Log.d("TRASYA", "Episode elements bulunamadı: $epHref")
-                continue
-            }
-
-            // Her bölüm için iframe ve metni eşleştir
-            episodeElements.forEachIndexed { index, element ->
-                val episodeText = element.text()
-                val episodeNumMatch = Regex("(\\d+)\\.\\s*Bölüm").find(episodeText)
-                val episodeNum = episodeNumMatch?.groupValues?.get(1)?.toIntOrNull()
-                if (episodeNum == null || episodeNum < startEpisode || episodeNum > endEpisode) return@forEachIndexed
-
-                // Iframe'i elementin içinden veya sonraki kardeşinden al
-                val iframeUrl = element.selectFirst("iframe")?.attr("data-src")
-                    ?: element.nextElementSibling()?.selectFirst("iframe")?.attr("data-src")
-                if (iframeUrl.isNullOrEmpty()) {
-                    Log.d("TRASYA", "Iframe bulunamadı for episode $episodeNum")
-                    return@forEachIndexed
-                }
-
-                // Iframe URL'sine "https:" ekle
-                val fixedIframeUrl = if (iframeUrl.startsWith("//")) "https:$iframeUrl" else iframeUrl
-                val dynamicEpName = "$episodeNum. Bölüm"
-
-                Log.d("TRASYA", "Episode $episodeNum: $fixedIframeUrl")
-                val newEpisode = newEpisode(fixedIframeUrl) {
-                    this.name = dynamicEpName
-                    this.episode = episodeNum
-                }
-                episodeses.add(newEpisode)
-            }
-        } else {
-            // Tek bölüm varsa
-            val singleEpisodeMatch = Regex("(\\d+)\\.\\s*Bölüm").find(epName)
-            val epEpisode = singleEpisodeMatch?.groupValues?.get(1)?.toIntOrNull()
-
-            if (epEpisode != null) {
-                // Tek bölümün iframe'ini çek
-                val episodePageDoc = app.get(epHref).document
-                val iframeUrl = episodePageDoc.selectFirst("iframe")?.attr("data-src")
-                if (iframeUrl.isNullOrEmpty()) {
-                    Log.d("TRASYA", "Iframe bulunamadı for single episode $epEpisode")
-                    continue
-                }
-
-                // Iframe URL'sine "https:" ekle
-                val fixedIframeUrl = if (iframeUrl.startsWith("//")) "https:$iframeUrl" else iframeUrl
-                Log.d("TRASYA", "Single Episode $epEpisode: $fixedIframeUrl")
-                val newEpisode = newEpisode(fixedIframeUrl) {
-                    this.name = epName
-                    this.episode = epEpisode
-                }
-                episodeses.add(newEpisode)
-            }
+        val newEpisode = newEpisode(epHref) {
+            this.name = epName
+            this.episode = epEpisode
         }
-    }
-
-    if (episodeses.isEmpty()) {
-        Log.d("TRASYA", "Hiçbir bölüm bulunamadı")
-        return null
+        episodeses.add(newEpisode)
     }
 
     return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
@@ -152,19 +88,22 @@ override suspend fun load(url: String): LoadResponse? {
     }
 }
 
-override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-    Log.d("TRASYA", "loadLinks data: $data")
+     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+        Log.d("TRASYA", "data » $data")
+        val document = app.get(data).document
 
-    // Iframe URL'sine "https:" ekle (gerekirse)
-    val fixedIframe = if (data.startsWith("//")) "https:$data" else data
-    Log.d("TRASYA", "fixedIframe: $fixedIframe")
+            val iframe = document.selectFirst("iframe")?.attr("data-src")
+            Log.d("TRASYA", "iframe » $iframe")
+			val fixediframe = "https:" + iframe
+			Log.d("TRASYA", "fixediframe » $fixediframe")
 
-    // Iframe URL'sini loadExtractor ile işle
-    return try {
-        loadExtractor(fixedIframe, "${mainUrl}/", subtitleCallback, callback)
-        true
-    } catch (e: Exception) {
-        Log.e("TRASYA", "loadExtractor hatası: ${e.message}")
-        false
+         if (fixediframe != null) {
+                 loadExtractor(fixediframe, "${mainUrl}/", subtitleCallback, callback)
+             } else {
+                Log.d("TRASYA", "fixediframe bulunamadı")
+                return false
+        }
+
+        return true
     }
 }
