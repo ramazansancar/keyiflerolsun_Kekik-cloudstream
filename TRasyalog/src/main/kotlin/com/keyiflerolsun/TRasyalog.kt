@@ -69,9 +69,9 @@ override suspend fun load(url: String): LoadResponse? {
 
     // 1. Adım: Tüm bölüm aralıklarının URL'lerini çek (örnek: /marry-to...-1-5-bolum)
     val partUrls = document.select("span[data-url]").mapNotNull {
-        val relativeUrl = it.attr("data-url")?.trim()
-        if (relativeUrl.isNotBlank()) fixUrl(relativeUrl) else null
+        it.attr("data-url")?.trim()?.takeIf { it.isNotBlank() }?.let { fixUrl(it) }
     }
+
 
     var episodeCounter = 1
 
