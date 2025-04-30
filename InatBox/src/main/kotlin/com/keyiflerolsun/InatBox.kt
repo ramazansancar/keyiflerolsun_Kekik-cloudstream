@@ -373,10 +373,22 @@ class InatBox : MainAPI() {
         }
 
         val extractorFound =
-            loadExtractor(sourceUrl, headers["Referer"], subtitleCallback){
-                callback.invoke(
-                    ExtractorLink(source = it.source,name = contentToProcess.chName, url = it.url, referer = it.referer, quality = it.quality, headers = it.headers, type = it.type)
-                )
+            if (sourceUrl.contains("dzen.ru")) {
+                 loadExtractor(sourceUrl,subtitleCallback,callback)
+             } else {
+                 loadExtractor(sourceUrl, headers["Referer"], subtitleCallback) {
+                     callback.invoke(
+                         ExtractorLink(
+                             source = it.source,
+                             name = contentToProcess.chName,
+                             url = it.url,
+                             referer = it.referer,
+                             quality = it.quality,
+                             headers = it.headers,
+                             type = it.type
+                         )
+                     )
+                 }
             }
 
         //When no extractor found, try to load as generic
