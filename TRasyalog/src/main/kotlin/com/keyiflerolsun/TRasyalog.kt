@@ -27,7 +27,6 @@ class TRasyalog : MainAPI() {
         "${mainUrl}/category/tayland-dizileri/"          to "TaylandDizileri",
         "${mainUrl}/category/japon-dizileri/"            to "Japon Diziler",
         "${mainUrl}/category/endonezya-dizileri/"        to "Endonezya Diziler",
-        "${mainUrl}/category/seri-diziler/"              to "Seri Diziler",
         "${mainUrl}/category/devam-eden-diziler/"        to "Devam eden Diziler"
     )
 
@@ -102,24 +101,9 @@ override suspend fun load(url: String): LoadResponse? {
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
     Log.d("TRASYA", "data » $data")
-    val document = app.get(data).document
+    // data zaten doğrudan iframe URL'si ise loadExtractor'a gönderiyoruz
+    loadExtractor(data, "$mainUrl/", subtitleCallback, callback)
 
-    // src varsa onu al, yoksa data-src al, null olursa boş kalır
-    val iframeUrl = document.selectFirst("iframe")?.let {
-        it.attr("src").ifBlank { it.attr("data-src") }
-    }?.let {
-        if (it.startsWith("http")) it else "https:$it"
-    }
-
-    Log.d("TRASYA", "iframeUrl » $iframeUrl")
-
-    if (iframeUrl != null) {
-        loadExtractor(iframeUrl, "$mainUrl/", subtitleCallback, callback)
-        return true
-    } else {
-        Log.d("TRASYA", "iframeUrl bulunamadı")
-        return false
-    }
+    return true
 }
-
 }
