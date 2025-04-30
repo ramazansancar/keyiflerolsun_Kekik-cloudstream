@@ -1,40 +1,51 @@
+
+// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
 package com.keyiflerolsun
 
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.fasterxml.jackson.annotation.JsonProperty
 
-class Dzen : ExtractorApi(){
-    override val name            = "Dzen"
-    override val mainUrl         = "https://cdn.dzen.ru/"
-    override val requiresReferer = false
+open class DzenRu : ExtractorApi() {
+    override val name            = "DzenRu"
+    override val mainUrl         = "https://dzen.ru"
+    override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        val type = if (url.contains(".m3u8")) "m3u8" else if(url.contains(".mpd")) "dash" else null
+        val videoKey = url.split("/").last()
+        val videoUrl = "${mainUrl}/embed/${videoKey}"
+        Log.d("Kekik_${this.name}", "videoUrl: $videoUrl")
 
-        val extractorLink = when(type) {
-            "m3u8" -> ExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = url,
-                referer = "",
-                quality = Qualities.Unknown.value,
-                type    = ExtractorLinkType.M3U8
+        val html = app.get(videoUrl).text
+
+        val regex = Regex("""https://vd\d+\.okcdn\.ru/\?[^"'\\\s]+""")
+        val matches = regex.findAll(html).map { it.value }.toList()
+
+        if (matches.isEmpty()) throw ErrorLoadingException("DzenRu video link not found.")
+
+        for (link in matches.distinct()) {
+            callback.invoke(
+                newExtractorLink(
+                    source  = this.name,
+                    name    = this.name,
+                    url     = link,
+                    type    = INNER_TYPE,
+                ) {
+                    headers = mapOf("Referer" to mainUrl)
+                    this.quality = Qualities.Unknown.value
+                }
             )
-
-            "dash" -> ExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = url,
-                referer = "",
-                quality = Qualities.Unknown.value,
-                type    = ExtractorLinkType.DASH
-            )
-
-            else -> null
-        }
-
-        if (extractorLink != null) {
-            callback.invoke(extractorLink)
         }
     }
+
+    data class DzenRuUrls(
+        @JsonProperty("urls") val urls: List<DzenRuData>
+    )
+
+    data class DzenRuData(
+        @JsonProperty("url")   val url: String,
+        @JsonProperty("label") val label: String,
+    )
 }
