@@ -60,37 +60,35 @@ class TRasyalog : MainAPI() {
         val document = app.get(url).document
     
         val title = document.selectFirst("h1")?.text()?.trim() ?: return null
-        val poster = fixUrlNull(document.selectFirst("img.wp-image-66892")?.let {it.attr("src").ifBlank { it.attr("data-src") }})
+        val poster = fixUrlNull(document.selectFirst("img.wp-image-66892")?.attr("data-src") 
+            ?: document.selectFirst("img.wp-image-66892")?.attr("src"))
         val description = document.selectFirst("h2 > p")?.text()?.trim()
         val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
     
         val episodeses = mutableListOf<Episode>()
     
-        // Bölüm sayfalarının linklerini al (örneğin 1-5, 6-7 bölümler vs.)
         val partUrls = document.select("span[data-url]").mapNotNull {
             val relativeUrl = it.attr("data-url").trim()
-            if (relativeUrl.isNotEmpty()) fixUrl(relativeUrl) else null
+            if (relativeUrl.isNotBlank()) fixUrl(relativeUrl) else null
         }
     
         for (partUrl in partUrls) {
             val partDoc = app.get(partUrl).document
     
-            // Her bölüm "tab-X-Y-bolum" id'li div içinde
             val tabDivs = partDoc.select("div.tab_content[id^=tab-]")
     
             for (div in tabDivs) {
-                val id = div.attr("id")
-                val epNumber = Regex("tab-\\d+-(\\d+)-bolum").find(id)?.groupValues?.get(1)?.toIntOrNull() ?: continue
+                val idAttr = div.attr("id") // örnek: "tab-0-1-bolum"
+                val epNum = Regex("tab-\\d+-(\\d+)-bolum").find(idAttr)?.groupValues?.get(1)?.toIntOrNull() ?: continue
     
-                val iframe = div.selectFirst("iframe[data-src], iframe[src]") ?: continue
-                val rawUrl = iframe.attr("data-src").ifBlank { iframe.attr("src") }.trim()
-                val fixedUrl = if (rawUrl.startsWith("http")) rawUrl else "https:$rawUrl"
+                val iframe = div.selectFirst("iframe[src], iframe[data-src]") ?: continue
+                val rawUrl = iframe.attr("src").ifBlank { iframe.attr("data-src") }
+                val videoUrl = if (rawUrl.startsWith("http")) rawUrl else "https:$rawUrl"
     
-                val episode = newEpisode(fixedUrl) {
-                    this.name = "Bölüm $epNumber"
-                    this.episode = epNumber
+                val episode = newEpisode(videoUrl) {
+                    this.name = "Bölüm $epNum"
+                    this.episode = epNum
                 }
-    
                 episodeses.add(episode)
             }
         }
