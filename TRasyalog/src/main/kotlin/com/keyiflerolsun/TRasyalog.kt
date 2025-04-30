@@ -67,20 +67,30 @@ override suspend fun load(url: String): LoadResponse? {
 
     val episodes = mutableListOf<Episode>()
 
-    // Tüm iframe'leri sırayla al
-    val iframeElements = document.select("iframe[data-src]")
+    // 1. Adım: Tüm bölüm aralıklarının URL'lerini çek (örnek: /marry-to...-1-5-bolum)
+    val partUrls = document.select("span[data-url]").mapNotNull {
+        val relativeUrl = it.attr("data-url")?.trim()
+        if (relativeUrl.isNotBlank()) fixUrl(relativeUrl) else null
+    }
 
-    for ((index, iframe) in iframeElements.withIndex()) {
-        val iframeSrc = iframe.attr("data-src").trim()
-        val iframeUrl = if (iframeSrc.startsWith("http")) iframeSrc else "https:$iframeSrc"
+    var episodeCounter = 1
 
-        val episodeNumber = index + 1 // 0'dan başladığı için 1 ekliyoruz
+    // 2. Adım: Her sayfayı indir, iframe'leri sırayla bölüme çevir
+    for (partUrl in partUrls) {
+        val partDoc = app.get(partUrl).document
+        val iframes = partDoc.select("iframe[data-src]")
 
-        val episode = newEpisode(iframeUrl) {
-            this.name = "$episodeNumber. Bölüm"
-            this.episode = episodeNumber
+        for (iframe in iframes) {
+            val iframeSrc = iframe.attr("data-src").trim()
+            val iframeUrl = if (iframeSrc.startsWith("http")) iframeSrc else "https:$iframeSrc"
+
+            val episode = newEpisode(iframeUrl) {
+                this.name = "$episodeCounter. Bölüm"
+                this.episode = episodeCounter
+            }
+            episodes.add(episode)
+            episodeCounter++
         }
-        episodes.add(episode)
     }
 
     return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
@@ -89,7 +99,6 @@ override suspend fun load(url: String): LoadResponse? {
         this.tags = tags
     }
 }
-
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
     Log.d("TRASYA", "data » $data")
