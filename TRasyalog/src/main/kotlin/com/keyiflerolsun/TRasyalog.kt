@@ -71,14 +71,53 @@ override suspend fun load(url: String): LoadResponse? {
         val epPath = bolum.attr("data-url")?.trim() ?: continue
         val epHref = fixUrlNull(mainUrl + epPath) ?: continue
         val epName = bolum.text()?.trim() ?: continue
-        // "1-4. Bölüm" için ilk numarayı (1) al
-        val epEpisode = Regex("(\\d+)(?:-\\d+)?\\.\\s*Bölüm").find(epName)?.groupValues?.get(1)?.toIntOrNull()
 
-        val newEpisode = newEpisode(epHref) {
-            this.name = epName
-            this.episode = epEpisode
+        // "1-5. Bölüm" için başlangıç ve bitiş numaralarını al
+        val episodeRangeMatch = Regex("(\\d+)-(\\d+)\\.\\s*Bölüm").find(epName)
+        if (episodeRangeMatch != null) {
+            val startEpisode = episodeRangeMatch.groupValues[1].toIntOrNull() ?: continue
+            val endEpisode = episodeRangeMatch.groupValues[2].toIntOrNull() ?: continue
+
+            // Bölüm sayfasını ziyaret et
+            val episodePageDoc = app.get(epHref).document
+
+            // Sayfadaki tüm iframe'leri al (veya bölümlere özel bir seçici kullan)
+            val iframes = episodePageDoc.select("iframe[src]").map { it.attr("src") }
+            if (iframes.isEmpty()) continue
+
+            // Her bölüm için iframe linkini eşleştir
+            for (episodeNum in startEpisode..endEpisode) {
+                // Bölüm numarasına göre iframe seç (örneğin, sırayla eşleştirme)
+                val iframeIndex = episodeNum - startEpisode
+                if (iframeIndex >= iframes.size) continue // Iframe yoksa atla
+
+                val iframeUrl = fixUrlNull(iframes[iframeIndex]) ?: continue
+                val dynamicEpName = "$episodeNum. Bölüm"
+
+                val newEpisode = newEpisode(iframeUrl) {
+                    this.name = dynamicEpName
+                    this.episode = episodeNum
+                }
+                episodeses.add(newEpisode)
+            }
+        } else {
+            // Tek bölüm varsa
+            val singleEpisodeMatch = Regex("(\\d+)\\.\\s*Bölüm").find(epName)
+            val epEpisode = singleEpisodeMatch?.groupValues?.get(1)?.toIntOrNull()
+
+            if (epEpisode != null) {
+                // Tek bölümün iframe'ini çek
+                val episodePageDoc = app.get(epHref).document
+                val iframeUrl = episodePageDoc.selectFirst("iframe[src]")?.attr("src")
+                if (iframeUrl != null) {
+                    val newEpisode = newEpisode(fixUrlNull(iframeUrl) ?: continue) {
+                        this.name = epName
+                        this.episode = epEpisode
+                    }
+                    episodeses.add(newEpisode)
+                }
+            }
         }
-        episodeses.add(newEpisode)
     }
 
     return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodeses) {
