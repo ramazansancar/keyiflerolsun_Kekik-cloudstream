@@ -82,7 +82,7 @@ override suspend fun load(url: String): LoadResponse? {
             val episodePageDoc = app.get(epHref).document
 
             // Sayfadaki tüm iframe'leri al (veya bölümlere özel bir seçici kullan)
-            val iframes = episodePageDoc.select("iframe[src]").map { it.attr("src") }
+            val iframes = episodePageDoc.select("iframe").map { it.attr("src") }
             if (iframes.isEmpty()) continue
 
             // Her bölüm için iframe linkini eşleştir
@@ -108,7 +108,7 @@ override suspend fun load(url: String): LoadResponse? {
             if (epEpisode != null) {
                 // Tek bölümün iframe'ini çek
                 val episodePageDoc = app.get(epHref).document
-                val iframeUrl = episodePageDoc.selectFirst("iframe[src]")?.attr("src")
+                val iframeUrl = episodePageDoc.selectFirst("iframe")?.attr("src")
                 if (iframeUrl != null) {
                     val newEpisode = newEpisode(fixUrlNull(iframeUrl) ?: continue) {
                         this.name = epName
