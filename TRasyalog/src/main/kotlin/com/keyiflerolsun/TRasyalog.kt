@@ -41,9 +41,9 @@ class TRasyalog : MainAPI() {
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("a")?.text() ?: return null
+        val title     = this.selectFirst("a img")?.attr("alt")?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
@@ -93,11 +93,13 @@ override suspend fun load(url: String): LoadResponse? {
 
             val iframe = document.selectFirst("iframe")?.attr("data-src")
             Log.d("TRASYA", "iframe » $iframe")
+			val fixediframe = "https:" + iframe
+			Log.d("TRASYA", "fixediframe » $fixediframe")
 
-         if (iframe != null) {
-                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+         if (fixediframe != null) {
+                 loadExtractor(fixediframe, "${mainUrl}/", subtitleCallback, callback)
              } else {
-                Log.d("TRASYA", "Iframe bulunamadı")
+                Log.d("TRASYA", "fixediframe bulunamadı")
                 return false
         }
 
