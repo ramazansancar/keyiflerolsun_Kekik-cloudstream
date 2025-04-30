@@ -3,49 +3,87 @@
 
 package com.keyiflerolsun
 
-import com.lagradost.api.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import android.util.Log
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.APIHolder.capitalize
+import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 
-open class DzenRu : ExtractorApi() {
+class DzenRu : ExtractorApi(){
     override val name            = "DzenRu"
-    override val mainUrl         = "https://dzen.ru"
-    override val requiresReferer = true
+    override val mainUrl         = "https://dzen.ru/"
+    override val requiresReferer = false
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        val videoKey = url.split("/").last()
-        val videoUrl = "${mainUrl}/embed/${videoKey}"
-        Log.d("Kekik_${this.name}", "videoUrl: $videoUrl")
+        val document = app.get(
+            url     = url,
+            headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
+            referer = this.mainUrl,
+        ).document
 
-        val html = app.get(videoUrl).text
+        val script = document.select("script").find { it.data().contains("streams") }?.data() ?: ""
+        val content = script.substringAfter("\"streams\":").substringBefore("],") + "]"
+        val streams = tryParseJson<List<Stream>>(content)
+        streams?.forEach { it ->
+            val type = it.type ?: ""
+            val streamUrl = it.url ?: ""
+            Log.d("DZN", "Type -> $type")
+            val quality = if (type.contains("fullhd"))  {
+                Qualities.P1080.value
+            } else if(type.contains("high")) {
+                Qualities.P720.value
+            } else if(type.contains("medium")) {
+                Qualities.P480.value
+            } else if(type.contains("low")) {
+                Qualities.P360.value
+            } else if(type.contains("lowest")) {
+                Qualities.P240.value
+            } else if(type.contains("tiny")) {
+                Qualities.P144.value
+            } else Qualities.Unknown.value
 
-        val regex = Regex("""https://vd\d+\.okcdn\.ru/\?[^"'\\\s]+""")
-        val matches = regex.findAll(html).map { it.value }.toList()
+            val qualityName = Qualities.getStringByInt(quality)
 
-        if (matches.isEmpty()) throw ErrorLoadingException("DzenRu video link not found.")
-
-        for (link in matches.distinct()) {
-            callback.invoke(
-                newExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = link,
-                    type    = ExtractorLinkType.DASH,
+            val extractorLink = when(type) {
+                "hls" -> newExtractorLink(
+                    source  = this.name + " - HLS",
+                    name    = this.name + " - HLS",
+                    url     = streamUrl,
+                    ExtractorLinkType.M3U8
                 ) {
-                    headers = mapOf("Referer" to mainUrl)
-                    this.quality = Qualities.Unknown.value
+                    this.referer = ""
+                    this.quality = quality
                 }
-            )
+
+                "dash" -> newExtractorLink(
+                    source  = this.name + " - DASH",
+                    name    = this.name + " - DASH",
+                    url     = streamUrl,
+                    ExtractorLinkType.DASH
+                ) {
+                    this.referer = ""
+                    this.quality = quality
+                }
+
+                else -> newExtractorLink(
+                    source  = this.name + " - " + qualityName,
+                    name    = this.name + " - " + qualityName,
+                    url     = streamUrl,
+                    ExtractorLinkType.VIDEO
+                ) {
+                    this.referer = ""
+                    this.quality = quality
+                }
+            }
+
+            callback.invoke(extractorLink)
         }
+
     }
-
-    data class DzenRuUrls(
-        @JsonProperty("urls") val urls: List<DzenRuData>
-    )
-
-    data class DzenRuData(
-        @JsonProperty("url")   val url: String,
-        @JsonProperty("label") val label: String,
-    )
 }
+
+private data class Stream(
+    @JsonProperty("url") val url: String? = null,
+    @JsonProperty("type") val type: String? = null,
+)
