@@ -127,47 +127,50 @@ class BelgeselX : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
     Log.d("BLX", "data » $data")
+    
     val source = app.get(data)
 
-    Regex("""<iframe\s+[^>]*data-src=["']([^"']+)["']""").findAll(source.text).forEach { alternatifUrlMatchResult ->
-        val alternatifUrl = alternatifUrlMatchResult.groupValues[1]
-        Log.d("BLX", "alternatifUrl » $alternatifUrl")
-        val alternatifResp = app.get(alternatifUrl, referer = data)
+    // data-episode id'sini çek
+    val episodeId = Regex("""data-episode=["'](\d+)["']""").find(source.text)?.groupValues?.get(1)
+    if (episodeId == null) {
+        Log.e("BLX", "data-episode bulunamadı.")
+        return false
+    }
 
-        if (alternatifUrl.contains("new4.php")) {
-            Regex("""file:"([^"]+)", label: "([^"]+)""").findAll(alternatifResp.text).forEach {
-                var thisName = this.name
-                val videoUrl = it.groupValues[1]
-                var quality = it.groupValues[2]
-                if (quality == "FULL") {
-                    quality = "1080p"
-                    thisName = "Google"
-                }
-                Log.d("BLX", "quality » $quality")
-                Log.d("BLX", "videoUrl » $videoUrl")
+    val iframeUrl = "https://belgeselx.com/video/data/new4.php?id=$episodeId"
+    Log.d("BLX", "iframeUrl oluşturuldu » $iframeUrl")
 
-                callback.invoke(
-                    newExtractorLink(
-                        source = thisName,
-                        name = thisName,
-                        url = videoUrl,
-                        type = INFER_TYPE
-                    ) {
-                        headers = mapOf("Referer" to data)
-                        quality = getQualityFromName(quality).toString()
-                    }
-                )
-            }
-        } else {
-            val iframe = fixUrlNull(alternatifResp.document.selectFirst("iframe")?.attr("src")) ?: return@forEach
-            Log.d("BLX", "iframe » $iframe")
+    val alternatifResp = app.get(iframeUrl, referer = data)
 
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+    // new4.php içindeki video linklerini parse et
+    Regex("""file:"([^"]+)", label: "([^"]+)""").findAll(alternatifResp.text).forEach {
+        var thisName = this.name
+        val videoUrl = it.groupValues[1]
+        var quality = it.groupValues[2]
+
+        if (quality == "FULL") {
+            quality = "1080p"
+            thisName = "Google"
         }
+
+        Log.d("BLX", "quality » $quality")
+        Log.d("BLX", "videoUrl » $videoUrl")
+
+        callback.invoke(
+            newExtractorLink(
+                source = thisName,
+                name = thisName,
+                url = videoUrl,
+                type = INFER_TYPE
+            ) {
+                headers = mapOf("Referer" to data)
+                quality = getQualityFromName(quality).toString()
+            }
+        )
     }
 
     return true
- }
+}
 }
