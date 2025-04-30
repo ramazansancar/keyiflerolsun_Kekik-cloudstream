@@ -91,7 +91,7 @@ override suspend fun load(url: String): LoadResponse? {
         Log.d("TRASYA", "data » $data")
         val document = app.get(data).document
 
-            val iframe = document.selectFirst("iframe")?.attr("src")
+            val iframe = document.selectFirst("iframe")?.attr("data-src")
             Log.d("TRASYA", "iframe » $iframe")
 
          if (iframe != null) {
