@@ -17,12 +17,12 @@ class JetFilmizle : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/page/"                                     to "Son Filmler",
-        "${mainUrl}/netflix/page/"                             to "Netflix",
-        "${mainUrl}/editorun-secimi/page/"                     to "Editörün Seçimi",
-        "${mainUrl}/turk-film-full-hd-izle/page/"                      to "Türk Filmleri",
-        "${mainUrl}/cizgi-filmler-izle/page/"                  to "Çizgi Filmler",
-        "${mainUrl}/kategoriler/yesilcam-filmleri-izlee/page/" to "Yeşilçam Filmleri"
+        "${mainUrl}/page/"                                         to "Son Filmler",
+        "${mainUrl}/netflix/page/"                                 to "Netflix",
+        "${mainUrl}/editorun-secimi/page/"                         to "Editörün Seçimi",
+        "${mainUrl}/turk-film-full-hd-izle/page/"                  to "Türk Filmleri",
+        "${mainUrl}/cizgi-filmler-full-izle/page/"                 to "Çizgi Filmler",
+        "${mainUrl}/kategoriler/yesilcam-filmleri-full-izle/page/" to "Yeşilçam Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
