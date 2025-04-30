@@ -132,16 +132,22 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
     
     val source = app.get(data)
 
-    // data-episode id'sini çek
-    val episodeId = Regex("""data-episode=["'](\d+)["']""").find(source.text)?.groupValues?.get(1)
-    if (episodeId == null) {
-        Log.e("BLX", "data-episode bulunamadı.")
+    // Sayfa kaynağından ilk fnc_addWatch içeren div elemanının data-episode numarasını al
+    val firstEpisodeId = Regex("""<div[^>]*class=["'][^"']*fnc_addWatch[^"']*["'][^>]*data-episode=["'](\d+)["']""")
+        .find(source.text)?.groupValues?.get(1)
+
+    if (firstEpisodeId == null) {
+        Log.e("BLX", "İlk fnc_addWatch data-episode bulunamadı.")
         return false
     }
 
-    val iframeUrl = "https://belgeselx.com/video/data/new4.php?id=$episodeId"
+    Log.d("BLX", "İlk fnc_addWatch data-episode: $firstEpisodeId")
+    
+    // Bu ID ile iframe URL’si oluştur
+    val iframeUrl = "https://belgeselx.com/video/data/new4.php?id=$firstEpisodeId"
     Log.d("BLX", "iframeUrl oluşturuldu » $iframeUrl")
-
+    
+    // iframe URL’si üzerinden veriyi al
     val alternatifResp = app.get(iframeUrl, referer = data)
 
     // new4.php içindeki video linklerini parse et
@@ -158,6 +164,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
         Log.d("BLX", "quality » $quality")
         Log.d("BLX", "videoUrl » $videoUrl")
 
+        // Callback ile video bilgilerini geri gönder
         callback.invoke(
             newExtractorLink(
                 source = thisName,
