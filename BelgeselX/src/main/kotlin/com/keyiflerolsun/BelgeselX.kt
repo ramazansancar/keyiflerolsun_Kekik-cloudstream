@@ -131,7 +131,7 @@ class BelgeselX : MainAPI() {
     Log.d("BLX", "data » $data")
     val source = app.get(data)
 
-    Regex("""<iframe\s+[^>]*src=\\"([^\\"']+)\\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
+    Regex("""<iframe\s+[^>]*data-src=\\"([^\\"']+)\\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
         val alternatifUrl = alternatifUrlMatchResult.groupValues[1]
         Log.d("BLX", "alternatifUrl » $alternatifUrl")
         val alternatifResp = app.get(alternatifUrl, referer = data)
@@ -153,10 +153,10 @@ class BelgeselX : MainAPI() {
                         source = thisName,
                         name = thisName,
                         url = videoUrl,
-                        type = INFER_TYPE // Varsayılan olarak tür atanıyor
+                        type = INFER_TYPE
                     ) {
-                        headers = mapOf("Referer" to data) // "Referer" ayarı burada yapılabilir
-                        quality = getQualityFromName(quality).toString() // Int değeri String'e dönüştürülüyor
+                        headers = mapOf("Referer" to data)
+                        quality = getQualityFromName(quality).toString()
                     }
                 )
             }
