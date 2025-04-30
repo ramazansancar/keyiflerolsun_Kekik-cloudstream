@@ -16,6 +16,10 @@ class BelgeselX : MainAPI() {
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.Documentary)
 
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPageDelay       = 500L  // ? 0.5 saniye
+    override var sequentialMainPageScrollDelay = 500L  // ? 0.5 saniye
+	
     override val mainPage = mainPageOf(
         "${mainUrl}/konu/turk-tarihi-belgeselleri&page=" to "Türk Tarihi",
         "${mainUrl}/konu/tarih-belgeselleri&page="		 to "Tarih",
@@ -170,7 +174,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
                 source = thisName,
                 name = thisName,
                 url = videoUrl,
-                type = INFER_TYPE
+                type = ExtractorLinkType.VIDEO
             ) {
                 headers = mapOf("Referer" to data)
                 quality = getQualityFromName(quality).toString()
