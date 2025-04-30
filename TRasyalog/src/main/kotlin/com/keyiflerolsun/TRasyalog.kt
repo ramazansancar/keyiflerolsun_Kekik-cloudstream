@@ -22,15 +22,13 @@ class TRasyalog : MainAPI() {
     override var sequentialMainPageScrollDelay = 500L  // ? 0.5 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/category/yeni-eklenen-bolumler/" to "Yeni Eklenen Bölümler",
-        "${mainUrl}/category/final-yapan-diziler/" to "Final Yapan Diziler",
         "${mainUrl}/category/kore-dizileri-izle-guncel/" to "Kore Dizileri",
-        "${mainUrl}/category/cin-dizileri/" to "Çin Dizileri",
-        "${mainUrl}/category/tayland-dizileri/" to "TaylandDizileri",
-        "${mainUrl}/category/japon-dizileri/" to "Japon Diziler",
-        "${mainUrl}/category/endonezya-dizileri/" to "Endonezya Diziler",
-        "${mainUrl}/category/seri-diziler/" to "Seri Diziler",
-        "${mainUrl}/category/devam-eden-diziler/" to "Devam eden Diziler"
+        "${mainUrl}/category/cin-dizileri/"              to "Çin Dizileri",
+        "${mainUrl}/category/tayland-dizileri/"          to "TaylandDizileri",
+        "${mainUrl}/category/japon-dizileri/"            to "Japon Diziler",
+        "${mainUrl}/category/endonezya-dizileri/"        to "Endonezya Diziler",
+        "${mainUrl}/category/seri-diziler/"              to "Seri Diziler",
+        "${mainUrl}/category/devam-eden-diziler/"        to "Devam eden Diziler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -43,7 +41,10 @@ class TRasyalog : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a img")?.attr("alt")?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail img")?.let { img ->
+        img.attr("data-src").takeIf { it.isNotEmpty() } ?: img.attr("src")
+    }
+)
 
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
@@ -60,8 +61,8 @@ override suspend fun load(url: String): LoadResponse? {
     val document = app.get(url).document
 
     val title = document.selectFirst("h1")?.text()?.trim() ?: return null
-    val poster = fixUrlNull(document.selectFirst("div.aligncenter img")?.attr("src"))
-    val description = document.selectFirst("div.entry-content > p")?.text()?.trim()
+    val poster = fixUrlNull(document.selectFirst("img.wp-image-66892")?.attr("src"))
+    val description = document.selectFirst("h2 > p")?.text()?.trim()
     val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
 
     val episodeses = mutableListOf<Episode>()
