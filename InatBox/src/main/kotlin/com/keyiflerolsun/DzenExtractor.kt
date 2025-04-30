@@ -31,7 +31,7 @@ open class DzenRu : ExtractorApi() {
                     source  = this.name,
                     name    = this.name,
                     url     = link,
-                    type    = INNER_TYPE,
+                    type    = ExtractorLinkType.DASH,
                 ) {
                     headers = mapOf("Referer" to mainUrl)
                     this.quality = Qualities.Unknown.value
