@@ -131,7 +131,7 @@ class BelgeselX : MainAPI() {
     Log.d("BLX", "data » $data")
     val source = app.get(data)
 
-    Regex("""<iframe\s+[^>]*data-src=\\"([^\\"']+)\\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
+    Regex("""<iframe\s+[^>]*data-src=["']([^"']+)["']""").findAll(source.text).forEach { alternatifUrlMatchResult ->
         val alternatifUrl = alternatifUrlMatchResult.groupValues[1]
         Log.d("BLX", "alternatifUrl » $alternatifUrl")
         val alternatifResp = app.get(alternatifUrl, referer = data)
