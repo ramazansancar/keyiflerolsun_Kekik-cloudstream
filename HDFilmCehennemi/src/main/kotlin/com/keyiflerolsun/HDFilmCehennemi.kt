@@ -170,41 +170,42 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ): Boolean {
-        Log.d("HDCH", "data » $data")
-        val document = app.get(data).document
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("HDCH", "data » $data")
+    val document = app.get(data).document
 
-        document.select("div.alternative-links").map { element ->
-            element to element.attr("data-lang").uppercase()
-        }.forEach { (element, langCode) ->
-            element.select("button.alternative-link").map { button ->
-                button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
-            }.forEach { (source, videoID) ->
-                val apiGet = app.get(
-                    "${mainUrl}/video/$videoID/",
-                    headers = mapOf(
-                        "Content-Type"     to "application/json",
-                        "X-Requested-With" to "fetch"
-                    ),
-                    referer = data
-                ).text
-                Log.d("HDCH", "Found videoID: $videoID")
-                var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
-				Log.d("HDCH", "$iframe » $iframe")
-                if (iframe.contains("rapidrame")) {
-                    iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
-				} 
-				if (iframe.contains("rplayer")) {
-                    iframe = "${mainUrl}/playerr/" + iframe.substringAfter("/rplayer/")
-                }else {
-                    iframe = iframe.substringBefore("{rapidrame_id")
-
-                Log.d("HDCH", "$source » $videoID » $iframe")
-                invokeLocalSource(source, iframe, subtitleCallback, callback)
+    document.select("div.alternative-links").map { element ->
+        element to element.attr("data-lang").uppercase()
+    }.forEach { (element, langCode) ->
+        element.select("button.alternative-link").map { button ->
+            button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
+        }.forEach { (source, videoID) ->
+            val apiGet = app.get(
+                "${mainUrl}/video/$videoID/",
+                headers = mapOf(
+                    "Content-Type" to "application/json",
+                    "X-Requested-With" to "fetch"
+                ),
+                referer = data
+            ).text
+            Log.d("HDCH", "Found videoID: $videoID")
+            var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
+            Log.d("HDCH", "$iframe » $iframe")
+            if (iframe.contains("rapidrame")) {
+                iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
+            } else if (iframe.contains("rplayer")) {
+                iframe = "${mainUrl}/playerr/" + iframe.substringAfter("/rplayer/")
+            }
+            Log.d("HDCH", "$source » $videoID » $iframe")
+            invokeLocalSource(source, iframe, subtitleCallback, callback)
         }
     }
-  }
-        return true
+    return true
 }
     private data class SubSource(
         @JsonProperty("file")  val file: String?  = null,
