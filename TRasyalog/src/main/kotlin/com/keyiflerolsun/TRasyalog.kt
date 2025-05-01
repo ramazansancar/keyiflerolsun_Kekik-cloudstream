@@ -68,21 +68,21 @@ class TRasyalog : MainAPI() {
         val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
     
         val episodeList = mutableListOf<Episode>()
+        val addedEpisodeNumbers = mutableSetOf<Int>()
     
-        val tabUrls = document.select("span[data-url]").mapNotNull {
+        val dataUrls = document.select("span[data-url]").mapNotNull {
             it.attr("data-url")?.trim()?.takeIf { it.isNotEmpty() }?.let { fixUrl(it) }
         }
     
-        val addedEpisodeNumbers = mutableSetOf<Int>()
+        val isMultiEpisodePage = dataUrls.size > 1
     
-        for (tabUrl in tabUrls) {
-            val tabDoc = app.get(tabUrl).document
-    
-            // Eğer sayfa tab içeriyorsa, çoklu bölüm sayfasıdır
-            val tabContents = tabDoc.select("div[id^=tab-][id*=bolum]")
-            if (tabContents.isNotEmpty()) {
+        if (isMultiEpisodePage) {
+            // Örneğin: 1-5, 6-10 gibi bölümler varsa her data-url sayfasını işle
+            for (partUrl in dataUrls) {
+                val partDoc = app.get(partUrl).document
+                val tabContents = partDoc.select("div[id^=tab-][id*=bolum]")
                 for (tab in tabContents) {
-                    val tabId = tab.id() // Örn: tab-2-3-bolum
+                    val tabId = tab.id() // örn: tab-2-3-bolum
                     val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
                     if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
                         val iframe = tab.selectFirst("iframe")
@@ -98,15 +98,17 @@ class TRasyalog : MainAPI() {
                         addedEpisodeNumbers.add(episodeNumber)
                     }
                 }
-            } else {
-                // Tekli bölüm sayfasıdır
-                val iframe = tabDoc.selectFirst("iframe")
+            }
+        } else {
+            // Eğer tekli bölüm sayfalarıysa her data-url sayfasını ayrı ayrı işle
+            for (singleUrl in dataUrls) {
+                val epDoc = app.get(singleUrl).document
+                val iframe = epDoc.selectFirst("iframe")
                 val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
                     if (it.startsWith("http")) it else "https:$it"
                 } ?: continue
     
-                // Bölüm numarasını URL'den al
-                val episodeNumber = Regex("""-(\d+)-bolum""").find(tabUrl)?.groupValues?.get(1)?.toIntOrNull()
+                val episodeNumber = Regex("""-(\d+)-bolum""").find(singleUrl)?.groupValues?.get(1)?.toIntOrNull()
                 if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
                     val ep = newEpisode(iframeUrl) {
                         name = "$episodeNumber. Bölüm"
@@ -118,7 +120,6 @@ class TRasyalog : MainAPI() {
             }
         }
     
-        // Sıralı hale getir
         val sortedEpisodes = episodeList.sortedBy { it.episode ?: 0 }
     
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, sortedEpisodes) {

@@ -84,7 +84,7 @@ open class Ultrahd : ExtractorApi() {
                     val m3u8= httpsify( it.file)
                     Log.d("DHS", "m3u8 » $m3u8")
                     Log.d("DHS", "Mapped source: $it")
-                    if (m3u8.contains(".mp4"))
+                    if (m3u8.contains(".mpegurl"))
                     {
                         callback.invoke(
                             newExtractorLink(
