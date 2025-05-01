@@ -63,7 +63,7 @@ class InatBox : MainAPI() {
         "${contentUrl}/tv/dini.php"                           to "Dini Kanallar",
         "${contentUrl}/ex/index.php"                          to "EXXEN",
         "${contentUrl}/ga/index.php"                          to "Gain",
-        "${contentUrl}/blu/index.php"                         to "BluTV",
+        "${contentUrl}/max/index.php"                         to "Max-BluTV",
         "${contentUrl}/nf/index.php"                          to "Netflix",
         "${contentUrl}/dsny/index.php"                        to "Disney+",
         "${contentUrl}/amz/index.php"                         to "Amazon Prime",
