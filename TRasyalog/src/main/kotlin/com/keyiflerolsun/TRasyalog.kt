@@ -67,39 +67,61 @@ class TRasyalog : MainAPI() {
         val description = document.selectFirst("h2 > p")?.text()?.trim()
         val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
     
-        val episodes = mutableListOf<Episode>()
+        val episodeList = mutableListOf<Episode>()
     
-        // 1. Ana sayfada data-url içeren span'leri al
-        val partUrls = document.select("span[data-url]").mapNotNull {
-            val relativeUrl = it.attr("data-url")?.trim()
-            if (!relativeUrl.isNullOrBlank()) fixUrl(relativeUrl) else null
-        }.distinct()
+        val tabUrls = document.select("span[data-url]").mapNotNull {
+            it.attr("data-url")?.trim()?.takeIf { it.isNotEmpty() }?.let { fixUrl(it) }
+        }
     
-        // 2. Her data-url sayfasını işle
-        for (partUrl in partUrls) {
-            val partDoc = app.get(partUrl).document
+        val addedEpisodeNumbers = mutableSetOf<Int>()
     
-            // Her tab içindeki ilk iframe'i al ve bölüm numarasını çıkar
-            val tabDivs = partDoc.select("div.tab_container > div[id^=tab-]")
-            for (tab in tabDivs) {
-                val tabId = tab.attr("id")
-                val epNumber = Regex("-(\\d+)-bolum$").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
+        for (tabUrl in tabUrls) {
+            val tabDoc = app.get(tabUrl).document
     
-                // Sadece ilk iframe'i al
-                val iframe = tab.selectFirst("iframe")
-                val iframeUrl = iframe?.attr("data-src") ?: iframe?.attr("src")
-                val finalUrl = iframeUrl?.let { if (it.startsWith("http")) it else "https:$it" } ?: continue
+            // Eğer sayfa tab içeriyorsa, çoklu bölüm sayfasıdır
+            val tabContents = tabDoc.select("div[id^=tab-][id*=bolum]")
+            if (tabContents.isNotEmpty()) {
+                for (tab in tabContents) {
+                    val tabId = tab.id() // Örn: tab-2-3-bolum
+                    val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
+                    if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
+                        val iframe = tab.selectFirst("iframe")
+                        val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
+                            if (it.startsWith("http")) it else "https:$it"
+                        } ?: continue
     
-                episodes.add(
-                    newEpisode(finalUrl) {
-                        name = "Bölüm ${epNumber ?: episodes.size + 1}"
-                        episode = epNumber
+                        val ep = newEpisode(iframeUrl) {
+                            name = "$episodeNumber. Bölüm"
+                            episode = episodeNumber
+                        }
+                        episodeList.add(ep)
+                        addedEpisodeNumbers.add(episodeNumber)
                     }
-                )
+                }
+            } else {
+                // Tekli bölüm sayfasıdır
+                val iframe = tabDoc.selectFirst("iframe")
+                val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
+                    if (it.startsWith("http")) it else "https:$it"
+                } ?: continue
+    
+                // Bölüm numarasını URL'den al
+                val episodeNumber = Regex("""-(\d+)-bolum""").find(tabUrl)?.groupValues?.get(1)?.toIntOrNull()
+                if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
+                    val ep = newEpisode(iframeUrl) {
+                        name = "$episodeNumber. Bölüm"
+                        episode = episodeNumber
+                    }
+                    episodeList.add(ep)
+                    addedEpisodeNumbers.add(episodeNumber)
+                }
             }
         }
     
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes.sortedBy { it.episode ?: 0 }) {
+        // Sıralı hale getir
+        val sortedEpisodes = episodeList.sortedBy { it.episode ?: 0 }
+    
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, sortedEpisodes) {
             this.posterUrl = poster
             this.plot = description
             this.tags = tags
