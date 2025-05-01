@@ -56,68 +56,70 @@ class TRasyalog : MainAPI() {
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
-    override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
-    
-        val title = document.selectFirst("h1")?.text()?.trim() ?: return null
-        val poster = fixUrlNull(document.selectFirst("img.wp-image-66892")?.attr("data-src")
-            ?: document.selectFirst("img.wp-image-66892")?.attr("src"))
-        val description = document.selectFirst("h2 > p")?.text()?.trim()
-        val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
-    
-        val episodes = mutableListOf<Episode>()
-    
-        // Bölüm URL'lerini almak için data-url kullanıyoruz
-        val partUrls = document.select("span[data-url]").mapNotNull {
-            val relativeUrl = it.attr("data-url").trim()
-            if (relativeUrl.isNotBlank()) fixUrl(relativeUrl) else null
-        }
-    
-        // Eğer data-url varsa, her bir grup için bölüm URL'lerini alıyoruz
-        if (partUrls.isNotEmpty()) {
-            for (partUrl in partUrls) {
-                val partDoc = app.get(partUrl).document
-                val tabDivs = partDoc.select("div.tab_content[id^=tab-]")
-    
-                for (div in tabDivs) {
-                    val idAttr = div.attr("id")
-                    val epNum = Regex("tab-\\d+-(\\d+)-bolum").find(idAttr)?.groupValues?.get(1)?.toIntOrNull() ?: continue
-    
-                    // iframe'den video linki almak
-                    val iframe = div.selectFirst("iframe[src], iframe[data-src]") ?: continue
-                    val rawUrl = iframe.attr("src").ifBlank { iframe.attr("data-src") }
-                    val videoUrl = if (rawUrl.startsWith("http")) rawUrl else "https:$rawUrl"
-    
-                    val episode = newEpisode(videoUrl) {
-                        this.name = "Bölüm $epNum"
-                        this.episode = epNum
-                    }
-                    episodes.add(episode)
+override suspend fun load(url: String): LoadResponse? {
+    val document = app.get(url).document
+
+    val title = document.selectFirst("h1")?.text()?.trim() ?: return null
+    val poster = fixUrlNull(
+        document.selectFirst("img.wp-image-66892")?.attr("data-src")
+            ?: document.selectFirst("img.wp-image-66892")?.attr("src")
+    )
+    val description = document.selectFirst("h2 > p")?.text()?.trim()
+    val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
+
+    val episodes = mutableListOf<Episode>()
+
+    // 1. data-url içeren tab yapısı varsa onu işle
+    val partUrls = document.select("span[data-url]").mapNotNull {
+        val relativeUrl = it.attr("data-url")?.trim()
+        if (!relativeUrl.isNullOrBlank()) fixUrl(relativeUrl) else null
+    }.distinct()
+
+    for (partUrl in partUrls) {
+        val partDoc = app.get(partUrl).document
+        val tabDivs = partDoc.select("div.tab_container > div[id^=tab-]")
+        for (div in tabDivs) {
+            val tabId = div.attr("id")
+            val epNumber = Regex("-(\\d+)-bolum$").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
+            val iframe = div.selectFirst("iframe")
+            val iframeSrc = iframe?.attr("data-src") ?: iframe?.attr("src")
+            val finalSrc = iframeSrc?.let { if (it.startsWith("http")) it else "https:$it" } ?: continue
+
+            episodes.add(
+                newEpisode(finalSrc) {
+                    name = "Bölüm ${epNumber ?: episodes.size + 1}"
+                    episode = epNumber
                 }
-            }
-        } else {
-            // Eğer data-url yoksa, sayfa içindeki tek tek bölümleri almak
-            val links = document.select("a[href*='-bolum']").mapNotNull { a ->
-                val href = a.attr("href")
-                val epNum = Regex("(\\d+)-bolum").find(href)?.groupValues?.get(1)?.toIntOrNull()
+            )
+        }
+    }
+
+    // 2. Eğer yukarıdan bölüm gelmediyse, sayfa sayfa gezen bölüm sistemini kontrol et
+    if (episodes.isEmpty()) {
+        val slug = url.substringAfter("asyalog.com/").substringBefore("/").substringBeforeLast("-")
+        val episodeLinks = document.select("a[href]").mapNotNull { a ->
+            val href = a.attr("href")
+            if (href.contains(slug) && Regex("$slug-(\\d+)-bolum/?$").containsMatchIn(href)) {
+                val epNum = Regex("-(\\d+)-bolum").find(href)?.groupValues?.get(1)?.toIntOrNull()
                 val fullUrl = fixUrlNull(href)
                 if (epNum != null && fullUrl != null) {
                     newEpisode(fullUrl) {
-                        this.name = "Bölüm $epNum"
-                        this.episode = epNum
+                        name = "Bölüm $epNum"
+                        episode = epNum
                     }
                 } else null
-            }
-            episodes.addAll(links)
-        }
-    
-        // Sonuç döndürülüyor
-        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes.sortedBy { it.episode }) {
-            this.posterUrl = poster
-            this.plot = description
-            this.tags = tags
-        }
+            } else null
+        }.distinctBy { it.url }
+
+        episodes.addAll(episodeLinks)
     }
+
+    return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes.sortedBy { it.episode ?: 0 }) {
+        this.posterUrl = poster
+        this.plot = description
+        this.tags = tags
+    }
+}
 
 override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
     Log.d("TRASYA", "data » $data")
