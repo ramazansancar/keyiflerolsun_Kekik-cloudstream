@@ -109,7 +109,7 @@ override suspend fun load(url: String): LoadResponse? {
                     }
                 } else null
             } else null
-        }.distinctBy { it.url }
+        }
 
         episodes.addAll(episodeLinks)
     }
