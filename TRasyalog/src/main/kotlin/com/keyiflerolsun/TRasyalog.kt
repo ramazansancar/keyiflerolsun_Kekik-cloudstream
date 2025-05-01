@@ -64,7 +64,7 @@ class TRasyalog : MainAPI() {
             document.selectFirst("img.wp-image-66892")?.attr("data-src")
                 ?: document.selectFirst("img.wp-image-66892")?.attr("src")
         )
-        val description = document.selectFirst("h2 > p")?.text()?.trim()
+        val description = document.selectFirst("h2")?.text()?.trim()
         val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
     
         val episodeList = mutableListOf<Episode>()
