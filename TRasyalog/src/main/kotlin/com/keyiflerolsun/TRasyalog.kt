@@ -22,12 +22,12 @@ class TRasyalog : MainAPI() {
     override var sequentialMainPageScrollDelay = 500L  // ? 0.5 saniye
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/category/kore-dizileri-izle-guncel/page/" to "Kore Dizileri",
-        "${mainUrl}/category/cin-dizileri/page/"              to "Çin Dizileri",
-        "${mainUrl}/category/tayland-dizileri/page/"          to "TaylandDizileri",
-        "${mainUrl}/category/japon-dizileri/page/"            to "Japon Diziler",
-        "${mainUrl}/category/endonezya-dizileri/page/"        to "Endonezya Diziler",
-        "${mainUrl}/category/devam-eden-diziler/page/"        to "Devam eden Diziler"
+        "${mainUrl}/category/kore-dizileri-izle-guncel" to "Kore Dizileri",
+        "${mainUrl}/category/cin-dizileri"              to "Çin Dizileri",
+        "${mainUrl}/category/tayland-dizileri"          to "TaylandDizileri",
+        "${mainUrl}/category/japon-dizileri"            to "Japon Diziler",
+        "${mainUrl}/category/endonezya-dizileri"        to "Endonezya Diziler",
+        "${mainUrl}/category/devam-eden-diziler"        to "Devam eden Diziler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
