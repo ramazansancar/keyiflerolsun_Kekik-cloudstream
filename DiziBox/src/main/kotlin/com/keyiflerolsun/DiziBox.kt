@@ -86,7 +86,7 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home = document.select("article, figure").mapNotNull {
+        val home = document.select("article").mapNotNull {
         it.toMainPageResult()
     }
         return newHomePageResponse(request.name, home)
@@ -100,12 +100,6 @@ private fun Element.toMainPageResult(): SearchResponse? {
             img.attr("data-src").takeIf { it.isNotBlank() } ?: img.attr("src")
         }
     )
-    Log.d("toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
-
-    if (title == null || href == null) {
-        Log.w("toMainPageResult", "Article eksik veri içeriyor, atlanıyor!")
-        return null
-    }
 
     return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
 }
