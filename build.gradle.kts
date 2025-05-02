@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
         // Shitpack repo which contains our tools and dependencies
         maven{
-		    url "https://jitpack.io"
+            url "https://jitpack.io"
             credentials { username authToken }
         }
     }
