@@ -61,8 +61,8 @@ class TRasyalog : MainAPI() {
     
         val title = document.selectFirst("h1")?.text()?.trim() ?: return null
         val poster = fixUrlNull(
-            document.selectFirst("img.wp-image-66892")?.attr("data-src")
-                ?: document.selectFirst("img.wp-image-66892")?.attr("src")
+            document.selectFirst("img")?.attr("data-src")
+                ?: document.selectFirst("img")?.attr("src")
         )
         val description = document.selectFirst("h2 + p")?.text()?.trim()
         val tags = document.selectFirst("b.inline:contains(Tür:)")?.parent()?.text()?.substringAfter("Tür:")?.trim()?.split(", ")?: emptyList()
