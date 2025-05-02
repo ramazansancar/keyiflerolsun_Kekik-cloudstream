@@ -11,7 +11,7 @@ import org.jsoup.Jsoup
 
 class TRasyalog : MainAPI() {
     override var mainUrl        = "https://asyalog.com"
-    override var name           = "TRasyalog"
+    override var name           = "TrAsyaLog"
     override val hasMainPage    = true
     override var lang           = "tr"
     override val hasQuickSearch = false
@@ -64,8 +64,8 @@ class TRasyalog : MainAPI() {
             document.selectFirst("img.wp-image-66892")?.attr("data-src")
                 ?: document.selectFirst("img.wp-image-66892")?.attr("src")
         )
-        val description = document.selectFirst("h2")?.text()?.trim()
-        val tags = document.select("div.post-meta a[href*='/category/']").map { it.text() }
+        val description = document.selectFirst("h2 + p")?.text()?.trim()
+        val tags = document.selectFirst("b.inline:contains(Tür:)")?.parent()?.text()?.substringAfter("Tür:")?.trim()?.split(", ")?: emptyList()
     
         val episodeList = mutableListOf<Episode>()
         val addedEpisodeNumbers = mutableSetOf<Int>()
@@ -74,15 +74,13 @@ class TRasyalog : MainAPI() {
             it.attr("data-url")?.trim()?.takeIf { it.isNotEmpty() }?.let { fixUrl(it) }
         }
     
-        val isMultiEpisodePage = dataUrls.size > 1
-    
-        if (isMultiEpisodePage) {
-            // Örneğin: 1-5, 6-10 gibi bölümler varsa her data-url sayfasını işle
+        if (dataUrls.any { Regex("""\d+-\d+""").containsMatchIn(it) }) {
+            // Toplu bölümler (1-5, 6-10 gibi)
             for (partUrl in dataUrls) {
                 val partDoc = app.get(partUrl).document
                 val tabContents = partDoc.select("div[id^=tab-][id*=bolum]")
                 for (tab in tabContents) {
-                    val tabId = tab.id() // örn: tab-2-3-bolum
+                    val tabId = tab.id()
                     val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
                     if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
                         val iframe = tab.selectFirst("iframe")
@@ -90,31 +88,31 @@ class TRasyalog : MainAPI() {
                             if (it.startsWith("http")) it else "https:$it"
                         } ?: continue
     
-                        val ep = newEpisode(iframeUrl) {
+                        episodeList.add(newEpisode(iframeUrl) {
                             name = "$episodeNumber. Bölüm"
                             episode = episodeNumber
-                        }
-                        episodeList.add(ep)
+                        })
                         addedEpisodeNumbers.add(episodeNumber)
                     }
                 }
             }
         } else {
-            // Eğer tekli bölüm sayfalarıysa her data-url sayfasını ayrı ayrı işle
-            for (singleUrl in dataUrls) {
-                val epDoc = app.get(singleUrl).document
+            // Her bölüm ayrıysa
+            for (epUrl in dataUrls) {
+                val epDoc = app.get(epUrl).document
                 val iframe = epDoc.selectFirst("iframe")
                 val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
                     if (it.startsWith("http")) it else "https:$it"
                 } ?: continue
     
-                val episodeNumber = Regex("""-(\d+)-bolum""").find(singleUrl)?.groupValues?.get(1)?.toIntOrNull()
-                if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
-                    val ep = newEpisode(iframeUrl) {
+                val episodeNumber = Regex("""-(\d+)-bolum""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull()
+                    ?: continue
+    
+                if (episodeNumber !in addedEpisodeNumbers) {
+                    episodeList.add(newEpisode(iframeUrl) {
                         name = "$episodeNumber. Bölüm"
                         episode = episodeNumber
-                    }
-                    episodeList.add(ep)
+                    })
                     addedEpisodeNumbers.add(episodeNumber)
                 }
             }
