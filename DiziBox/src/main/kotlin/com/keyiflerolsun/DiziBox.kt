@@ -36,9 +36,9 @@ class DiziBox : MainAPI() {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request  = chain.request()
             val response = chain.proceed(request)
-            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+            val doc      = Jsoup.parse(response.peekBody(10 * 1024).string())
 
-            if (doc.text().contains("Güvenlik taramasından geçiriliyorsunuz. Lütfen bekleyiniz..")) {
+            if (response.code == 503 || doc.selectFirst("meta[name='cloudflare']") != null) {
                 return cloudflareKiller.intercept(chain)
             }
 
@@ -84,17 +84,17 @@ class DiziBox : MainAPI() {
                 "isTrustedUser" to "true",
                 "dbxu"          to "1743289650198"
             ),
-            interceptor = interceptor
+            interceptor = interceptor, cacheTime = 60
         ).document
-        val home = document.select("article").mapNotNull {
+        val home = document.select("article.article-series-poster").mapNotNull {
         it.toMainPageResult()
     }
         return newHomePageResponse(request.name, home)
     }
 
 private fun Element.toMainPageResult(): SearchResponse? {
-    val title = this.selectFirst("a")?.text() ?: return null
-    val href = fixUrlNull(this.selectFirst("a")?.attr("href"))
+    val title = this.selectFirst("a.poster-title")?.text() ?: return null
+    val href = fixUrlNull(this.selectFirst("a.poster-title")?.attr("href")) ?: return null
     val posterUrl = fixUrlNull(
         this.selectFirst("img")?.let { img ->
             img.attr("data-src").takeIf { it.isNotBlank() } ?: img.attr("src")
@@ -115,7 +115,7 @@ private fun Element.toMainPageResult(): SearchResponse? {
             interceptor = interceptor
         ).document
 
-        return document.select("overlay-content").mapNotNull { it.toMainPageResult() }
+        return document.select("div.overlay-content > article.article-series-poster").mapNotNull { it.toMainPageResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
