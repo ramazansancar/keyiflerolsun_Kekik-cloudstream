@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
         // Shitpack repo which contains our tools and dependencies
         maven("https://jitpack.io")
-        credentials.username = providers.gradleProperty("jp_d2o1900pjpmive58mb1l9aef6u").get()
+        credentials.username = providers.gradleProperty("authToken").get()
     }
 
     dependencies {
