@@ -13,6 +13,7 @@ buildscript {
             credentials {
                 username = "jp_d2o1900pjpmive58mb1l9aef6u"
             }
+		}
     }
 
     dependencies {
