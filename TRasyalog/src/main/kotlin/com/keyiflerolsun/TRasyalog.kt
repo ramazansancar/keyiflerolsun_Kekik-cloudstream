@@ -74,47 +74,49 @@ class TRasyalog : MainAPI() {
             it.attr("data-url")?.trim()?.takeIf { it.isNotEmpty() }?.let { fixUrl(it) }
         }
     
-        if (dataUrls.any { Regex("""\d+-\d+""").containsMatchIn(it) }) {
-            // Toplu bölümler (1-5, 6-10 gibi)
-            for (partUrl in dataUrls) {
-                val partDoc = app.get(partUrl).document
-                val tabContents = partDoc.select("div[id^=tab-][id*=bolum]")
-                for (tab in tabContents) {
-                    val tabId = tab.id()
-                    val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
-                    if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
-                        val iframe = tab.selectFirst("iframe")
-                        val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
-                            if (it.startsWith("http")) it else "https:$it"
-                        } ?: continue
+        // Ayır: toplu (1-5, 6-10) ve tekli (1, 2...)
+        val groupedPartUrls = dataUrls.filter { Regex("""\d+-\d+""").containsMatchIn(it) }
+        val singlePartUrls = dataUrls.filterNot { it in groupedPartUrls }
     
-                        episodeList.add(newEpisode(iframeUrl) {
-                            name = "$episodeNumber. Bölüm"
-                            episode = episodeNumber
-                        })
-                        addedEpisodeNumbers.add(episodeNumber)
-                    }
-                }
-            }
-        } else {
-            // Her bölüm ayrıysa
-            for (epUrl in dataUrls) {
-                val epDoc = app.get(epUrl).document
-                val iframe = epDoc.selectFirst("iframe")
-                val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
-                    if (it.startsWith("http")) it else "https:$it"
-                } ?: continue
+        //Toplu bölümler
+        for (partUrl in groupedPartUrls) {
+            val partDoc = app.get(partUrl).document
+            val tabContents = partDoc.select("div[id^=tab-][id*=bolum]")
+            for (tab in tabContents) {
+                val tabId = tab.id()
+                val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
+                if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
+                    val iframe = tab.selectFirst("iframe")
+                    val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
+                        if (it.startsWith("http")) it else "https:$it"
+                    } ?: continue
     
-                val episodeNumber = Regex("""-(\d+)-bolum""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull()
-                    ?: continue
-    
-                if (episodeNumber !in addedEpisodeNumbers) {
                     episodeList.add(newEpisode(iframeUrl) {
                         name = "$episodeNumber. Bölüm"
                         episode = episodeNumber
                     })
                     addedEpisodeNumbers.add(episodeNumber)
                 }
+            }
+        }
+    
+        //Tekli bölümler
+        for (epUrl in singlePartUrls) {
+            val epDoc = app.get(epUrl).document
+            val iframe = epDoc.selectFirst("iframe")
+            val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
+                if (it.startsWith("http")) it else "https:$it"
+            } ?: continue
+    
+            val episodeNumber = Regex("""-(\d+)-bolum""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull()
+                ?: continue
+    
+            if (episodeNumber !in addedEpisodeNumbers) {
+                episodeList.add(newEpisode(iframeUrl) {
+                    name = "$episodeNumber. Bölüm"
+                    episode = episodeNumber
+                })
+                addedEpisodeNumbers.add(episodeNumber)
             }
         }
     
