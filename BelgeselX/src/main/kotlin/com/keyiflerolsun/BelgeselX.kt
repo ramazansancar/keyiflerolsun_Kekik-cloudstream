@@ -53,9 +53,9 @@ class BelgeselX : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("h3 a")?.text()?.trim()?.toTitleCase() ?: return null
-        val href      = fixUrlNull(this.selectFirst("h3 a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.gen-movie-img img")?.attr("src"))
+        val title     = this.selectFirst("div.gen-movie-info > h3 a")?.text()?.trim()?.toTitleCase() ?: return null
+        val href      = fixUrlNull(this.selectFirst("div.gen-movie-info > h3 a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("div.gen-movie-img > img")?.attr("src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.Documentary) { this.posterUrl = posterUrl }
     }
