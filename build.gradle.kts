@@ -7,6 +7,7 @@ buildscript {
         mavenCentral()
         // Shitpack repo which contains our tools and dependencies
         maven("https://jitpack.io")
+        credentials.username = providers.gradleProperty("jp_d2o1900pjpmive58mb1l9aef6u").get()
     }
 
     dependencies {
@@ -86,7 +87,7 @@ subprojects {
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")   // Kotlin için Jackson JSON kütüphanesi
         implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")          // JSON-nesne dönüştürme kütüphanesi
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")      // Kotlin için asenkron işlemler
-        implementation 'com.github.vidstige:jadb:v1.2.1'
+        implementation("com.github.vidstige:jadb:1.2.1")
     }
 }
 
