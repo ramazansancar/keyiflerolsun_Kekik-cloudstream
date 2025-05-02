@@ -6,7 +6,13 @@ buildscript {
         google()
         mavenCentral()
         // Shitpack repo which contains our tools and dependencies
-        maven("https://jitpack.io")
+        maven {
+            setUrl("https://jitpack.io")
+            // setUrl("https://www.jitpack.io")
+
+            credentials {
+                username = "jp_d2o1900pjpmive58mb1l9aef6u"
+            }
     }
 
     dependencies {
