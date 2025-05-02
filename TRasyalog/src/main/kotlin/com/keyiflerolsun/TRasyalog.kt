@@ -74,33 +74,34 @@ class TRasyalog : MainAPI() {
             it.attr("data-url")?.trim()?.takeIf { it.isNotEmpty() }?.let { fixUrl(it) }
         }
     
-        // Ayır: toplu (1-5, 6-10) ve tekli (1, 2...)
+        // Ayır: toplu (1-5, 6-10) ve tekli (1, 2...) bölümler
         val groupedPartUrls = dataUrls.filter { Regex("""\d+-\d+""").containsMatchIn(it) }
         val singlePartUrls = dataUrls.filterNot { it in groupedPartUrls }
     
-        //Toplu bölümler
+        // 🧩 Toplu bölümler
         for (partUrl in groupedPartUrls) {
             val partDoc = app.get(partUrl).document
             val tabContents = partDoc.select("div[id^=tab-][id*=bolum]")
             for (tab in tabContents) {
                 val tabId = tab.id()
+                val isFinal = tabId.contains("final", ignoreCase = true)
                 val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
-                if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
+                if ((episodeNumber != null && episodeNumber !in addedEpisodeNumbers) || isFinal) {
                     val iframe = tab.selectFirst("iframe")
                     val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
                         if (it.startsWith("http")) it else "https:$it"
                     } ?: continue
     
                     episodeList.add(newEpisode(iframeUrl) {
-                        name = "$episodeNumber. Bölüm"
+                        name = if (isFinal) "Final Bölüm" else "$episodeNumber. Bölüm"
                         episode = episodeNumber
                     })
-                    addedEpisodeNumbers.add(episodeNumber)
+                    episodeNumber?.let { addedEpisodeNumbers.add(it) }
                 }
             }
         }
     
-        //Tekli bölümler
+        // 🧩 Tekli bölümler
         for (epUrl in singlePartUrls) {
             val epDoc = app.get(epUrl).document
             val iframe = epDoc.selectFirst("iframe")
@@ -108,19 +109,19 @@ class TRasyalog : MainAPI() {
                 if (it.startsWith("http")) it else "https:$it"
             } ?: continue
     
+            val isFinal = epUrl.contains("final", ignoreCase = true)
             val episodeNumber = Regex("""-(\d+)-bolum""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull()
-                ?: continue
     
-            if (episodeNumber !in addedEpisodeNumbers) {
+            if ((episodeNumber != null && episodeNumber !in addedEpisodeNumbers) || isFinal) {
                 episodeList.add(newEpisode(iframeUrl) {
-                    name = "$episodeNumber. Bölüm"
+                    name = if (isFinal) "Final Bölüm" else "$episodeNumber. Bölüm"
                     episode = episodeNumber
                 })
-                addedEpisodeNumbers.add(episodeNumber)
+                episodeNumber?.let { addedEpisodeNumbers.add(it) }
             }
         }
     
-        val sortedEpisodes = episodeList.sortedBy { it.episode ?: 0 }
+        val sortedEpisodes = episodeList.sortedBy { it.episode ?: Int.MAX_VALUE }
     
         return newTvSeriesLoadResponse(title, url, TvType.TvSeries, sortedEpisodes) {
             this.posterUrl = poster
