@@ -32,7 +32,7 @@ class TRasyalog : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}/page/$page/").document
-        val home     = document.select("div.post-container").mapNotNull { it.toMainPageResult() }
+        val home     = document.select("div#archiveListing div.post-container").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
     }
