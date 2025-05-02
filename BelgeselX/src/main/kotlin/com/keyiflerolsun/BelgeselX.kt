@@ -17,8 +17,8 @@ class BelgeselX : MainAPI() {
     override val supportedTypes       = setOf(TvType.Documentary)
 
     override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 200L  // ? 0.2 saniye
-    override var sequentialMainPageScrollDelay = 200L  // ? 0.2 saniye
+    override var sequentialMainPageDelay       = 300L  // ? 0.3 saniye
+    override var sequentialMainPageScrollDelay = 300L  // ? 0.3 saniye
 	
     override val mainPage = mainPageOf(
         "${mainUrl}/konu/turk-tarihi-belgeselleri&page=" to "Türk Tarihi",
@@ -59,7 +59,7 @@ class BelgeselX : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title     = this.selectFirst("h3 a")?.text()?.trim()?.toTitleCase() ?: return null
         val href      = fixUrlNull(this.selectFirst("h3 a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.gen-movie-img img")?.attr("src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.Documentary) { this.posterUrl = posterUrl }
     }
