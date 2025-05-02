@@ -17,8 +17,8 @@ class BelgeselX : MainAPI() {
     override val supportedTypes       = setOf(TvType.Documentary)
 
     override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 500L  // ? 0.5 saniye
-    override var sequentialMainPageScrollDelay = 500L  // ? 0.5 saniye
+    override var sequentialMainPageDelay       = 200L  // ? 0.2 saniye
+    override var sequentialMainPageScrollDelay = 200L  // ? 0.2 saniye
 	
     override val mainPage = mainPageOf(
         "${mainUrl}/konu/turk-tarihi-belgeselleri&page=" to "Türk Tarihi",
@@ -43,8 +43,8 @@ class BelgeselX : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.gen-movie-contain").mapNotNull { it.toSearchResult() }
+        val document = app.get("${request.data}${page}", cacheTime = 60).document
+        val home     = document.select("div.gen-movie-contain > div.gen-movie-info").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
@@ -72,7 +72,6 @@ class BelgeselX : MainAPI() {
         val cseToken      = Regex("""cse_token": "(.*)"""").find(tokenResponse.text)?.groupValues?.get(1)
 
         val response = app.get("https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=100&hl=tr&source=gcsc&cselibv=${cseLibVersion}&cx=${cx}&q=${query}&safe=off&cse_tok=${cseToken}&oq=${query}&callback=google.search.cse.api9969&rurl=https%3A%2F%2Fbelgeselx.com%2F")
-        Log.d("BLX","Search result: ${response.text}")
 
         val titles     = Regex(""""titleNoFormatting": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
         val urls       = Regex(""""url": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
@@ -164,10 +163,6 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
             quality = "1080p"
             thisName = "Google"
         }
-
-        Log.d("BLX", "quality » $quality")
-        Log.d("BLX", "videoUrl » $videoUrl")
-
         // Callback ile video bilgilerini geri gönder
         callback.invoke(
             newExtractorLink(
