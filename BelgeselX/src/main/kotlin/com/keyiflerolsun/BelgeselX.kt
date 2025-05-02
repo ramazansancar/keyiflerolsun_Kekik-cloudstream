@@ -15,10 +15,6 @@ class BelgeselX : MainAPI() {
     override var lang                 = "tr"
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.Documentary)
-
-    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/library/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 300L  // ? 0.3 saniye
-    override var sequentialMainPageScrollDelay = 300L  // ? 0.3 saniye
 	
     override val mainPage = mainPageOf(
         "${mainUrl}/konu/turk-tarihi-belgeselleri&page=" to "Türk Tarihi",
@@ -44,7 +40,7 @@ class BelgeselX : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${page}", cacheTime = 60).document
-        val home     = document.select("div.gen-movie-contain > div.gen-movie-info").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.gen-movie-contain > div.gen-info-contain > div.gen-movie-info").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
