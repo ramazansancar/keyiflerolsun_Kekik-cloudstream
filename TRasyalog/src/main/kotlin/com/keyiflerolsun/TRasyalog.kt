@@ -67,78 +67,65 @@ class TRasyalog : MainAPI() {
         val description = document.selectFirst("h2 + p")?.text()?.trim()
         val tags = document.selectFirst("b.inline:contains(Tür:)")?.parent()?.text()?.substringAfter("Tür:")?.trim()?.split(", ")?: emptyList()
     
-        val episodes = mutableListOf<Episode>()
+        val episodeList = mutableListOf<Episode>()
+        val addedEpisodeNumbers = mutableSetOf<Int>()
     
-        // 1. data-url varsa → gruplu bölümler
-        val partUrls = document.select("span[data-url]").mapNotNull {
-            val relativeUrl = it.attr("data-url")?.trim()
-            if (!relativeUrl.isNullOrBlank()) fixUrl(relativeUrl) else null
+        val dataUrls = document.select("span[data-url]").mapNotNull {
+            it.attr("data-url")?.trim()?.takeIf { it.isNotEmpty() }?.let { fixUrl(it) }
         }
     
-        if (partUrls.isNotEmpty()) {
-            // her grup sayfası için
-            partUrls.forEach { partUrl ->
-                val partDoc = app.get(partUrl).document
+        // Ayır: toplu (1-5, 6-10) ve tekli (1, 2...)
+        val groupedPartUrls = dataUrls.filter { Regex("""\d+-\d+""").containsMatchIn(it) }
+        val singlePartUrls = dataUrls.filterNot { it in groupedPartUrls }
     
-                // her tab_content div'i bir bölüm temsil eder
-                partDoc.select("div.tab_content").forEach { tab ->
-                    val iframe = tab.selectFirst("iframe")?.let {
-                        it.attr("src").ifBlank { it.attr("data-src") }
-                    }?.let {
+        //Toplu bölümler
+        for (partUrl in groupedPartUrls) {
+            val partDoc = app.get(partUrl).document
+            val tabContents = partDoc.select("div[id^=tab-][id*=bolum]")
+            for (tab in tabContents) {
+                val tabId = tab.id()
+                val episodeNumber = Regex("""-(\d+)-bolum""").find(tabId)?.groupValues?.get(1)?.toIntOrNull()
+                if (episodeNumber != null && episodeNumber !in addedEpisodeNumbers) {
+                    val iframe = tab.selectFirst("iframe")
+                    val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
                         if (it.startsWith("http")) it else "https:$it"
-                    }
+                    } ?: continue
     
-                    if (iframe != null) {
-                        val id = tab.id() // örnek: tab-1-5-bolum
-                        val episodeNumber = Regex("""-(\d+)-bolum""").find(id)?.groupValues?.get(1)?.toIntOrNull()
-                        val title = if (id.contains("final", ignoreCase = true)) "Final Bölüm" else "${episodeNumber ?: ""}. Bölüm"
-    
-                        episodes.add(
-                            newEpisode(iframe) {
-                                this.name = title
-                                this.episode = episodeNumber
-                            }
-                        )
-                    }
-                }
-            }
-        } else {
-            // 2. Eğer data-url yoksa → tek sayfa bölümleri
-            val items = document.select("span[data-url]").ifEmpty {
-                // bazı sayfalarda data-url yerine doğrudan <a href> oluyor
-                document.select("a[href*=-bolum]")
-            }
-    
-            val uniqueUrls = items.mapNotNull {
-                val href = it.attr("data-url").ifBlank { it.attr("href") }
-                if (!href.isNullOrBlank()) fixUrl(href) else null
-            }.distinct()
-    
-            uniqueUrls.forEach { epUrl ->
-                val epDoc = app.get(epUrl).document
-                val iframe = epDoc.selectFirst("iframe")?.let {
-                    it.attr("src").ifBlank { it.attr("data-src") }
-                }?.let {
-                    if (it.startsWith("http")) it else "https:$it"
-                }
-    
-                if (iframe != null) {
-                    val episodeNumber = Regex("""-(\d+)-bolum""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull()
-                    val title = if (epUrl.contains("final", ignoreCase = true)) "Final Bölüm" else "${episodeNumber ?: ""}. Bölüm"
-    
-                    episodes.add(
-                        newEpisode(iframe) {
-                            this.name = title
-                            this.episode = episodeNumber
-                        }
-                    )
+                    episodeList.add(newEpisode(iframeUrl) {
+                        name = "$episodeNumber. Bölüm"
+                        episode = episodeNumber
+                    })
+                    addedEpisodeNumbers.add(episodeNumber)
                 }
             }
         }
     
-        return newAnimeLoadResponse(title, url, TvType.Anime) {
-            posterUrl = poster
-            addEpisodes(DubStatus.Subbed, episodes)
+        //Tekli bölümler
+        for (epUrl in singlePartUrls) {
+            val epDoc = app.get(epUrl).document
+            val iframe = epDoc.selectFirst("iframe")
+            val iframeUrl = iframe?.attr("data-src")?.ifBlank { iframe.attr("src") }?.let {
+                if (it.startsWith("http")) it else "https:$it"
+            } ?: continue
+    
+            val episodeNumber = Regex("""-(\d+)-bolum""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull()
+                ?: continue
+    
+            if (episodeNumber !in addedEpisodeNumbers) {
+                episodeList.add(newEpisode(iframeUrl) {
+                    name = "$episodeNumber. Bölüm"
+                    episode = episodeNumber
+                })
+                addedEpisodeNumbers.add(episodeNumber)
+            }
+        }
+    
+        val sortedEpisodes = episodeList.sortedBy { it.episode ?: 0 }
+    
+        return newTvSeriesLoadResponse(title, url, TvType.TvSeries, sortedEpisodes) {
+            this.posterUrl = poster
+            this.plot = description
+            this.tags = tags
         }
     }
 
