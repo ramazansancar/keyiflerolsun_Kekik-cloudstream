@@ -70,7 +70,7 @@ class BelgeselX : MainAPI() {
         val response = app.get("https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=100&hl=tr&source=gcsc&cselibv=${cseLibVersion}&cx=${cx}&q=${query}&safe=off&cse_tok=${cseToken}&sort=&exp=cc%2Capo&oq=${query}&callback=google.search.cse.api9969&rurl=https%3A%2F%2Fbelgeselx.com%2F")
         Log.d("BLX", "response » $response")
         val titles     = Regex(""""titleNoFormatting": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
-        val urls       = Regex(""""url": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
+        val urls       = Regex(""""ogImage": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
         val posterUrls = Regex(""""ogImage": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
 
         val searchResponses = mutableListOf<TvSeriesSearchResponse>()
@@ -80,8 +80,11 @@ class BelgeselX : MainAPI() {
             val url       = urls.getOrNull(i) ?: continue
             val posterUrl = posterUrls.getOrNull(i) ?: continue
 
-        if (url.contains("belgesel")) {
-            val modifiedUrl = url.replace("/belgesel/", "/belgeseldizi/")
+        if (url.contains("diziresimleri")) {
+            // URL'den dosya adını al ve .jpg uzantısını kaldır
+            val fileName = url.substringAfterLast("/").replace(".jpg", "")
+            // Yeni URL'yi oluştur
+            val modifiedUrl = "https://belgeselx.com/belgeseldizi/$fileName"
             searchResponses.add(newTvSeriesSearchResponse(title, modifiedUrl, TvType.Documentary) {
                 this.posterUrl = posterUrl
             })
