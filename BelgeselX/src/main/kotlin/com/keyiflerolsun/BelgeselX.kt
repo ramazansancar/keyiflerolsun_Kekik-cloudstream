@@ -80,12 +80,15 @@ class BelgeselX : MainAPI() {
             val url       = urls.getOrNull(i) ?: continue
             val posterUrl = posterUrls.getOrNull(i) ?: continue
 
-            if(!url.contains("belgesel")) continue
-            searchResponses.add(newTvSeriesSearchResponse(title,url,TvType.Documentary) {
+        if (url.contains("belgesel")) {
+            val modifiedUrl = url.replace("belgesel", "belgeseldizi")
+            searchResponses.add(newTvSeriesSearchResponse(title, modifiedUrl, TvType.Documentary) {
                 this.posterUrl = posterUrl
             })
+        } else {
+            continue
         }
-
+        }
         return searchResponses
     }
 
