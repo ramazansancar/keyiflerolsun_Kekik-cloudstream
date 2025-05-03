@@ -69,7 +69,7 @@ class BelgeselX : MainAPI() {
         val callback      = Regex("""callback": "(.*)"""").find(tokenResponse.text)?.groupValues?.get(1)
 
         val response = app.get("https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=tr&source=gcsc&cselibv=${cseLibVersion}&cx=${cx}&q=${query}&safe=off&cse_tok=${cseToken}&oq=${query}&callback={callback}&rurl=https%3A%2F%2Fbelgeselx.com%2F")
-
+        Log.d("BLX", "response » $response")
         val titles     = Regex(""""titleNoFormatting": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
         val urls       = Regex(""""url": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
         val posterUrls = Regex(""""ogImage": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
@@ -81,7 +81,7 @@ class BelgeselX : MainAPI() {
             val url       = urls.getOrNull(i) ?: continue
             val posterUrl = posterUrls.getOrNull(i) ?: continue
 
-            if(!url.contains("belgeseldizi")) continue
+            if(!url.contains("/belgesel*/")) continue
             searchResponses.add(newTvSeriesSearchResponse(title,url,TvType.Documentary) {
                 this.posterUrl = posterUrl
             })
