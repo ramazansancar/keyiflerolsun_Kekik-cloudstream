@@ -11,7 +11,7 @@ Kısakod: feroxxcs3
 
 ## 💾 Kurulum
 
-1. **[cloudstream/pre-release](https://github.com/recloudstream/cloudstream/releases/tag/pre-release)** _Adresinden güncel APK dosyasını indirip kurun._
+1. **[cloudstream/release](https://github.com/recloudstream/cloudstream/releases)** _Adresinden güncel APK dosyasını indirip kurun._
 2. **Uygulamanın yüklü olduğu cihazda** _[depoyu otomatik yüklemek için tıklayın](https://keyiflerolsun.me/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json)_
 
 
