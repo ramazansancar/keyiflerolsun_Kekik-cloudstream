@@ -82,7 +82,7 @@ class BelgeselX : MainAPI() {
 
         if (url.contains("diziresimleri")) {
             // URL'den dosya adını al ve .jpg uzantısını kaldır
-            val fileName = url.substringAfterLast("/").replace(".jpg", "")
+            val fileName = url.substringAfterLast("/").replace(Regex("\\.(jpe?g|png|webp)$"), "")
             // Yeni URL'yi oluştur
             val modifiedUrl = "https://belgeselx.com/belgeseldizi/$fileName"
             searchResponses.add(newTvSeriesSearchResponse(title, modifiedUrl, TvType.Documentary) {
