@@ -115,7 +115,7 @@ private fun Element.toMainPageResult(): SearchResponse? {
             interceptor = interceptor
         ).document
 
-        return document.select("div.overlay-content > article.article-series-poster").mapNotNull { it.toMainPageResult() }
+        return document.select("article.detailed-article").mapNotNull { it.toMainPageResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)

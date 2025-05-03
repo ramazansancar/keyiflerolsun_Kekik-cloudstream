@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import org.jsoup.Jsoup
 
 class FilmBip : MainAPI() {
     override var mainUrl              = "https://filmbip.com"
@@ -73,6 +74,40 @@ private fun Element.toSearchResult(): SearchResponse? {
 
     return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
 }
+
+    override suspend fun search(query: String): List<SearchResponse> {
+        val responseRaw = app.post(
+            "$mainUrl/search",
+            headers = mapOf(
+                "Accept" to "application/json, text/javascript, */*; q=0.01",
+                "X-Requested-With" to "XMLHttpRequest",
+                "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+                "Origin" to mainUrl,
+                "Referer" to "$mainUrl/"
+            ),
+            data = mapOf("query" to query)
+        )
+
+        val json = responseRaw.parsedSafe<Map<String, Any>>()
+        if (json?.get("success") != true) {
+            Log.d("FLB", "Search failed: ${json?.get("success")}")
+            return emptyList()
+        }
+
+        val theme = json["theme"] as? String ?: return emptyList()
+        val document = Jsoup.parse(theme)
+        val items = document.select("li")
+
+        return items.mapNotNull { item ->
+            val title = item.selectFirst("a.block.truncate")?.text()?.trim() ?: return@mapNotNull null
+            val href = fixUrlNull(item.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
+            val posterUrl = fixUrlNull(item.selectFirst("img.lazy")?.attr("data-src"))
+
+            newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+        }
+    }
+
+    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document

@@ -89,7 +89,7 @@ private fun Element.toSearchResult(): SearchResponse? {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}?s=${query}").document
+        val document = app.get("${mainUrl}/arama/?s=${query}").document
 
         return document.select("div.film-list div.item-relative").mapNotNull { it.toSearchResult() }
     }

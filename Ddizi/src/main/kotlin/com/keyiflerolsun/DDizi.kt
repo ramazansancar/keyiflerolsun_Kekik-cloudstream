@@ -49,19 +49,60 @@ class DDizi : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
+        Log.d("DDizi:", "Searching for $query")
+        
+        val formData = mapOf("arama" to query)
+        
         val document = app.post(
-            "$mainUrl/arama/",
-            data = mapOf("arama" to query),
+            "$mainUrl/arama/", 
+            data = formData, 
             headers = getHeaders(mainUrl)
         ).document
-
-        // Çoklu seçiciyle arama sonuçları alınır, alternatifler birleştirilir
-        return document.select("div.dizi-boxpost, div.dizi-boxpost-cat, div.dizi-listesi a, div.yerli-diziler li a, div.yabanci-diziler li a")
-            .mapNotNull { element ->
-                val title = element.text().trim() ?: return@mapNotNull null
-                val href = fixUrl(element.attr("href") ?: return@mapNotNull null)
-                newTvSeriesSearchResponse(title, href, TvType.TvSeries)
+        val results = ArrayList<SearchResponse>()
+        
+        try {
+            val boxCatResults = document.select("div.dizi-boxpost-cat").mapNotNull { it.toSearchResult() }
+            if (boxCatResults.isNotEmpty()) {
+                Log.d("DDizi:", "Found ${boxCatResults.size} box-cat results")
+                results.addAll(boxCatResults)
             }
+        } catch (e: Exception) {
+            Log.d("DDizi:", "Error parsing box-cat search results: ${e.message}")
+        }
+        
+        if (results.isEmpty()) {
+            try {
+                val boxResults = document.select("div.dizi-boxpost").mapNotNull { it.toSearchResult() }
+                if (boxResults.isNotEmpty()) {
+                    Log.d("DDizi:", "Found ${boxResults.size} box results")
+                    results.addAll(boxResults)
+                }
+            } catch (e: Exception) {
+                Log.d("DDizi:", "Error parsing box search results: ${e.message}")
+            }
+        }
+        
+        if (results.isEmpty()) {
+            try {
+                val altResults = document.select("div.dizi-listesi a, div.yerli-diziler li a, div.yabanci-diziler li a").mapNotNull { 
+                    val title = it.text()?.trim() ?: return@mapNotNull null
+                    val href = fixUrl(it.attr("href") ?: return@mapNotNull null)
+                    
+                    newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                        this.posterUrl = null
+                    }
+                }
+                
+                if (altResults.isNotEmpty()) {
+                    Log.d("DDizi:", "Found ${altResults.size} alternative results")
+                    results.addAll(altResults)
+                }
+            } catch (e: Exception) {
+                Log.d("DDizi:", "Error parsing alternative search results: ${e.message}")
+            }
+        }
+        
+        return results
     }
 
     override suspend fun load(url: String): LoadResponse {
