@@ -3,7 +3,7 @@
 
 Kısakod: feroxxcs3
 
-
+Çalışmayan eklenti v ya da eklenmesini istediğiniz eklenti istekleriniz icin issue açabilirsiniz
 [Döküman](https://recloudstream.github.io/csdocs/) **━** [Resmi Site](https://dweb.link/ipns/cloudstream.on.fleek.co/) **━** [Wiki](https://cloudstream.miraheze.org/wiki/Main_Page)
 
 [![ForTheBadge made-with-kotlin](https://ForTheBadge.com/images/badges/made-with-kotlin.svg)](https://kotlinlang.org/)
