@@ -49,7 +49,7 @@ class TRasyalog : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/search?s=${query}").document
+        val document = app.get("${mainUrl}/?s=${query}").document
 
         return document.select("div.post-container").mapNotNull { it.toMainPageResult() }
     }
