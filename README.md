@@ -16,47 +16,53 @@ Kısakod: feroxxcs3
 
 Eklenti içeriği ve güncel durumları
 
-<div style="display: flex; justify-content: space-between; gap: 1%;">
-  <table style="display: inline-block; width: 49%;">
-    <tr><th>Platform Adı</th><th>Durum</th></tr>
-    <tr><td>AnimeciX</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>BelgeselX</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>CanliTV</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>CizgiMax</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>Ddizi</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>DiziBox</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>DiziKorea</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>DiziMom</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>DiziPal</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>DiziYou</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>Dizilla</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>FilmBip</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>FilmMakinesi</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>FilmModu</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>FullHDFilm</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>FullHDFilmizlesene</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>HDFilmCehennemi</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-  </table>
+<table>
+  <tr>
+    <td style="vertical-align: top; padding-right: 40px;">
+      <table>
+        <tr><th>Platform Adı</th><th>Durum</th></tr>
+        <tr><td>AnimeciX</td><td>✅</td></tr>
+        <tr><td>BelgeselX</td><td>✅</td></tr>
+        <tr><td>CanliTV</td><td>✅</td></tr>
+        <tr><td>CizgiMax</td><td>✅</td></tr>
+        <tr><td>Ddizi</td><td>✅</td></tr>
+        <tr><td>DiziBox</td><td>✅</td></tr>
+        <tr><td>DiziKorea</td><td>✅</td></tr>
+        <tr><td>DiziMom</td><td>✅</td></tr>
+        <tr><td>DiziPal</td><td>✅</td></tr>
+        <tr><td>DiziYou</td><td>✅</td></tr>
+        <tr><td>Dizilla</td><td>✅</td></tr>
+        <tr><td>FilmBip</td><td>✅</td></tr>
+        <tr><td>FilmMakinesi</td><td>✅</td></tr>
+        <tr><td>FilmModu</td><td>✅</td></tr>
+        <tr><td>FullHDFilm</td><td>✅</td></tr>
+        <tr><td>FullHDFilmizlesene</td><td>✅</td></tr>
+        <tr><td>HDFilmCehennemi</td><td>✅</td></tr>
+      </table>
+    </td>
 
-  <table style="display: inline-block; width: 49%;">
-    <tr><th>Platform Adı</th><th>Durum</th></tr>
-    <tr><td>InatBox</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>JetFilmizle</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>KoreanTurk</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>KultFilmler</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>NetflixMirror</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>RareFilmm</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>RecTV</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>SetFilmIzle</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>SezonlukDizi</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>SinemaCX</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>SuperFilmGeldi</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>TLCtr</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>TRanimaci</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>TrAsyaLog</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>TurkAnime</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>UgurFilm</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>Watch2Movies</td><td>✅</td></tr><tr><td colspan="2"><hr></td></tr>
-    <tr><td>WebteIzle</td><td>✅</td></tr>
-  </table>
-</div>
+    <td style="vertical-align: top;">
+      <table>
+        <tr><th>Platform Adı</th><th>Durum</th></tr>
+        <tr><td>InatBox</td><td>✅</td></tr>
+        <tr><td>JetFilmizle</td><td>✅</td></tr>
+        <tr><td>KoreanTurk</td><td>✅</td></tr>
+        <tr><td>KultFilmler</td><td>✅</td></tr>
+        <tr><td>NetflixMirror</td><td>✅</td></tr>
+        <tr><td>RareFilmm</td><td>✅</td></tr>
+        <tr><td>RecTV</td><td>✅</td></tr>
+        <tr><td>SetFilmIzle</td><td>✅</td></tr>
+        <tr><td>SezonlukDizi</td><td>✅</td></tr>
+        <tr><td>SinemaCX</td><td>✅</td></tr>
+        <tr><td>SuperFilmGeldi</td><td>✅</td></tr>
+        <tr><td>TLCtr</td><td>✅</td></tr>
+        <tr><td>TRanimaci</td><td>✅</td></tr>
+        <tr><td>TrAsyaLog</td><td>✅</td></tr>
+        <tr><td>TurkAnime</td><td>✅</td></tr>
+        <tr><td>UgurFilm</td><td>✅</td></tr>
+        <tr><td>Watch2Movies</td><td>✅</td></tr>
+        <tr><td>WebteIzle</td><td>✅</td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
