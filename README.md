@@ -18,7 +18,7 @@ Eklenti içeriği ve güncel durumları
 
 <table>
   <tr>
-    <td style="vertical-align: top; padding-right: 40px;">
+    <td valign="top" style="padding-right: 40px;">
       <table>
         <tr><th>Platform Adı</th><th>Durum</th></tr>
         <tr><td>AnimeciX</td><td>✅</td></tr>
@@ -40,8 +40,7 @@ Eklenti içeriği ve güncel durumları
         <tr><td>HDFilmCehennemi</td><td>✅</td></tr>
       </table>
     </td>
-
-    <td style="vertical-align: top;">
+    <td valign="top">
       <table>
         <tr><th>Platform Adı</th><th>Durum</th></tr>
         <tr><td>InatBox</td><td>✅</td></tr>
