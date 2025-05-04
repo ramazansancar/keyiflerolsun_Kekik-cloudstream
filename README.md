@@ -14,5 +14,74 @@ Kısakod: feroxxcs3
 1. **[cloudstream/release](https://github.com/recloudstream/cloudstream/releases)** _Adresinden güncel APK dosyasını indirip kurun._
 2. **Uygulamanın yüklü olduğu cihazda** _[depoyu otomatik yüklemek için tıklayın](https://keyiflerolsun.me/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json)_
 
+Eklenti içeriği ve güncel durumları
 
+AnimeciX ✅
 
+BelgeselX ✅
+
+CanliTV ✅
+
+CizgiMax ✅
+
+Ddizi ✅
+
+DiziBox ✅
+
+DiziKorea ✅
+
+DiziMom ✅
+
+DiziPal ✅
+
+DiziYou ✅
+
+Dizilla ✅
+
+FilmBip ✅
+
+FilmMakinesi ✅
+
+FilmModu ✅
+
+FullHDFilm ✅
+
+FullHDFilmizlesene ✅
+
+HDFilmCehennemi ✅
+
+InatBox ✅
+
+JetFilmizle ✅
+
+KoreanTurk ✅
+
+KultFilmler ✅
+
+NetflixMirror ✅
+
+RareFilmm ✅
+
+RecTV ✅
+
+SetFilmIzle ✅
+
+SezonlukDizi ✅
+
+SinemaCX ✅
+
+SuperFilmGeldi ✅
+
+TLCtr ✅
+
+TRanimaci ✅
+
+TrAsyaLog ✅
+
+TurkAnime ✅
+
+UgurFilm ✅
+
+Watch2Movies ✅
+
+WebteIzle ✅
