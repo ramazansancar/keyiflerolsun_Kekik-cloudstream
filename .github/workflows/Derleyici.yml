@@ -106,27 +106,7 @@ jobs:
             echo "YerelDiziler zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-      - name: CizgiVeDizi Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "CizgiVeDizi")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["Tv,Cartoon"],
-              "version": 2,
-              "internalName": "CizgiVeDizi",
-              "description": "CizgiVeDizi için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/CizgiVeDizi.cs3",
-              "name": "CizgiVeDizi",
-              "iconUrl": "https://cizgivedizi.com/Logo.png"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "CizgiVeDizi zaten plugins.json'da mevcut, eklenmedi."
-          fi
+      
 
       
 
