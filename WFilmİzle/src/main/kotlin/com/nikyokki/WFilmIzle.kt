@@ -4,32 +4,14 @@ package com.nikyokki
 
 import android.util.Log
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.lagradost.cloudstream3.HomePageResponse
-import com.lagradost.cloudstream3.LoadResponse
+import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
-import com.lagradost.cloudstream3.MainAPI
-import com.lagradost.cloudstream3.MainPageRequest
-import com.lagradost.cloudstream3.SearchResponse
-import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.cloudstream3.TvType
-import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.fixUrlNull
-import com.lagradost.cloudstream3.mainPageOf
-import com.lagradost.cloudstream3.newHomePageResponse
-import com.lagradost.cloudstream3.newMovieLoadResponse
-import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.getQualityFromName
-import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class WFilmIzle : MainAPI() {
-    override var mainUrl = "https://www.wfilmizle.plus"
+    override var mainUrl = "https://www.wfilmizle.club/"
     override var name = "WFilmİzle"
     override val hasMainPage = true
     override var lang = "tr"
@@ -169,18 +151,20 @@ class WFilmIzle : MainAPI() {
                     source = name,
                     name = name,
                     url = master,
-                    ExtractorLinkType.M3U8
+                    type = ExtractorLinkType.M3U8
+
                 ) {
-                    referer = mainUrl
+                    referer = mapOf("Referer" to mainUrl).toString() // "Referer" ayarı burada yapılabilir
+                    quality = getQualityFromName(Qualities.Unknown.value.toString())
                     headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox",
                         "Accept" to "*/*", "X-Requested-With" to "XMLHttpRequest",
                         "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8"
                     )
-                    quality = Qualities.Unknown.value
                 }
             )
         }
+        //loadExtractor(iframe.toS, "${mainUrl}/", subtitleCallback, callback)
         return true
     }
     private fun decodeUnicodeEscapeSequences(input: String): String {

@@ -1,12 +1,12 @@
-package com.nikyokki
+package com.sinetech.latte
 
-import android.content.Context
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
+import android.content.Context
 
 @CloudstreamPlugin
-class WFilmIzlePlugin: Plugin() {
+class KickTRPlugin: Plugin() {
     override fun load(context: Context) {
-        registerMainAPI(WFilmIzle())
+        registerMainAPI(KickTR())
     }
 }

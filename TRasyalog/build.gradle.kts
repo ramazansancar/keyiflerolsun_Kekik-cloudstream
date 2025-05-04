@@ -1,9 +1,9 @@
-version = 2
+version = 1
 
 cloudstream {
     authors     = listOf("kerimmkirac")
     language    = "tr"
-    description = "Binlerce yerli yabancı dizi arşivi, tüm sezonlar, kesintisiz bölümler. Filmbip heryerde seninle!"
+    description = "TRasyalog izleme sitesi."
 
     /**
      * Status int as the following:
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("TvSeries")
-    iconUrl = "https://www.google.com/s2/favicons?domain=www.filmbip.com/&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=asyalog.com&sz=%size%"
 }

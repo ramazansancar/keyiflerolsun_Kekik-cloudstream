@@ -1,12 +1,12 @@
-package com.nikyokki
+package com.keyiflerolsun
 
-import android.content.Context
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
+import android.content.Context
 
 @CloudstreamPlugin
-class WFilmIzlePlugin: Plugin() {
+class TRasyalogPlugin: Plugin() {
     override fun load(context: Context) {
-        registerMainAPI(WFilmIzle())
+        registerMainAPI(TRasyalog())
     }
 }
