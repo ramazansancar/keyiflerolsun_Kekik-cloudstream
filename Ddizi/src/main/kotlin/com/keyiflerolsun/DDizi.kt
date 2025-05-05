@@ -187,7 +187,7 @@ class DDizi : MainAPI() {
                 // Log the extracted YouTube URL for debugging
                 Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
                 
-                return loadExtractor(youtubeUrl, data, subtitleCallback, callback)
+                return loadExtractor(youtubeUrl, youtubeUrl, subtitleCallback, callback)
             } else {
                 // Log failure to extract YouTube URL
                 Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
