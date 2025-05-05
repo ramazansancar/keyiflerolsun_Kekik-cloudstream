@@ -11,7 +11,7 @@ import org.jsoup.Jsoup
 
 class TRasyalog : MainAPI() {
     override var mainUrl        = "https://asyalog.com"
-    override var name           = "TrAsyaLog"
+    override var name           = "AsyaLog"
     override val hasMainPage    = true
     override var lang           = "tr"
     override val hasQuickSearch = false
