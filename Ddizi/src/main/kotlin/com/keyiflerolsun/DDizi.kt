@@ -188,11 +188,6 @@ class DDizi : MainAPI() {
                 val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
                 Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
 				Log.d("DDizi:", "id = $id")
-                 loadExtractor(
-                "https://youtube.com/watch?v=$id",
-                subtitleCallback,
-                callback
-            )
             callback(
                 newExtractorLink(
                     "Youtube",
