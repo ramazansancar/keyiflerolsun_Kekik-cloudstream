@@ -190,7 +190,7 @@ override suspend fun loadLinks(
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
             Log.d("DDizi:", "id = $id")
             val videoInfo = app.get("https://iv.ggtyler.dev/api/v1/videos/$id").text
-            val videoData = tryParseJson(videoInfo)
+            val videoData = tryParseJson<Map<String, Any>>(videoInfo)
         if (videoData != null) {
             callback.invoke(
                     ExtractorLink(
