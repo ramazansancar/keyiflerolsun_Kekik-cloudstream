@@ -195,9 +195,9 @@ override suspend fun loadLinks(
                     "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
                     ExtractorLinkType.DASH
                 ) {
-                    this.referer = ""
+                    this.referer = "https://iv.ggtyler.dev"
                     this.headers = mapOf()
-                    this.quality = Qualities.Unknown.value
+                    this.quality = Qualities.P1080.value
                     this.extractorData = null
                 }
             )
