@@ -198,7 +198,7 @@ class DDizi : MainAPI() {
                     "Youtube",
                     "Youtube",
                     "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
-                    ExtractorLinkType.DASH
+                    ExtractorLinkType.VIDEO
                 ) {
                     this.referer = ""
                     this.headers = mapOf()
