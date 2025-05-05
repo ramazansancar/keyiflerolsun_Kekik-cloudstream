@@ -4,6 +4,7 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.M3u8Helper
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
@@ -189,7 +190,7 @@ override suspend fun loadLinks(
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
             Log.d("DDizi:", "id = $id")
             val videoInfo = app.get("https://iv.ggtyler.dev/api/v1/videos/$id").text
-            val videoData = tryParseJson<VideoEntry>(videoInfo)
+            val videoData = tryParseJson(videoInfo)
         if (videoData != null) {
             callback.invoke(
                     ExtractorLink(
