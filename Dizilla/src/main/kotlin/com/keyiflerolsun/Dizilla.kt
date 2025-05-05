@@ -33,9 +33,6 @@ import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.syncproviders.SyncIdName
-import com.lagradost.cloudstream3.syncproviders.providers.SimklApi.MediaObject
-import com.lagradost.cloudstream3.syncproviders.providers.SimklApi.Ids
-import com.lagradost.cloudstream3.syncproviders.providers.SimklApi.Show
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.Calendar
