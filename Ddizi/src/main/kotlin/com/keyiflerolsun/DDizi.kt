@@ -175,13 +175,24 @@ class DDizi : MainAPI() {
     ): Boolean {
         val document = app.get(data, headers = getHeaders(mainUrl)).document
 
+// Check for iframe with YouTube in src
         val iframeSrc = document.selectFirst("iframe")?.attr("src")
-                if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
-                    // Extract the YouTube URL from the id parameter
-                    val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
-                        ?: return loadExtractor(data, data, subtitleCallback, callback) // Fallback if extraction fails
-                    return loadExtractor(youtubeUrl, data, subtitleCallback, callback)
-                }
+        if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
+            // Log the iframe src for debugging
+            Log.d("DDizi:", "iframeSrc = $iframeSrc")
+            
+            // Extract the YouTube URL from the id parameter
+            val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
+            if (youtubeUrl != null) {
+                // Log the extracted YouTube URL for debugging
+                Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
+                
+                return loadExtractor(youtubeUrl, data, subtitleCallback, callback)
+            } else {
+                // Log failure to extract YouTube URL
+                Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
+            }
+        }
 
         val ogVideo = document.selectFirst("meta[property=og:video]")?.attr("content")
             ?: return loadExtractor(data, data, subtitleCallback, callback)
