@@ -167,27 +167,27 @@ class DDizi : MainAPI() {
         return Triple(title, season, episode)
     }
 
-    override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ): Boolean {
-        val document = app.get(data, headers = getHeaders(mainUrl)).document
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    val document = app.get(data, headers = getHeaders(mainUrl)).document
 
-// Check for iframe with YouTube in src
-        val iframeSrc = document.selectFirst("iframe")?.attr("src")
-        if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
-            // Log the iframe src for debugging
-            Log.d("DDizi:", "iframeSrc = $iframeSrc")
-            
-            // Extract the YouTube URL from the id parameter
-            val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
-            if (youtubeUrl != null) {
-                // Log the extracted YouTube URL for debugging
-                val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
-                Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
-				Log.d("DDizi:", "id = $id")
+    // Check for iframe with YouTube in src
+    val iframeSrc = document.selectFirst("iframe")?.attr("src")
+    if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
+        // Log the iframe src for debugging
+        Log.d("DDizi:", "iframeSrc = $iframeSrc")
+        
+        // Extract the YouTube URL from the id parameter
+        val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
+        if (youtubeUrl != null) {
+            // Log the extracted YouTube URL for debugging
+            val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
+            Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
+            Log.d("DDizi:", "id = $id")
             callback(
                 newExtractorLink(
                     "Youtube",
@@ -201,54 +201,56 @@ class DDizi : MainAPI() {
                     this.extractorData = null
                 }
             )
-            } else {
-                // Log failure to extract YouTube URL
-                Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
-            }
-        }
-
-        val ogVideo = document.selectFirst("meta[property=og:video]")?.attr("content")
-            ?: return loadExtractor(data, data, subtitleCallback, callback)
-
-        val playerDoc = app.get(ogVideo, headers = getHeaders(data)).document
-        val jwScript = playerDoc.select("script").firstOrNull { it.html().contains("jwplayer") && it.html().contains("sources") }
-            ?: return loadExtractor(ogVideo, data, subtitleCallback, callback)
-
-        val sourcesRegex = Regex("""sources:\s*\[\s*\{(.*?)\}\s*,?\s*\]""", RegexOption.DOT_MATCHES_ALL)
-        val fileRegex = Regex("""file:\s*["'](.*?)["']""")
-        val sourcesMatch = sourcesRegex.find(jwScript.html()) ?: return false
-        val fileUrl = fileRegex.find(sourcesMatch.groupValues[1])?.groupValues?.get(1) ?: return false
-
-        val isHls = fileUrl.contains(".m3u8") || fileUrl.contains("hls")
-        val quality = Regex("""label:\s*["'](.*?)["']""").find(sourcesMatch.groupValues[1])?.groupValues?.get(1) ?: "Auto"
-        val videoHeaders = if (fileUrl.contains("master.txt")) {
-            mapOf(
-                "accept" to "*/*",
-                "user-agent" to USER_AGENT,
-                "referer" to ogVideo
-            )
+            return true // Return immediately after successful YouTube extraction
         } else {
-            getHeaders(ogVideo)
+            // Log failure to extract YouTube URL
+            Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
         }
-
-        callback.invoke(
-            ExtractorLink(
-                source = name,
-                name = "$name - $quality",
-                url = fileUrl,
-                referer = ogVideo,
-                quality = getQualityFromName(quality),
-                headers = videoHeaders,
-                type = if (isHls) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-            )
-        )
-
-        if (isHls) {
-            M3u8Helper.generateM3u8(name, fileUrl, ogVideo, headers = videoHeaders).forEach(callback)
-        }
-
-        return true
     }
+
+    // Proceed to og:video extraction if YouTube iframe is not present or fails
+    val ogVideo = document.selectFirst("meta[property=og:video]")?.attr("content")
+        ?: return loadExtractor(data, data, subtitleCallback, callback) // Fallback to loadExtractor if no og:video
+
+    val playerDoc = app.get(ogVideo, headers = getHeaders(data)).document
+    val jwScript = playerDoc.select("script").firstOrNull { it.html().contains("jwplayer") && it.html().contains("sources") }
+        ?: return loadExtractor(ogVideo, data, subtitleCallback, callback) // Fallback to loadExtractor if no JW script
+
+    val sourcesRegex = Regex("""sources:\s*\[\s*\{(.*?)\}\s*,?\s*\]""", RegexOption.DOT_MATCHES_ALL)
+    val fileRegex = Regex("""file:\s*["'](.*?)["']""")
+    val sourcesMatch = sourcesRegex.find(jwScript.html()) ?: return false
+    val fileUrl = fileRegex.find(sourcesMatch.groupValues[1])?.groupValues?.get(1) ?: return false
+
+    val isHls = fileUrl.contains(".m3u8") || fileUrl.contains("hls")
+    val quality = Regex("""label:\s*["'](.*?)["']""").find(sourcesMatch.groupValues[1])?.groupValues?.get(1) ?: "Auto"
+    val videoHeaders = if (fileUrl.contains("master.txt")) {
+        mapOf(
+            "accept" to "*/*",
+            "user-agent" to USER_AGENT,
+            "referer" to ogVideo
+        )
+    } else {
+        getHeaders(ogVideo)
+    }
+
+    callback.invoke(
+        ExtractorLink(
+            source = name,
+            name = "$name - $quality",
+            url = fileUrl,
+            referer = ogVideo,
+            quality = getQualityFromName(quality),
+            headers = videoHeaders,
+            type = if (isHls) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+        )
+    )
+
+    if (isHls) {
+        M3u8Helper.generateM3u8(name, fileUrl, ogVideo, headers = videoHeaders).forEach(callback)
+    }
+
+    return true
+}
 
     companion object {
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
