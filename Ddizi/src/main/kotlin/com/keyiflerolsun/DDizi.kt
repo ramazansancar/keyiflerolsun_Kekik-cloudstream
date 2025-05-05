@@ -185,8 +185,9 @@ class DDizi : MainAPI() {
             val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
             if (youtubeUrl != null) {
                 // Log the extracted YouTube URL for debugging
-                val id = iframe.substringAfter("/watch?v=").substringBefore("?")
-                Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl", "id:","$id")
+                val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
+                Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
+				Log.d("DDizi:", "id = $id")
                  loadExtractor(
                 "https://youtube.com/watch?v=$id",
                 subtitleCallback,
