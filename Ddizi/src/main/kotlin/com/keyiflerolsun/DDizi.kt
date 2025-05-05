@@ -188,19 +188,16 @@ override suspend fun loadLinks(
             val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
             Log.d("DDizi:", "id = $id")
-            callback(
-                newExtractorLink(
-                    "Youtube",
-                    "Youtube",
-                    "https://iv.ggtyler.dev/api/manifest/dash/id/$id",
-                    ExtractorLinkType.DASH
-                ) {
-                    this.referer = "https://iv.ggtyler.dev"
-                    this.headers = mapOf()
-                    this.quality = Qualities.P1080.value
-                    this.extractorData = null
-                }
-            )
+            callback.invoke(
+                    ExtractorLink(
+                        source = this.name,
+                        name = "${name} (DASH)",
+                        url = "https://iv.ggtyler.dev/api/manifest/dash/id/$videoId",
+                        referer = mainUrl,
+                        quality = Qualities.P1080.value,
+                        type = ExtractorLinkType.DASH
+                    )
+                )
             return true // Return immediately after successful YouTube extraction
         } else {
             // Log failure to extract YouTube URL
