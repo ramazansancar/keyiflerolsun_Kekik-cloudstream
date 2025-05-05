@@ -174,6 +174,12 @@ class DDizi : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data, headers = getHeaders(mainUrl)).document
+
+        val iframeSrc = document.selectFirst("iframe")?.attr("src")
+                if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
+                    return loadExtractor(iframeSrc, iframeSrc, subtitleCallback, callback)
+                }
+
         val ogVideo = document.selectFirst("meta[property=og:video]")?.attr("content")
             ?: return loadExtractor(data, data, subtitleCallback, callback)
 
