@@ -47,7 +47,8 @@ class Dizilla : MainAPI() {
     override val supportedTypes = setOf(TvType.TvSeries)
 
     override val supportedSyncNames = setOf(
-        SyncIdName.Simkl
+        SyncIdName.MyAnimeList,
+        SyncIdName.Anilist
     )
 
     override val mainPage = mainPageOf(
