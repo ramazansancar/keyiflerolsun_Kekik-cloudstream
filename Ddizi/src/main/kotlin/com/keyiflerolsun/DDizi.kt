@@ -192,7 +192,7 @@ override suspend fun loadLinks(
                     ExtractorLink(
                         source = this.name,
                         name = "${name} (DASH)",
-                        url = "https://iv.ggtyler.dev/api/manifest/dash/id/$videoId",
+                        url = "https://iv.ggtyler.dev/api/manifest/dash/id/$id",
                         referer = mainUrl,
                         quality = Qualities.P1080.value,
                         type = ExtractorLinkType.DASH
