@@ -188,6 +188,9 @@ override suspend fun loadLinks(
             val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
             Log.d("DDizi:", "id = $id")
+            val videoInfo = app.get("https://iv.ggtyler.dev/api/v1/videos/$id").text
+            val videoData = tryParseJson<VideoEntry>(videoInfo)
+        if (videoData != null) {
             callback.invoke(
                     ExtractorLink(
                         source = this.name,
@@ -198,7 +201,8 @@ override suspend fun loadLinks(
                         type = ExtractorLinkType.DASH
                     )
                 )
-            return true // Return immediately after successful YouTube extraction
+            return true
+            }			// Return immediately after successful YouTube extraction
         } else {
             // Log failure to extract YouTube URL
             Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
