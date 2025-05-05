@@ -177,7 +177,10 @@ class DDizi : MainAPI() {
 
         val iframeSrc = document.selectFirst("iframe")?.attr("src")
                 if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
-                    return loadExtractor(iframeSrc, iframeSrc, subtitleCallback, callback)
+                    // Extract the YouTube URL from the id parameter
+                    val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
+                        ?: return loadExtractor(data, data, subtitleCallback, callback) // Fallback if extraction fails
+                    return loadExtractor(youtubeUrl, data, subtitleCallback, callback)
                 }
 
         val ogVideo = document.selectFirst("meta[property=og:video]")?.attr("content")
