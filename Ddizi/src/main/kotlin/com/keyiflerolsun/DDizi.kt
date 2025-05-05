@@ -185,9 +185,26 @@ class DDizi : MainAPI() {
             val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
             if (youtubeUrl != null) {
                 // Log the extracted YouTube URL for debugging
-                Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
-                
-                return loadExtractor(youtubeUrl, youtubeUrl, subtitleCallback, callback)
+                val id = iframe.substringAfter("/watch?v=").substringBefore("?")
+                Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl", "id:","$id")
+                 loadExtractor(
+                "https://youtube.com/watch?v=$id",
+                subtitleCallback,
+                callback
+            )
+            callback(
+                newExtractorLink(
+                    "Youtube",
+                    "Youtube",
+                    "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
+                    ExtractorLinkType.DASH
+                ) {
+                    this.referer = ""
+                    this.headers = mapOf()
+                    this.quality = Qualities.Unknown.value
+                    this.extractorData = null
+                }
+            )
             } else {
                 // Log failure to extract YouTube URL
                 Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
