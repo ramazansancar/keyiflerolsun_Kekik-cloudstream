@@ -192,7 +192,7 @@ override suspend fun loadLinks(
                 newExtractorLink(
                     "Youtube",
                     "Youtube",
-                    "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
+                    "https://iv.ggtyler.dev/api/manifest/dash/id/$id",
                     ExtractorLinkType.DASH
                 ) {
                     this.referer = "https://iv.ggtyler.dev"
