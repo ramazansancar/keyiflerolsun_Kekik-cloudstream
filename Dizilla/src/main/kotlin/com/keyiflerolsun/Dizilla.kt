@@ -32,6 +32,7 @@ import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.syncproviders.SyncIdName
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.Calendar
@@ -45,6 +46,9 @@ class Dizilla : MainAPI() {
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.TvSeries)
 
+    override val supportedSyncNames = setOf(
+        SyncIdName.Simkl
+    )
 
     override val mainPage = mainPageOf(
         //"${mainUrl}/tum-bolumler" to "Altyazılı Bölümler",
