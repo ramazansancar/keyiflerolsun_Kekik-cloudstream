@@ -7,8 +7,11 @@ import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 
 class DDizi : MainAPI() {
@@ -169,9 +172,17 @@ class DDizi : MainAPI() {
         return Triple(title, season, episode)
     }
 
-data class GenericVideoData(
+private data class GenericVideoData(
     val videoId: String,
     val title: String,
+    val videoThumbnails: List<Thumbnail>
+)
+
+private data class Thumbnail(
+    val quality: String,
+    val url: String,
+    val width: Int,
+    val height: Int
 )
 
 override suspend fun loadLinks(
