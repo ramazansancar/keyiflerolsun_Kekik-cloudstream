@@ -8,5 +8,6 @@ import android.content.Context
 class DDiziPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(DDizi())
+        registerExtractorAPI(DDiziExtractor())
     }
 } 
