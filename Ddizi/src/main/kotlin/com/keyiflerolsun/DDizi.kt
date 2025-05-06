@@ -5,6 +5,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
+import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
@@ -168,6 +169,11 @@ class DDizi : MainAPI() {
         return Triple(title, season, episode)
     }
 
+data class GenericVideoData(
+    val videoId: String,
+    val title: String,
+)
+
 override suspend fun loadLinks(
     data: String,
     isCasting: Boolean,
@@ -186,17 +192,17 @@ override suspend fun loadLinks(
         val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
         if (youtubeUrl != null) {
             // Log the extracted YouTube URL for debugging
-            val id = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
+            val videoId = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
-            Log.d("DDizi:", "id = $id")
-            val videoInfo = app.get("https://iv.ggtyler.dev/api/v1/videos/$id").text
-            val videoData = tryParseJson<Map<String, Any>>(videoInfo)
+            Log.d("DDizi:", "videoId = $videoId")
+            val videoInfo = app.get("https://iv.ggtyler.dev/api/v1/videos/$videoId").text
+            val videoData = tryParseJson<GenericVideoData>(videoInfo)
         if (videoData != null) {
             callback.invoke(
                     ExtractorLink(
                         source = this.name,
                         name = "${name} (DASH)",
-                        url = "https://iv.ggtyler.dev/api/manifest/dash/id/$id",
+                        url = "https://iv.ggtyler.dev/api/manifest/dash/id/$videoId",
                         referer = "https://iv.ggtyler.dev",
                         quality = Qualities.P1080.value,
                         type = ExtractorLinkType.DASH
