@@ -45,7 +45,7 @@ subprojects {
         namespace = "com.keyiflerolsun"
 
         defaultConfig {
-            minSdk = 21
+            minSdk = 33
             compileSdkVersion(35)
             targetSdk = 35
         }
