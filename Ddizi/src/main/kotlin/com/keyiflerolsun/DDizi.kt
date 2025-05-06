@@ -172,19 +172,6 @@ class DDizi : MainAPI() {
         return Triple(title, season, episode)
     }
 
-private data class GenericVideoData(
-    val videoId: String,
-    val title: String,
-    val videoThumbnails: List<Thumbnail>
-)
-
-private data class Thumbnail(
-    val quality: String,
-    val url: String,
-    val width: Int,
-    val height: Int
-)
-
 override suspend fun loadLinks(
     data: String,
     isCasting: Boolean,
@@ -207,21 +194,18 @@ override suspend fun loadLinks(
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
             Log.d("DDizi:", "videoId = $videoId")
             val videoInfo = app.get("https://pol1.iv.ggtyler.dev/api/v1/videos/$videoId").text
-            val videoData = tryParseJson<GenericVideoData>(videoInfo)
-			Log.d("DDizi:", "videoData = $videoData")
-        if (videoData != null) {
+			Log.d("DDizi:", "videoInfo = $videoInfo")
             callback.invoke(
                     ExtractorLink(
                         source = this.name,
                         name = "${name} (DASH)",
                         url = "https://pol1.iv.ggtyler.dev/api/manifest/dash/id/$videoId",
-                        referer = "https://iv.ggtyler.dev",
+                        referer = "https://pol1.iv.ggtyler.dev",
                         quality = Qualities.P1080.value,
                         type = ExtractorLinkType.DASH
                     )
                 )
             return true
-            }			// Return immediately after successful YouTube extraction
         } else {
             // Log failure to extract YouTube URL
             Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
