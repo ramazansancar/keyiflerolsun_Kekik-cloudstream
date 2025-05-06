@@ -189,22 +189,9 @@ override suspend fun loadLinks(
         // Extract the YouTube URL from the id parameter
         val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
         if (youtubeUrl != null) {
-            // Log the extracted YouTube URL for debugging
-            val videoId = youtubeUrl.substringAfter("/watch?v=").substringBefore("?")
             Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
-            Log.d("DDizi:", "videoId = $videoId")
-            val videoInfo = app.get("https://pol1.iv.ggtyler.dev/api/v1/videos/$videoId").text
 			Log.d("DDizi:", "videoInfo = $videoInfo")
-            callback.invoke(
-                    ExtractorLink(
-                        source = this.name,
-                        name = "${name} (DASH)",
-                        url = "https://pol1.iv.ggtyler.dev/api/manifest/dash/id/$videoId",
-                        referer = "https://pol1.iv.ggtyler.dev",
-                        quality = Qualities.P1080.value,
-                        type = ExtractorLinkType.DASH
-                    )
-                )
+            loadExtractor(youtubeUrl, "", subtitleCallback, callback)
             return true
         } else {
             // Log failure to extract YouTube URL
