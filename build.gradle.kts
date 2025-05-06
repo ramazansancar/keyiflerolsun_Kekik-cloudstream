@@ -87,6 +87,7 @@ subprojects {
         implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")          // JSON-nesne dönüştürme kütüphanesi
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")      // Kotlin için asenkron işlemler
         implementation("com.github.vidstige:jadb:v1.2.1")
+        implementation ("com.github.teamnewpipe:NewPipeExtractor:0.24.4")
     }
 }
 
