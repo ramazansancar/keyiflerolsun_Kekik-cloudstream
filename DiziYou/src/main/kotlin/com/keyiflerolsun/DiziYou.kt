@@ -36,33 +36,33 @@ class DiziYou : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (page > 1) return newHomePageResponse(request.name, listOf()) // Anasayfa sadece ilk sayfa
+        if (page > 1) return newHomePageResponse(request.name, emptyList()) // Sadece ilk sayfa
     
         val document = app.get(mainUrl).document
-        val home = ArrayList<HomePageList>()
+        val homePageList = mutableListOf<HomePageList>()
     
-        // Her başlığı ve altında gelen içerikleri al
-        document.select("div.baslik").forEach { section ->
-            val title = section.selectFirst("h2")?.text()?.trim() ?: return@forEach
-            val container = section.nextElementSibling() ?: return@forEach
+        val sections = document.select("div.baslik")
+        for (section in sections) {
+            val title = section.selectFirst("h2")?.text()?.trim() ?: continue
+            val container = section.nextElementSibling() ?: continue
     
-            val items = container.select("div.seriescontent").mapNotNull { el ->
+            val items = container.select("div.seriescontent, div.seriescon").mapNotNull { el ->
                 val aTag = el.selectFirst("a") ?: return@mapNotNull null
                 val href = fixUrlNull(aTag.attr("href")) ?: return@mapNotNull null
-                val img = el.selectFirst("img")?.attr("src")?.let { fixUrlNull(it) }
                 val name = aTag.attr("title") ?: aTag.text()
+                val image = fixUrlNull(el.selectFirst("img")?.attr("src"))
     
                 newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
-                    this.posterUrl = img
+                    this.posterUrl = image
                 }
             }
     
             if (items.isNotEmpty()) {
-                home.add(HomePageList(title, items))
+                homePageList.add(HomePageList(title, items))
             }
         }
     
-        return HomePageResponse(home)
+        return HomePageResponse(homePageList)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
