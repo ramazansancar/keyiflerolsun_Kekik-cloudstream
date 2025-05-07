@@ -36,33 +36,64 @@ class DiziYou : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (page > 1) return newHomePageResponse(request.name, emptyList()) // Sadece ilk sayfa
+        if (page > 1) return newHomePageResponse(request.name, emptyList()) // Sadece ilk sayfa için geçerli
     
         val document = app.get(mainUrl).document
-        val homePageList = mutableListOf<HomePageList>()
+        val home = ArrayList<HomePageList>()
     
-        val sections = document.select("div.baslik")
-        for (section in sections) {
-            val title = section.selectFirst("h2")?.text()?.trim() ?: continue
-            val container = section.nextElementSibling() ?: continue
+        // (1) Popüler Dizilerden Son Bölümler
+        val populer = document.select("div.dsmobil").mapNotNull {
+            val a = it.selectFirst("a") ?: return@mapNotNull null
+            val title = a.attr("title") ?: a.text()
+            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
+            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
     
-            val items = container.select("div.seriescontent, div.seriescon").mapNotNull { el ->
-                val aTag = el.selectFirst("a") ?: return@mapNotNull null
-                val href = fixUrlNull(aTag.attr("href")) ?: return@mapNotNull null
-                val name = aTag.attr("title") ?: aTag.text()
-                val image = fixUrlNull(el.selectFirst("img")?.attr("src"))
-    
-                newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
-                    this.posterUrl = image
-                }
-            }
-    
-            if (items.isNotEmpty()) {
-                homePageList.add(HomePageList(title, items))
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = image
             }
         }
+        if (populer.isNotEmpty()) home.add(HomePageList("Popüler Dizilerden Son Bölümler", populer))
     
-        return HomePageResponse(homePageList)
+        // (2) Son Eklenen Diziler
+        val sonEklenen = document.select("div.dsmobil2").mapNotNull {
+            val a = it.selectFirst("a") ?: return@mapNotNull null
+            val title = a.attr("title") ?: a.text()
+            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
+            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = image
+            }
+        }
+        if (sonEklenen.isNotEmpty()) home.add(HomePageList("Son Eklenen Diziler", sonEklenen))
+    
+        // (3) Efsane Diziler
+        val efsane = document.select("div.incontent").mapNotNull {
+            val a = it.selectFirst("a") ?: return@mapNotNull null
+            val title = a.attr("title") ?: a.text()
+            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
+            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = image
+            }
+        }
+        if (efsane.isNotEmpty()) home.add(HomePageList("Efsane Diziler", efsane))
+    
+        // (4) Dikkat Çeken Diziler
+        val dikkat = document.select("div.incontentyeni").mapNotNull {
+            val a = it.selectFirst("a") ?: return@mapNotNull null
+            val title = a.attr("title") ?: a.text()
+            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
+            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = image
+            }
+        }
+        if (dikkat.isNotEmpty()) home.add(HomePageList("Dikkat Çeken Diziler", dikkat))
+    
+        return HomePageResponse(home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
