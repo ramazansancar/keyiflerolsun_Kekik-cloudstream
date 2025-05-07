@@ -50,7 +50,7 @@ class DiziYou : MainAPI() {
     
         for ((title, blockSelector, itemSelector) in blocks) {
             val block = document.selectFirst(blockSelector) ?: continue
-            val items = block.parent()?.select(itemSelector) ?: continue
+            val items = block.parent()?.parent()?.select(itemSelector) ?: continue
     
             val results = items.mapNotNull { el ->
                 val a = el.selectFirst("a") ?: return@mapNotNull null
