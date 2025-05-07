@@ -33,7 +33,7 @@ class AnimeciX : MainAPI() {
                 headers = mapOf(
                     "x-e-h" to "7Y2ozlO+QysR5w9Q6Tupmtvl9jJp7ThFH8SB+Lo7NvZjgjqRSqOgcT2v4ISM9sP10LmnlYI8WQ==.xrlyOBFS5BHjQ2Lk"
                 )
-            ).parsedSafe<List<LastEpisode>>() ?: emptyList()
+            ).parsedSafe<LastEpisodesResponse>()?.data ?: emptyList()
     
             val home = response.map {
                 val formattedTitle = "S${it.seasonNumber}B${it.episodeNumber} - ${it.titleName}"

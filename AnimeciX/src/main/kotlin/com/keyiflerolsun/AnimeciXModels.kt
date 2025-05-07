@@ -56,6 +56,10 @@ data class LastEpisode(
     @JsonProperty("episode_number") val episodeNumber: Int
 )
 
+data class LastEpisodesResponse(
+    @JsonProperty("data") val data: List<LastEpisode>
+)
+
 data class Genre(
     @JsonProperty("display_name") val name: String,
 )
