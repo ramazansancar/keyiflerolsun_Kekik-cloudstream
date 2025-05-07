@@ -36,62 +36,37 @@ class DiziYou : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (page > 1) return newHomePageResponse(request.name, emptyList()) // Sadece ilk sayfa için geçerli
+        if (page > 1) return newHomePageResponse(request.name, emptyList()) // Sadece ilk sayfa destekleniyor
     
         val document = app.get(mainUrl).document
         val home = ArrayList<HomePageList>()
     
-        // (1) Popüler Dizilerden Son Bölümler
-        val populer = document.select("div.dsmobil").mapNotNull {
-            val a = it.selectFirst("a") ?: return@mapNotNull null
-            val title = a.attr("title") ?: a.text()
-            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
-            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
+        val blocks = listOf(
+            Triple("Popüler Dizilerden Son Bölümler", "div.dsmobil", "div.dsmobil"),
+            Triple("Son Eklenen Diziler", "div.dsmobil2", "div.dsmobil2"),
+            Triple("Efsane Diziler", "div.incontent", "div.incontent"),
+            Triple("Dikkat Çeken Diziler", "div.incontentyeni", "div.incontentyeni")
+        )
     
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                posterUrl = image
+        for ((title, blockSelector, itemSelector) in blocks) {
+            val block = document.selectFirst(blockSelector) ?: continue
+            val items = block.parent()?.select(itemSelector) ?: continue
+    
+            val results = items.mapNotNull { el ->
+                val a = el.selectFirst("a") ?: return@mapNotNull null
+                val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
+                val name = a.attr("title") ?: a.text()
+                val poster = fixUrlNull(el.selectFirst("img")?.attr("src"))
+    
+                newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
+                    posterUrl = poster
+                }
+            }
+    
+            if (results.isNotEmpty()) {
+                home.add(HomePageList(title, results))
             }
         }
-        if (populer.isNotEmpty()) home.add(HomePageList("Popüler Dizilerden Son Bölümler", populer))
-    
-        // (2) Son Eklenen Diziler
-        val sonEklenen = document.select("div.dsmobil2").mapNotNull {
-            val a = it.selectFirst("a") ?: return@mapNotNull null
-            val title = a.attr("title") ?: a.text()
-            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
-            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
-    
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                posterUrl = image
-            }
-        }
-        if (sonEklenen.isNotEmpty()) home.add(HomePageList("Son Eklenen Diziler", sonEklenen))
-    
-        // (3) Efsane Diziler
-        val efsane = document.select("div.incontent").mapNotNull {
-            val a = it.selectFirst("a") ?: return@mapNotNull null
-            val title = a.attr("title") ?: a.text()
-            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
-            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
-    
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                posterUrl = image
-            }
-        }
-        if (efsane.isNotEmpty()) home.add(HomePageList("Efsane Diziler", efsane))
-    
-        // (4) Dikkat Çeken Diziler
-        val dikkat = document.select("div.incontentyeni").mapNotNull {
-            val a = it.selectFirst("a") ?: return@mapNotNull null
-            val title = a.attr("title") ?: a.text()
-            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
-            val image = fixUrlNull(it.selectFirst("img")?.attr("src"))
-    
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                posterUrl = image
-            }
-        }
-        if (dikkat.isNotEmpty()) home.add(HomePageList("Dikkat Çeken Diziler", dikkat))
     
         return HomePageResponse(home)
     }
