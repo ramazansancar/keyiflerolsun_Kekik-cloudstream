@@ -50,6 +50,10 @@
            ./gradlew make makePluginsJson
            cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
            cp build/plugins.json $GITHUB_WORKSPACE/builds
+
+       - name: '@KekikAkademi ifadesini değiştir'
+         run: |
+           sed -i 's/@KekikAkademi/@feroxxcs3/g' $GITHUB_WORKSPACE/builds/repo.json
  
        - name: Derlemeleri Yükle
          run: |
