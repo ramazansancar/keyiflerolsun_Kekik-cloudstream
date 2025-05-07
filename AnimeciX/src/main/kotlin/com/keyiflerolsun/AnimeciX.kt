@@ -21,6 +21,7 @@ class AnimeciX : MainAPI() {
     override var sequentialMainPageScrollDelay = 200L  // ? 0.20 saniye
 
     override val mainPage = mainPageOf(
+        "${mainUrl}/secure/last-episodes"                          to "Son Eklenen Bölümler",
         "${mainUrl}/secure/titles?type=series&onlyStreamable=true" to "Seriler",
         "${mainUrl}/secure/titles?type=movie&onlyStreamable=true"  to "Filmler",
     )
