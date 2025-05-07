@@ -36,11 +36,33 @@ class DiziYou : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url      = request.data.replace("SAYFA", "$page")
-        val document = app.get(url).document
-        val home     = document.select("div.single-item").mapNotNull { it.toMainPageResult() }
-
-        return newHomePageResponse(request.name, home)
+        if (page > 1) return newHomePageResponse(request.name, listOf()) // Anasayfa sadece ilk sayfa
+    
+        val document = app.get(mainUrl).document
+        val home = ArrayList<HomePageList>()
+    
+        // Her başlığı ve altında gelen içerikleri al
+        document.select("div.baslik").forEach { section ->
+            val title = section.selectFirst("h2")?.text()?.trim() ?: return@forEach
+            val container = section.nextElementSibling() ?: return@forEach
+    
+            val items = container.select("div.seriescontent").mapNotNull { el ->
+                val aTag = el.selectFirst("a") ?: return@mapNotNull null
+                val href = fixUrlNull(aTag.attr("href")) ?: return@mapNotNull null
+                val img = el.selectFirst("img")?.attr("src")?.let { fixUrlNull(it) }
+                val name = aTag.attr("title") ?: aTag.text()
+    
+                newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
+                    this.posterUrl = img
+                }
+            }
+    
+            if (items.isNotEmpty()) {
+                home.add(HomePageList(title, items))
+            }
+        }
+    
+        return HomePageResponse(home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
