@@ -48,6 +48,14 @@ data class Anime(
     @JsonProperty("videos") val videos: List<Video>
 )
 
+data class LastEpisode(
+    @JsonProperty("title_id") val titleId: Int,
+    @JsonProperty("title_name") val titleName: String,
+    @JsonProperty("title_poster") val titlePoster: String?,
+    @JsonProperty("season_number") val seasonNumber: Int,
+    @JsonProperty("episode_number") val episodeNumber: Int
+)
+
 data class Genre(
     @JsonProperty("display_name") val name: String,
 )
