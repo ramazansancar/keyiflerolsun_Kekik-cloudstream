@@ -34,8 +34,7 @@ class DiziYou : MainAPI() {
             val poster = fixUrlNull(el.selectFirst("img.lazy")?.attr("data-src")
                 ?: el.selectFirst("img")?.attr("src"))
         
-            val title = el.selectFirst("div.bolum-alt div#dizi-ismi a")?.text()
-                ?: el.selectFirst("img")?.attr("alt")
+            val title = el.selectFirst("img[alt]")?.attr("alt")?.trim()
                 ?: return@mapNotNull null
     
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
