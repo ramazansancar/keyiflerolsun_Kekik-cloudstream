@@ -35,46 +35,68 @@ class DiziYou : MainAPI() {
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Vah%C5%9Fi+Bat%C4%B1" to "Vahşi Batı"
     )
 
-override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-    if (page > 1) return newHomePageResponse(request.name, emptyList())
-
-    val document = app.get(mainUrl).document
-    val home = ArrayList<HomePageList>()
-
-    val blocks = listOf(
-        Pair("Popüler Dizilerden Son Bölümler", "div.dsmobil"),
-        Pair("Son Eklenen Diziler", "div.dsmobil2"),
-        Pair("Efsane Diziler", "div.incontent"),
-        Pair("Dikkat Çeken Diziler", "div.incontentyeni")
-    )
-
-    for ((title, selector) in blocks) {
-        val container = document.selectFirst(selector) ?: continue
-        val items = container.select("div.listepisodes > a")
-
-        val results = items.mapNotNull { a ->
-            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
-            val name = a.selectFirst("div#dizi-ismi a")?.text()
-                ?: a.selectFirst("img")?.attr("alt")
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        if (page > 1) return newHomePageResponse(request.name, emptyList())
+    
+        val document = app.get(mainUrl).document
+        val home = ArrayList<HomePageList>()
+    
+        // 1. Popüler Dizilerden Son Bölümler (dsmobil / incontentyeni / listepisodes > a)
+        val populer = document.select("div.dsmobil div.incontentyeni div.listepisodes a").mapNotNull { el ->
+            val href = fixUrlNull(el.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("img.lazy")?.attr("data-src")
+                ?: el.selectFirst("img")?.attr("src"))
+            val title = el.selectFirst("div#dizi-ismi a")?.text()
+                ?: el.selectFirst("img")?.attr("alt")
                 ?: return@mapNotNull null
-
-            val img = fixUrlNull(
-                a.selectFirst("img.lazy")?.attr("data-src")
-                    ?: a.selectFirst("img")?.attr("src")
-            )
-
-            newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
-                posterUrl = img
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
             }
         }
-
-        if (results.isNotEmpty()) {
-            home.add(HomePageList(title, results))
+        if (populer.isNotEmpty()) home.add(HomePageList("Popüler Dizilerden Son Bölümler", populer))
+    
+        // 2. Son Eklenen Diziler (dsmobil2 > list-series-main)
+        val sonEklenen = document.select("div.dsmobil2 div#list-series-main").mapNotNull { el ->
+            val href = fixUrlNull(el.selectFirst("div.cat-img-main a")?.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("div.cat-img-main img")?.attr("src"))
+            val title = el.selectFirst("div.cat-title-main a")?.text()?.trim() ?: return@mapNotNull null
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
         }
+        if (sonEklenen.isNotEmpty()) home.add(HomePageList("Son Eklenen Diziler", sonEklenen))
+    
+        // 3. Efsane Diziler (incontent > list-series-main)
+        val efsane = document.select("div.incontent div#list-series-main").mapNotNull { el ->
+            val href = fixUrlNull(el.selectFirst("div.cat-img-main a")?.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("div.cat-img-main img")?.attr("src"))
+            val title = el.selectFirst("div.cat-title-main a")?.text()?.trim() ?: return@mapNotNull null
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
+        }
+        if (efsane.isNotEmpty()) home.add(HomePageList("Efsane Diziler", efsane))
+    
+        // 4. Dikkat Çeken Diziler (incontentyeni > listepisodes > a)
+        val dikkat = document.select("div.incontentyeni div.listepisodes a").mapNotNull { el ->
+            val href = fixUrlNull(el.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("img.lazy")?.attr("data-src")
+                ?: el.selectFirst("img")?.attr("src"))
+            val title = el.selectFirst("div#dizi-ismi a")?.text()
+                ?: el.selectFirst("img")?.attr("alt")
+                ?: return@mapNotNull null
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
+        }
+        if (dikkat.isNotEmpty()) home.add(HomePageList("Dikkat Çeken Diziler", dikkat))
+    
+        return HomePageResponse(home)
     }
-
-    return HomePageResponse(home)
-}
 
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("div#categorytitle a")?.text() ?: return null
