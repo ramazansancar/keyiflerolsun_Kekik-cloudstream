@@ -24,19 +24,24 @@ class DiziYou : MainAPI() {
         val home = ArrayList<HomePageList>()
     
         // 1. Popüler Dizilerden Son Bölümler
-        val populer = document.select("div.dsmobil div.listepisodes a").mapNotNull { el ->
-            val fullEpisodeUrl = fixUrlNull(el.attr("href")) ?: return@mapNotNull null
+        val populer = document.select("div.dsmobil div.listepisodes").mapNotNull { el ->
+            val episodeAnchor = el.selectFirst("a") ?: return@mapNotNull null
+            val fullEpisodeUrl = fixUrlNull(episodeAnchor.attr("href")) ?: return@mapNotNull null
             val slug = fullEpisodeUrl
                 .removePrefix("$mainUrl/")
                 .replace(Regex("""-\d+-sezon-\d+-bolum/?$"""), "")
             val href = "$mainUrl/$slug/"
         
-            val poster = fixUrlNull(el.selectFirst("img.lazy")?.attr("data-src")
-                ?: el.selectFirst("img")?.attr("src"))
-        
-            val title = el.selectFirst("img[alt]")?.attr("alt")?.trim()
+            // alt="..." değeri başlık olarak
+            val title = episodeAnchor.selectFirst("img[alt]")?.attr("alt")?.trim()
                 ?: return@mapNotNull null
-    
+        
+            // poster görseli (data-src veya src)
+            val poster = fixUrlNull(
+                episodeAnchor.selectFirst("img.lazy")?.attr("data-src")
+                    ?: episodeAnchor.selectFirst("img")?.attr("src")
+            )
+        
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
                 posterUrl = poster
             }
