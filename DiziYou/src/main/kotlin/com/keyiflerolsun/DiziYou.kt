@@ -35,41 +35,46 @@ class DiziYou : MainAPI() {
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Vah%C5%9Fi+Bat%C4%B1" to "Vahşi Batı"
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (page > 1) return newHomePageResponse(request.name, emptyList()) // Sadece ilk sayfa destekleniyor
-    
-        val document = app.get(mainUrl).document
-        val home = ArrayList<HomePageList>()
-    
-        val blocks = listOf(
-            Triple("Popüler Dizilerden Son Bölümler", "div.dsmobil", "div.dsmobil"),
-            Triple("Son Eklenen Diziler", "div.dsmobil2", "div.dsmobil2"),
-            Triple("Efsane Diziler", "div.incontent", "div.incontent"),
-            Triple("Dikkat Çeken Diziler", "div.incontentyeni", "div.incontentyeni")
-        )
-    
-        for ((title, blockSelector, itemSelector) in blocks) {
-            val block = document.selectFirst(blockSelector) ?: continue
-            val items = block.parent()?.parent()?.parent()?.select(itemSelector) ?: continue
-    
-            val results = items.mapNotNull { el ->
-                val a = el.selectFirst("a") ?: return@mapNotNull null
-                val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
-                val name = a.attr("title") ?: a.text()
-                val poster = fixUrlNull(el.selectFirst("img")?.attr("src"))
-    
-                newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
-                    posterUrl = poster
-                }
-            }
-    
-            if (results.isNotEmpty()) {
-                home.add(HomePageList(title, results))
+override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+    if (page > 1) return newHomePageResponse(request.name, emptyList())
+
+    val document = app.get(mainUrl).document
+    val home = ArrayList<HomePageList>()
+
+    val blocks = listOf(
+        Pair("Popüler Dizilerden Son Bölümler", "div.dsmobil"),
+        Pair("Son Eklenen Diziler", "div.dsmobil2"),
+        Pair("Efsane Diziler", "div.incontent"),
+        Pair("Dikkat Çeken Diziler", "div.incontentyeni")
+    )
+
+    for ((title, selector) in blocks) {
+        val container = document.selectFirst(selector) ?: continue
+        val items = container.select("div.listepisodes > a")
+
+        val results = items.mapNotNull { a ->
+            val href = fixUrlNull(a.attr("href")) ?: return@mapNotNull null
+            val name = a.selectFirst("div#dizi-ismi a")?.text()
+                ?: a.selectFirst("img")?.attr("alt")
+                ?: return@mapNotNull null
+
+            val img = fixUrlNull(
+                a.selectFirst("img.lazy")?.attr("data-src")
+                    ?: a.selectFirst("img")?.attr("src")
+            )
+
+            newTvSeriesSearchResponse(name, href, TvType.TvSeries) {
+                posterUrl = img
             }
         }
-    
-        return HomePageResponse(home)
+
+        if (results.isNotEmpty()) {
+            home.add(HomePageList(title, results))
+        }
     }
+
+    return HomePageResponse(home)
+}
 
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("div#categorytitle a")?.text() ?: return null
