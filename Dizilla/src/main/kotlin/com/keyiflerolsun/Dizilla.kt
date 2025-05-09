@@ -37,7 +37,7 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 class Dizilla : MainAPI() {
-    override var mainUrl              = "https://dizilla.nl"
+    override var mainUrl              = "https://dizilla.club"
     override var name                 = "Dizilla"
     override val hasMainPage          = true
     override var lang                 = "tr"
