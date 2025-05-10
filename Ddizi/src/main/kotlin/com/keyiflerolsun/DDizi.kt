@@ -25,18 +25,38 @@ class DDizi : MainAPI() {
     override val mainPage = mainPageOf(
         "$mainUrl/yeni-eklenenler1"  to "Son Eklenen Bölümler",
         "$mainUrl/yabanci-dizi-izle" to "Yabancı Diziler",
-        "$mainUrl/arama/"            to "Yerli Diziler",
+        "$mainUrl"                   to "Yerli Diziler",
         "$mainUrl/eski.diziler"      to "Eski Diziler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if (page > 1) "${request.data}/$page" else request.data
         val document = app.get(url, headers = getHeaders(mainUrl)).document
-
-        // Tek bir seçiciyle hem dizi-boxpost hem dizi-boxpost-cat alınır
-        val home = document.select("div.dizi-boxpost, div.dizi-boxpost-cat")
-            .mapNotNull { it.toSearchResult() }
-
+    
+        val home = when (request.name) {
+            "Yerli Diziler" -> {
+                document.select("ul.list_ > li > a").mapNotNull {
+                    val title = it.text()?.trim() ?: return@mapNotNull null
+                    val rawHref = it.attr("href") ?: return@mapNotNull null
+                    val cleanedHref = fixUrl(rawHref.replace(Regex("-\\d*-?son-bolum-izle/?$"), ""))
+    
+                    // 🔽 Detay sayfasına giderek poster URL’si çekiliyor
+                    val posterDoc = app.get(cleanedHref, headers = getHeaders(mainUrl)).document
+                    val posterUrl = posterDoc.selectFirst("div.afis img, img.afis, img.img-back, img.img-back-cat")
+                        ?.let { img -> fixUrlNull(img.attr("data-src") ?: img.attr("src")) }
+    
+                    newTvSeriesSearchResponse(title, cleanedHref, TvType.TvSeries) {
+                        this.posterUrl = posterUrl
+                    }
+                }
+            }
+    
+            else -> {
+                document.select("div.dizi-boxpost, div.dizi-boxpost-cat")
+                    .mapNotNull { it.toSearchResult() }
+            }
+        }
+    
         val hasNextPage = document.selectFirst(".pagination a:contains(Sonraki)") != null
         return newHomePageResponse(request.name, home, hasNextPage)
     }
@@ -116,13 +136,16 @@ class DDizi : MainAPI() {
 
         // Başlık ayrıştırma için daha basit bir yöntem
         val (title, season, episode) = parseTitle(fullTitle)
+    
         val posterUrl = document.selectFirst("div.afis img, img.afis, img.img-back, img.img-back-cat")
             ?.let { fixUrlNull(it.attr("data-src") ?: it.attr("src")) }
+    
         val plot = document.selectFirst("div.dizi-aciklama, div.aciklama, p")?.text()?.trim()
 
         val episodes = mutableListOf<Episode>()
+    
         if (url.contains("/dizi/") || url.contains("/diziler/")) {
-            // Dizi sayfası için tüm bölümleri topla
+            // Dizi sayfasıysa tüm bölümleri topla
             var currentPage = 0
             var hasMorePages = true
 
