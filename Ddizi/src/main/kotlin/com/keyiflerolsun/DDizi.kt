@@ -38,9 +38,16 @@ class DDizi : MainAPI() {
                 document.select("ul.list_ > li > a").mapNotNull {
                     val title = it.text()?.trim() ?: return@mapNotNull null
                     val rawHref = it.attr("href") ?: return@mapNotNull null
+    
+                    // İstenmeyen bağlantıları atla
+                    if (rawHref.contains("eski.diziler") || rawHref.contains("yabanci-dizi-izle")) {
+                        return@mapNotNull null
+                    }
+    
+                    // -07-son-bolum-izle, -son-bolum-izle gibi ekleri sil
                     val cleanedHref = fixUrl(rawHref.replace(Regex("-\\d*-?son-bolum-izle/?$"), ""))
     
-                    // 🔽 Detay sayfasına giderek poster URL’si çekiliyor
+                    // Poster URL’sini detay sayfasından al
                     val posterDoc = app.get(cleanedHref, headers = getHeaders(mainUrl)).document
                     val posterUrl = posterDoc.selectFirst("div.afis img, img.afis, img.img-back, img.img-back-cat")
                         ?.let { img -> fixUrlNull(img.attr("data-src") ?: img.attr("src")) }
