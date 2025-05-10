@@ -35,29 +35,31 @@ class DDizi : MainAPI() {
     
         val home = when (request.name) {
             "Yerli Diziler" -> {
-                document.select("ul.list_ > li > a").mapNotNull {
-                    val title = it.text()?.trim() ?: return@mapNotNull null
-                    val rawHref = it.attr("href") ?: return@mapNotNull null
-    
-                    // İstenmeyen bağlantıları atla
-                    if (rawHref.contains("eski.diziler") || rawHref.contains("yabanci-dizi-izle")) {
-                        return@mapNotNull null
-                    }
-    
-                    // -07-son-bolum-izle, -son-bolum-izle gibi ekleri sil
-                    val cleanedHref = fixUrl(rawHref.replace(Regex("-\\d*-?son-bolum-izle/?$"), ""))
-    
-                    // Poster URL’sini detay sayfasından al
-                    val posterDoc = app.get(cleanedHref, headers = getHeaders(mainUrl)).document
-                    val posterUrl = posterDoc.selectFirst("div.afis img, img.afis, img.img-back, img.img-back-cat")
-                        ?.let { img -> fixUrlNull(img.attr("data-src") ?: img.attr("src")) }
-    
-                    newTvSeriesSearchResponse(title, cleanedHref, TvType.TvSeries) {
-                        this.posterUrl = posterUrl
-                    }
-                }.take(34)
+                val listItems = document.selectFirst("ul.list_")  // Sadece ilkini al
+                    ?.select("li > a")
+                    ?.mapNotNull {
+                        val title = it.text()?.trim() ?: return@mapNotNull null
+                        val rawHref = it.attr("href") ?: return@mapNotNull null
+        
+                        // İstenmeyen bağlantıları atla
+                        if (rawHref.contains("eski.diziler") || rawHref.contains("yabanci-dizi-izle")) {
+                            return@mapNotNull null
+                        }
+        
+                        val cleanedHref = fixUrl(rawHref.replace(Regex("-\\d*-?son-bolum-izle/?$"), ""))
+        
+                        val posterDoc = app.get(cleanedHref, headers = getHeaders(mainUrl)).document
+                        val posterUrl = posterDoc.selectFirst("div.afis img, img.afis, img.img-back, img.img-back-cat")
+                            ?.let { img -> fixUrlNull(img.attr("data-src") ?: img.attr("src")) }
+        
+                        newTvSeriesSearchResponse(title, cleanedHref, TvType.TvSeries) {
+                            this.posterUrl = posterUrl
+                        }
+                    }?.take(34)
+        
+                listItems ?: emptyList()
             }
-    
+        
             else -> {
                 document.select("div.dizi-boxpost, div.dizi-boxpost-cat")
                     .mapNotNull { it.toSearchResult() }
