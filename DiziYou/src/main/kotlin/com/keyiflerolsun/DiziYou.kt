@@ -17,30 +17,74 @@ class DiziYou : MainAPI() {
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.TvSeries)
 
-    override val mainPage = mainPageOf(
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Aile"                 to "Aile",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Aksiyon"              to "Aksiyon",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Animasyon"            to "Animasyon",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Belgesel"             to "Belgesel",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Bilim+Kurgu"          to "Bilim Kurgu",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Dram"                 to "Dram",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Fantazi"              to "Fantazi",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Gerilim"              to "Gerilim",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Gizem"                to "Gizem",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Komedi"               to "Komedi",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Korku"                to "Korku",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Macera"               to "Macera",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Sava%C5%9F"           to "Savaş",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Su%C3%A7"             to "Suç",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur=Vah%C5%9Fi+Bat%C4%B1" to "Vahşi Batı"
-    )
-
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url      = request.data.replace("SAYFA", "$page")
-        val document = app.get(url).document
-        val home     = document.select("div.single-item").mapNotNull { it.toMainPageResult() }
-
-        return newHomePageResponse(request.name, home)
+        if (page > 1) return newHomePageResponse(request.name, emptyList())
+    
+        val document = app.get(mainUrl).document
+        val home = ArrayList<HomePageList>()
+    
+        // 1. Popüler Dizilerden Son Bölümler
+        val populer = document.select("div.dsmobil div.listepisodes").mapNotNull { el ->
+            val episodeAnchor = el.selectFirst("a") ?: return@mapNotNull null
+            val fullEpisodeUrl = fixUrlNull(episodeAnchor.attr("href")) ?: return@mapNotNull null
+            val slug = fullEpisodeUrl
+                .removePrefix("$mainUrl/")
+                .replace(Regex("""-\d+-sezon-\d+-bolum/?$"""), "")
+            val href = "$mainUrl/$slug/"
+        
+            // alt="..." değeri başlık olarak
+            val title = episodeAnchor.selectFirst("img[alt]")?.attr("alt")?.trim()
+                ?: return@mapNotNull null
+        
+            // poster görseli (data-src veya src)
+            val poster = fixUrlNull(
+                episodeAnchor.selectFirst("img.lazy")?.attr("data-src")
+                    ?: episodeAnchor.selectFirst("img")?.attr("src")
+            )
+        
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
+        }
+        if (populer.isNotEmpty()) home.add(HomePageList("Popüler Dizilerden Son Bölümler", populer))
+    
+        // 2. Son Eklenen Diziler
+        val sonEklenen = document.select("div.dsmobil2 div#list-series-main").mapNotNull { el ->
+            val href = fixUrlNull(el.selectFirst("div.cat-img-main a")?.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("div.cat-img-main img")?.attr("src"))
+            val title = el.selectFirst("div.cat-title-main a")?.text()?.trim() ?: return@mapNotNull null
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
+        }
+        if (sonEklenen.isNotEmpty()) home.add(HomePageList("Son Eklenen Diziler", sonEklenen))
+    
+        // 3. Efsane Diziler
+        val efsane = document.select("div.incontent div#list-series-main").mapNotNull { el ->
+            val href = fixUrlNull(el.selectFirst("div.cat-img-main a")?.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("div.cat-img-main img")?.attr("src"))
+            val title = el.selectFirst("div.cat-title-main a")?.text()?.trim() ?: return@mapNotNull null
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
+        }
+        if (efsane.isNotEmpty()) home.add(HomePageList("Efsane Diziler", efsane))
+    
+        // 4. Dikkat Çeken Diziler
+        val dikkat = document.select("div.incontentyeni div#list-series-main").mapNotNull { el ->
+            val href = fixUrlNull(el.selectFirst("div.cat-img-main a")?.attr("href")) ?: return@mapNotNull null
+            val poster = fixUrlNull(el.selectFirst("div.cat-img-main img")?.attr("src"))
+            val title = el.selectFirst("div.cat-title-main a")?.text()?.trim() ?: return@mapNotNull null
+    
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                posterUrl = poster
+            }
+        }
+        if (dikkat.isNotEmpty()) home.add(HomePageList("Dikkat Çeken Diziler", dikkat))
+    
+        return HomePageResponse(home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
@@ -135,15 +179,15 @@ class DiziYou : MainAPI() {
 
         for (stream in streamUrls) {
             callback.invoke(
-                newExtractorLink(
-                    source  = stream.name,
-                    name    = stream.name,
-                    url     = stream.url,
-                    ExtractorLinkType.M3U8
-                ) {
-                    this.referer = "${mainUrl}/"
-                    this.quality = Qualities.Unknown.value
-                }
+             newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = stream.url,
+                type    = INFER_TYPE
+            ) {
+                headers = mapOf("Referer" to "${mainUrl}/")
+                quality = Qualities.Unknown.value
+            }
             )
         }
 
