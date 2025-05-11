@@ -113,7 +113,7 @@ class FullHDFilm : MainAPI() {
 
     val document = app.get(data).document
     val iframeSrc = getIframe(document.outerHtml())  // kaynak koddan iframe src'yi al
-
+     Log.d("FHDF", "iframeSrc » $iframeSrc")
     if (iframeSrc.isNotEmpty()) {
         loadExtractor(iframeSrc, mainUrl, subtitleCallback, callback)  // iframe'e yönlendir
         return true
