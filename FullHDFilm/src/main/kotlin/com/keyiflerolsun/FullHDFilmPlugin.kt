@@ -8,5 +8,6 @@ import android.content.Context
 class FullHDFilmPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(FullHDFilm())
+        registerExtractorAPI(YildizKisaFilm())
     }
 }

@@ -11,127 +11,96 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class FullHDFilm : MainAPI() {
-    override var mainUrl              = "https://fullhdfilm.cx"
+    override var mainUrl              = "https://fullhdfilm.us"
     override var name                 = "FullHDFilm"
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = false
-    override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
+    override val supportedTypes       = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/yabanci-dizi-izle/page"			    to "Yabancı Dizi",
-        "${mainUrl}/yabanci-film-izle/page"			    to "Yabancı Filmler",
-        "${mainUrl}/yerli-film-izle/page"				to "Yerli Film",
-        "${mainUrl}/netflix-filmleri-izle/page"		    to "Netflix",
-        "${mainUrl}/aile-filmleri/page"				    to "Aile",
-        "${mainUrl}/aksiyon-filmleri-izle-hd1/page"	    to "Aksiyon",
-        "${mainUrl}/animasyon-filmleri-izlesene/page"	to "Animasyon",
-        "${mainUrl}/anime-izle/page"					to "Anime",
-        "${mainUrl}/belgesel/page"					    to "Belgesel",
-        "${mainUrl}/bilim-kurgu-filmleri/page"		    to "Bilim-Kurgu",
-        "${mainUrl}/biyografi-filmleri/page"			to "Biyografi",
-        "${mainUrl}/dram-filmleri/page"				    to "Dram",
-        "${mainUrl}/fantastik-filmler-izle/page"		to "Fantastik",
-        "${mainUrl}/gerilim-filmleri-izle-hd/page"		to "Gerilim",
-        "${mainUrl}/gizem-filmleri/page"				to "Gizem",
-        "${mainUrl}/komedi-filmleri/page"				to "Komedi",
-        "${mainUrl}/korku-filmleri-izle/page"			to "Korku",
-        "${mainUrl}/macera-filmleri-izle-hd/page"		to "Macera",
-        "${mainUrl}/romantik-filmler/page"			    to "Romantik",
-        "${mainUrl}/savas-filmleri-izle-hd/page"		to "Savaş",
-        "${mainUrl}/suc-filmleri-izle/page"			    to "Suç"
+        "${mainUrl}/tur/turkce-altyazili-film-izle/page" to "Altyazılı Filmler",
+        "${mainUrl}/tur/yerli-film-izle/page"			 to "Yerli Film",
+        "${mainUrl}/tur/netflix-filmleri-izle/page"		 to "Netflix",
+        "${mainUrl}/category/aile-filmleri-izle/page"	 to "Aile",
+        "${mainUrl}/category/aksiyon-filmleri-izle/page" to "Aksiyon",
+        "${mainUrl}/category/animasyon-filmleri-izle/page"	 to "Animasyon",
+        "${mainUrl}/category/belgesel-filmleri-izle/page"	to "Belgesel",
+        "${mainUrl}/category/bilim-kurgu-filmleri-izle/page" to "Bilim-Kurgu",
+        "${mainUrl}/category/biyografi-filmleri-izle/page"			 to "Biyografi",
+        "${mainUrl}/category/dram-filmleri-izle/page"				     to "Dram",
+        "${mainUrl}/category/fantastik-filmler-izle/page"		 to "Fantastik",
+        "${mainUrl}/category/gerilim-filmleri-izle/page"		 to "Gerilim",
+        "${mainUrl}/category/gizem-filmleri-izle/page"				 to "Gizem",
+        "${mainUrl}/category/komedi-filmleri-izle/page"				 to "Komedi",
+        "${mainUrl}/category/korku-filmleri-izle/page"			 to "Korku",
+        "${mainUrl}/category/macera-filmleri-izle/page"		 to "Macera",
+        "${mainUrl}/category/romantik-filmler-izle/page"			     to "Romantik",
+        "${mainUrl}/category/savas-filmleri-izle/page"		 to "Savaş",
+        "${mainUrl}/category/suc-filmleri-izle/page"			     to "Suç"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}/${page}/").document
-        val home     = document.select("div.movie_box").mapNotNull { it.toMainPageResult() }
+        val home     = document.select("div.movie-poster").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("h2")?.text() ?: return null
+        val title     = this.selectFirst("img[alt]")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/arama/?s=${query}").document
+        val document = app.get("${mainUrl}/wp-json/keremiya/search/?keyword=${query}&nonce=39de52abd9").document
 
-        return document.select("div.movie_box").mapNotNull { it.toMainPageResult() }
+        return document.select("div.movie-poster").mapNotNull { it.toMainPageResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
-
-        val title       = document.selectFirst("h1 span")?.text()?.trim() ?: return null
-        val poster      = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
-        val description = document.selectFirst("div[itemprop='description']")?.text()?.substringAfter("⭐")?.substringAfter("izleyin.")?.substringAfter("konusu:")?.trim()
-        val year        = document.selectFirst("span[itemprop='dateCreated'] a")?.text()?.trim()?.toIntOrNull()
-        val tags        = document.select("div.detail ul.bottom li:nth-child(5) span a").map { it.text() }
-        val rating      = document.selectFirst("ul.right li:nth-child(2) span")?.text()?.trim()?.toRatingInt()
-        val duration    = document.selectFirst("span[itemprop='duration']")?.text()?.split(" ")?.first()?.trim()?.toIntOrNull()
-        val actors      = document.select("sc[itemprop='actor'] span").map { Actor(it.text()) }
-        val trailer     = fixUrlNull(document.selectFirst("[property='og:video']")?.attr("content"))
-
-        if (url.contains("-dizi") || tags.any { it.lowercase().contains("dizi") }) {
-            val episodes = mutableListOf<Episode>()
-
-            val iframeSkici = IframeKodlayici()
-
-            val partNumbers  = document.select("li.psec").map { it.attr("id") }
-            val partNames    = document.select("li.psec a").map { it.text().trim() }
-            val pdataMatches = Regex("""pdata\['(.*?)'] = '(.*?)';""").findAll(document.html())
-            val pdataList    = pdataMatches.map { it.destructured }.toList()
-
-            partNumbers.forEachIndexed { index, partNumber ->
-                val partName = partNames.getOrNull(index)
-                val pdata    = pdataList.getOrNull(index)
-                
-                val value = pdata?.component2()
-
-                if (partName!!.lowercase().contains("fragman") || partNumber.lowercase().contains("fragman")) return@forEachIndexed
-
-                val iframeData = iframeSkici.iframeCoz(value!!)
-                val iframeLink = app.get(iframeData, referer="${mainUrl}/").url
-
-                val szNum = partNumber.takeIf { it.contains("sezon") }?.substringBefore("sezon")?.toIntOrNull() ?: 1
-                val epNum = partName.substringBefore(".").trim().toIntOrNull() ?: 1
-
-                episodes.add(newEpisode(iframeLink) {
-                    this.name = "${szNum}. Sezon ${epNum}. Bölüm"
-                    this.season = szNum
-                    this.episode = epNum
-                })
-            }
-
-
-            return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-                this.posterUrl = poster
-                this.plot      = description
-                this.year      = year
-                this.tags      = tags
-                this.rating    = rating
-                this.duration  = duration
-                addActors(actors)
-                addTrailer(trailer)
-            }
-        } else {
-            return newMovieLoadResponse(title, url, TvType.Movie, url) {
-                this.posterUrl = poster
-                this.plot      = description
-                this.year      = year
-                this.tags      = tags
-                this.rating    = rating
-                this.duration  = duration
-                addActors(actors)
-                addTrailer(trailer)
-            }
+    
+        val title       = document.selectFirst("h1")?.text() ?: return null
+    
+        val poster      = fixUrlNull(document.selectFirst("div.poster img")?.attr("src"))
+        val description = document.selectFirst("div.poster")?.text()?.trim()
+        val tags        = document.select("h4 a").map { it.text() }
+        val rating      = document.selectFirst("div.button-custom")?.text()?.trim()?.split(" ")?.first()?.toRatingInt()
+        val year        = Regex("""(\d+)""").find(document.selectFirst("div.release")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
+        val actors      = document.select("div.oyuncular h4").map { Actor(it.text()) }
+    
+        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+            this.posterUrl = poster
+            this.year = year
+            this.plot = description
+            this.tags = tags
+            this.rating = rating
+            addActors(actors)
         }
+    }
+
+    private fun getIframe(sourceCode: String): String {
+        // <script> içindeki iframe HTML-escaped formatta saklanmış (örneğin: &lt;iframe ...)
+        val escapedIframe = Regex("""<script[^>]*>\\?PCEtLWJhc2xpazpQVUJQbGF5ZXIs[^<]*</script>""")
+            .find(sourceCode)
+            ?.value
+            ?.substringAfter(">")  // sadece script içeriğini al
+            ?.substringBefore("</script>")
+            ?.trim() ?: return ""
+    
+        // HTML encoded string'i geri çözüyoruz (örneğin: &lt; -> <)
+        val decodedHtml = org.jsoup.parser.Parser.unescapeEntities(escapedIframe, false)
+    
+        // Jsoup ile parse edip iframe src'yi alıyoruz
+        val iframeSrc = Jsoup.parse(decodedHtml).selectFirst("iframe")?.attr("src")
+    
+        return fixUrlNull(iframeSrc) ?: ""
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
@@ -159,53 +128,6 @@ class FullHDFilm : MainAPI() {
         } else {
                 loadExtractor(data, "${mainUrl}/", subtitleCallback, callback)
             }
-
-        val document = app.get(data).document
-
-        val iframeSkici = IframeKodlayici()
-
-        val partNumbers  = document.select("li.psec").map { it.attr("id") }
-        val partNames    = document.select("li.psec a").map { it.text().trim() }
-        val pdataMatches = Regex("""pdata\['(.*?)'] = '(.*?)';""").findAll(document.html())
-        val pdataList    = pdataMatches.map { it.destructured }.toList()
-
-        partNumbers.forEachIndexed { index, partNumber ->
-            val partName = partNames.getOrNull(index)
-            val pdata    = pdataList.getOrNull(index)
-            
-            val key   = pdata?.component1()
-            val value = pdata?.component2()
-
-            if (partName!!.lowercase().contains("fragman") || partNumber.lowercase().contains("fragman")) return@forEachIndexed
-
-            Log.d("FHDF", "partNumber » $partNumber") // ! fragman0
-            Log.d("FHDF", "partName   » $partName")   // ! Fragman
-            Log.d("FHDF", "key        » $key")        // ! prt_fragman0
-            // Log.d("FHDF", "value      » ${value}")      // ! Şifreli veri
-
-            val iframeData = iframeSkici.iframeCoz(value!!)
-            val iframeLink = app.get(iframeData, referer="${mainUrl}/").url
-            Log.d("FHDF", "iframeLink » $iframeLink")
-
-            loadExtractor(iframeLink, "${mainUrl}/", subtitleCallback) { extractor ->
-                callback.invoke (
-                    ExtractorLink (
-                        source  = "$partName - ${extractor.source}",
-                        name    = "$partName - ${extractor.name}",
-                        url     = extractor.url,
-                        referer = extractor.referer,
-                        quality = extractor.quality,
-                        type    = extractor.type
-                    )
-                )
-            }
-        }
-
         return true
     }
-
-    data class VidLop(
-        @JsonProperty("hls") val hls: Boolean? = null,
-        @JsonProperty("securedLink") val securedLink: String? = null
-    )
 }
