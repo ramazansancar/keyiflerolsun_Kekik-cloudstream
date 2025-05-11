@@ -192,15 +192,48 @@ class TurkAnime : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("TRANM", "data » $data")
-        val document  = app.get(data).document
-        val iframe    = fixUrlNull(document.selectFirst("iframe")?.attr("src")) ?: return false
+        val document      = app.get(data).document
+        val iframeElement = document.selectFirst("iframe")
+        val iframe        = fixUrlNull(iframeElement?.attr("src"))
 
-        if (iframe.contains("a-ads.com")) {
-            for (button in document.select("button[onclick*='ajax/videosec']")) {
-                val butonLink = fixUrlNull(button.attr("onclick").substringAfter("IndexIcerik('").substringBefore("'")) ?: continue
-                val subDoc    = app.get(butonLink, headers=mapOf("X-Requested-With" to "XMLHttpRequest")).document
+        if (iframe == null || iframe.contains("a-ads.com")) {
+            val buttons   = document.select("button[onclick*='IndexIcerik']")
 
-                val subFrame  = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
+            for (button in buttons) {
+                val onclickAttr = button.attr("onclick")
+                val subLink = onclickAttr.substringAfter("IndexIcerik('").substringBefore("'")
+                    .takeIf { it.isNotBlank() }
+                    ?.let { fixUrlNull(it) } ?: continue
+
+                Log.d("TRANM", "Extra seçici ile alınan link: $subLink")
+
+                val subResponse = app.get(subLink, headers = mapOf("X-Requested-With" to "XMLHttpRequest"))
+                val subHtml = subResponse.body?.string().orEmpty()
+
+                val subDoc = org.jsoup.Jsoup.parse(subHtml, subLink)
+
+                // Önce artplayer-app içindeki data-url kontrol edilir
+                val dataUrl = subDoc.selectFirst("div.artplayer-app")?.attr("data-url")
+                if (dataUrl != null && dataUrl.endsWith(".m3u8")) {
+                    Log.d("TRANM", "M3U8 data-url bulundu: $dataUrl")
+                    callback(
+                        newExtractorLink(
+                            name = "TurkAnime",
+                            source = "TurkAnime",
+                            url = dataUrl,
+                            type = ExtractorLinkType.M3U8
+                        ) {
+                            quality = Qualities.Unknown.value
+                            headers = mapOf("Referer" to subLink)
+                        }
+                    )
+                    continue
+                }
+
+                // Eğer data-url yoksa iframe'e fallback yap
+                val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
+                Log.d("TRANM", "subFrame » $subFrame")
+
                 iframe2Load(subDoc, subFrame, subtitleCallback, callback)
             }
         } else {

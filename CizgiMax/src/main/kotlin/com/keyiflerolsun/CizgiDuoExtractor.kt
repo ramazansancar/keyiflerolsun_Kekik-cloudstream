@@ -25,15 +25,22 @@ open class CizgiDuo : ExtractorApi() {
 
         m3uLink = Regex("""video_location":"([^"]+)""").find(encrypted)?.groupValues?.get(1)
 
-        callback.invoke(
-            ExtractorLink(
+        /*callback.invoke(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                referer = url,
-                quality = Qualities.Unknown.value,
-                isM3u8  = true
-            )
-        )
+                type    = ExtractorLinkType.M3U8
+            ) {
+                /-* this.referer = url // bunun yerine headers kodunu ekledim *-/
+                this.quality = Qualities.Unknown.value
+                this.headers = mapOf("Referer" to url) // Referer burada başlıklar üzerinden ayarlandı
+                /-* site açılmıyor şu anda o yüzden hata vermemesi için bunu kapatıyorum isM3u8 = true *-/
+            }
+        )*/
+        callback.invoke(newExtractorLink(source = this.name, name = this.name, url = m3uLink ?: throw ErrorLoadingException("m3u link not found"), ExtractorLinkType.M3U8){
+            this.referer = url
+            this.quality = Qualities.Unknown.value
+        })
     }
 }

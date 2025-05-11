@@ -32,8 +32,8 @@ jobs:
           ref: "builds"
           path: "builds"
 
-      - name: Eski Derlemeleri Temizle
-        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
+      #- name: Eski Derlemeleri Temizle
+      #   run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -48,7 +48,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
-          ./gradlew make makePluginsJson
+          ./gradlew --q --parallel make makePluginsJson --continue
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 

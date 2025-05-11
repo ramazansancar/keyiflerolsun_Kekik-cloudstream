@@ -22,13 +22,15 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class HDFilmSitesi : MainAPI() {
-    override var mainUrl = "https://hdfilmsitesi.pro"
+    override var mainUrl = "https://hdfilmsitesi.tv"
     override var name = "HDFilmSitesi"
     override val hasMainPage = true
     override var lang = "tr"
@@ -218,24 +220,26 @@ class HDFilmSitesi : MainAPI() {
                     name2 = audioList[1].groupValues.getOrNull(1).toString()
                 }
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = "$resolution - $name1",
                         url = uri,
-                        referer = uri,
-                        quality = getQualityFromName("4k"),
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = uri
+                        this.quality = getQualityFromName("4k")
+                    }
                 )
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = "$resolution - $name2",
                         url = uriv2,
-                        referer = uriv2,
-                        quality = getQualityFromName("4k"),
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = uriv2
+                        this.quality = getQualityFromName("4k")
+                    }
                 )
             }
         } else if (data.contains("vidlop")) {
@@ -247,14 +251,15 @@ class HDFilmSitesi : MainAPI() {
                 referer = "${mainUrl}/"
             ).parsedSafe<VidLop>()?.securedLink ?: return false
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = vidUrl,
-                    referer = data,
-                    quality = Qualities.Unknown.value,
-                    isM3u8 = true
-                )
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = data
+                    this.quality = Qualities.Unknown.value
+                }
             )
             loadExtractor(data, subtitleCallback, callback)
         }
@@ -341,14 +346,15 @@ class HDFilmSitesi : MainAPI() {
 
                 }*/
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = m3uLink,
-                        referer = "$mainUrl/",
-                        quality = getQualityFromName("4k"),
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = "$mainUrl/"
+                        this.quality = getQualityFromName("4k")
+                    }
                 )
                 loadExtractor(iframeLink, "$mainUrl/", subtitleCallback, callback)
             } else if (iframeLink.contains("vidlop")) {
@@ -359,14 +365,15 @@ class HDFilmSitesi : MainAPI() {
                     referer = "${mainUrl}/"
                 ).parsedSafe<VidLop>()?.securedLink ?: return false
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = vidUrl,
-                        referer = data,
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = true
-                    )
+                        ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = data
+                        this.quality = Qualities.Unknown.value
+                    }
                 )
                 loadExtractor(data, subtitleCallback, callback)
             }

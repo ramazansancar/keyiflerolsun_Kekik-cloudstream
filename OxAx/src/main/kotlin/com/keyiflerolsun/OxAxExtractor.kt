@@ -9,9 +9,11 @@ import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.StringUtils.decodeUri
 import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class OxAxPlayer : ExtractorApi() {
     override var name            = "OxAxPlayer"
@@ -57,9 +59,9 @@ class OxAxPlayer : ExtractorApi() {
         val extRef  = referer ?: ""
         val iSource = app.get(url, referer=extRef).text
 
-        val kodk     = Regex("""var kodk="(.*?)"""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("kodk not found")
-        val kos      = Regex("""var kos="(.*?)"""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("kos not found")
-        val playerjs = Regex("""new Playerjs\("(.*?)"""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("playerjs not found")
+        val kodk     = Regex("""var kodk=\"(.*?)\"""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("kodk not found")
+        val kos      = Regex("""var kos=\"(.*?)\"""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("kos not found")
+        val playerjs = Regex("""new Playerjs\("(.*?)\"""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("playerjs not found")
 
         val decodedData = decodeAtob(playerjs)
         val (v1, v2)    = Regex("""\{v1\}(.*?)\{v2\}([a-zA-Z0-9]*)""").find(decodedData)?.destructured ?: throw ErrorLoadingException("v1 and v2 not found in decoded data")
@@ -68,14 +70,15 @@ class OxAxPlayer : ExtractorApi() {
         Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
-                referer = url,
-                quality = Qualities.Unknown.value,
-                isM3u8  = true
-            )
+                ExtractorLinkType.M3U8
+            ) {
+                this.referer = url
+                this.quality = Qualities.Unknown.value
+            }
         )
     }
 }

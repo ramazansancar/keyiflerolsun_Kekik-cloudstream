@@ -5,6 +5,11 @@ package com.keyiflerolsun
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorApi
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.INFER_TYPE
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 open class SibNet : ExtractorApi() {
     override val name            = "SibNet"
@@ -20,14 +25,15 @@ open class SibNet : ExtractorApi() {
         Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
-                url     = m3uLink,
-                referer = url,
-                quality = Qualities.Unknown.value,
+                url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
                 type    = INFER_TYPE
-            )
+            ) {
+                this.referer = url
+                this.quality = Qualities.Unknown.value
+            }
         )
     }
 }

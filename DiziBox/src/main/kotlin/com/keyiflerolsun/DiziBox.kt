@@ -47,6 +47,11 @@ class DiziBox : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
+        "${mainUrl}/tum-bolumler/page/SAYFA/?tip=populer"               to "Popüler Dizilerden Son Bölümler",
+        "${mainUrl}/tum-bolumler/page/SAYFA/"                           to "Yeni Eklenen Bölümler",
+        "${mainUrl}/dizi-arsivi/page/SAYFA/"                            to "Dizi Arşivi",
+
+        "${mainUrl}/dizi-arsivi/page/SAYFA/?ulke[]=amerikan&yil=&imdb"  to "Yabancı",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?ulke[]=turkiye&yil=&imdb"   to "Yerli",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=aile&yil&imdb"       to "Aile",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=aksiyon&yil&imdb"    to "Aksiyon",
@@ -71,7 +76,76 @@ class DiziBox : MainAPI() {
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=suc&yil&imdb"        to "Suç",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=tarih&yil&imdb"      to "Tarih",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=western&yil&imdb"    to "Western",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=yarisma&yil&imdb"    to "Yarışma"
+        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=yarisma&yil&imdb"    to "Yarışma",
+
+        /* Ülkeler - Çok fazla istek yapıldığı için sayfaların getirilmesinde sorun olabilir. O yüzden sadece belli ülkeler aktif edildi. */
+
+        "${mainUrl}/ulke/amerika/page/SAYFA/"                           to "Ülke: ABD",
+        "${mainUrl}/ulke/almanya/page/SAYFA/"                           to "Ülke: Almanya",
+        // ! "${mainUrl}/ulke/arjantin/page/SAYFA/"                          to "Ülke: Arjantin",
+        // ! "${mainUrl}/ulke/avustralya/page/SAYFA/"                        to "Ülke: Avustralya",
+        // ! "${mainUrl}/ulke/avusturya/page/SAYFA/"                         to "Ülke: Avusturya",
+        // ! "${mainUrl}/ulke/bae/page/SAYFA/"                               to "Ülke: BAE",
+        // ! "${mainUrl}/ulke/belcika/page/SAYFA/"                           to "Ülke: Belçika",
+        // ! "${mainUrl}/ulke/belgesel/page/SAYFA/"                          to "Ülke: Belgesel",
+        // ! "${mainUrl}/ulke/birlesik-arap-emirlikleri/page/SAYFA/"         to "Ülke: Birleşik Arap Emirlikleri",
+        // ! "${mainUrl}/ulke/biyografi/page/SAYFA/"                         to "Ülke: Biyografi",
+        // ! "${mainUrl}/ulke/brezilya/page/SAYFA/"                          to "Ülke: Brezilya",
+        // ! "${mainUrl}/ulke/bulgaristan/page/SAYFA/"                       to "Ülke: Bulgaristan",
+        // ! "${mainUrl}/ulke/cekya/page/SAYFA/"                             to "Ülke: Çekya",
+        // ! "${mainUrl}/ulke/cin/page/SAYFA/"                               to "Ülke: Çin",
+        // ! "${mainUrl}/ulke/danimarka/page/SAYFA/"                         to "Ülke: Danimarka",
+        // ! "${mainUrl}/ulke/endonezya/page/SAYFA/"                         to "Ülke: Endonezya",
+        // ! "${mainUrl}/ulke/estonya/page/SAYFA/"                           to "Ülke: Estonya",
+        // ! "${mainUrl}/ulke/filipinler/page/SAYFA/"                        to "Ülke: Filipinler",
+        // ! "${mainUrl}/ulke/finlandiya/page/SAYFA/"                        to "Ülke: Finlandiya",
+        // ! "${mainUrl}/ulke/fransa/page/SAYFA/"                            to "Ülke: Fransa",
+        // ! "${mainUrl}/ulke/guney-afrika/page/SAYFA/"                      to "Ülke: Güney Afrika",
+        // ! "${mainUrl}/ulke/guney-kore/page/SAYFA/"                        to "Ülke: Güney Kore",
+        // ! "${mainUrl}/ulke/hindistan/page/SAYFA/"                         to "Ülke: Hindistan",
+        // ! "${mainUrl}/ulke/hirvatistan/page/SAYFA/"                       to "Ülke: Hırvatistan",
+        // ! "${mainUrl}/ulke/hollanda/page/SAYFA/"                          to "Ülke: Hollanda",
+        // ! "${mainUrl}/ulke/ingil/page/SAYFA/"                             to "Ülke: ingil",
+        // ! "${mainUrl}/ulke/ingiltere/page/SAYFA/"                         to "Ülke: İngiltere",
+        // ! "${mainUrl}/ulke/iralanda/page/SAYFA/"                          to "Ülke: İralanda",
+        // ! "${mainUrl}/ulke/irlanda/page/SAYFA/"                           to "Ülke: İrlanda",
+        // ! "${mainUrl}/ulke/ispanya/page/SAYFA/"                           to "Ülke: İspanya",
+        // ! "${mainUrl}/ulke/israil/page/SAYFA/"                            to "Ülke: İsrail",
+        // ! "${mainUrl}/ulke/isvec/page/SAYFA/"                             to "Ülke: İsveç",
+        // ! "${mainUrl}/ulke/isvicre/page/SAYFA/"                           to "Ülke: İsviçre",
+        // ! "${mainUrl}/ulke/italya/page/SAYFA/"                            to "Ülke: İtalya",
+        // ! "${mainUrl}/ulke/izlanda/page/SAYFA/"                           to "Ülke: İzlanda",
+        // ! "${mainUrl}/ulke/japonya/page/SAYFA/"                           to "Ülke: Japonya",
+        // ! "${mainUrl}/ulke/kanad/page/SAYFA/"                             to "Ülke: Kanad",
+        // ! "${mainUrl}/ulke/kanada/page/SAYFA/"                            to "Ülke: Kanada",
+        // ! "${mainUrl}/ulke/kenya/page/SAYFA/"                             to "Ülke: Kenya",
+        // ! "${mainUrl}/ulke/kolombiya/page/SAYFA/"                         to "Ülke: Kolombiya",
+        // ! "${mainUrl}/ulke/kuveyt/page/SAYFA/"                            to "Ülke: Kuveyt",
+        // ! "${mainUrl}/ulke/kuzey-kore/page/SAYFA/"                        to "Ülke: Kuzey Kore",
+        // ! "${mainUrl}/ulke/letonya/page/SAYFA/"                           to "Ülke: Letonya",
+        // ! "${mainUrl}/ulke/lubnan/page/SAYFA/"                            to "Ülke: Lübnan",
+        // ! "${mainUrl}/ulke/luksemburg/page/SAYFA/"                        to "Ülke: Lüksemburg",
+        // ! "${mainUrl}/ulke/macaristan/page/SAYFA/"                        to "Ülke: Macaristan",
+        // ! "${mainUrl}/ulke/malta/page/SAYFA/"                             to "Ülke: Malta",
+        // ! "${mainUrl}/ulke/meksika/page/SAYFA/"                           to "Ülke: Meksika",
+        // ! "${mainUrl}/ulke/misir/page/SAYFA/"                             to "Ülke: Mısır",
+        // ! "${mainUrl}/ulke/nijerya/page/SAYFA/"                           to "Ülke: Nijerya",
+        // ! "${mainUrl}/ulke/norvec/page/SAYFA/"                            to "Ülke: Norveç",
+        // ! "${mainUrl}/ulke/peru/page/SAYFA/"                              to "Ülke: Peru",
+        // ! "${mainUrl}/ulke/polonya/page/SAYFA/"                           to "Ülke: Polonya",
+        // ! "${mainUrl}/ulke/portekiz/page/SAYFA/"                          to "Ülke: Portekiz",
+        // ! "${mainUrl}/ulke/romanya/page/SAYFA/"                           to "Ülke: Romanya",
+        // ! "${mainUrl}/ulke/rusya/page/SAYFA/"                             to "Ülke: Rusya",
+        // ! "${mainUrl}/ulke/sili/page/SAYFA/"                              to "Ülke: Şili",
+        // ! "${mainUrl}/ulke/singapur/page/SAYFA/"                          to "Ülke: Singapur",
+        // ! "${mainUrl}/ulke/sirbistan/page/SAYFA/"                         to "Ülke: Sırbistan",
+        // ! "${mainUrl}/ulke/suudi-arabistan/page/SAYFA/"                   to "Ülke: Suudi Arabistan",
+        // ! "${mainUrl}/ulke/tayland/page/SAYFA/"                           to "Ülke: Tayland",
+        // ! "${mainUrl}/ulke/tayvan/page/SAYFA/"                            to "Ülke: Tayvan",
+        "${mainUrl}/ulke/turkiye/page/SAYFA/"                           to "Ülke: Türkiye",
+        // ! "${mainUrl}/ulke/urdun/page/SAYFA/"                             to "Ülke: Ürdün",
+        // ! "${mainUrl}/ulke/yeni-zelanda/page/SAYFA/"                      to "Ülke: Yeni Zelanda",
+        // ! "${mainUrl}/ulke/yunanistan/page/SAYFA/"                        to "Ülke: Yunanistan",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -85,17 +159,42 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor
         ).document
-        val home     = document.select("article.detailed-article").mapNotNull { it.toMainPageResult() }
+        val home     = document.select("article").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("h3 a")?.text() ?: return null
-        val href      = fixUrlNull(this.selectFirst("h3 a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val title     = this.selectFirst("a")?.text() ?: return null
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src")) ?: fixUrlNull(this.selectFirst("img")?.attr("data-src")) ?: return null
 
+        Log.d("DZBX", "toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
+
+        if (title == null || href == null) {
+            Log.w("DZBX", "toMainPageResult", "Article eksik veri içeriyor, atlanıyor!")
+            return null
+        }
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+    }
+
+    private suspend fun Element.sonBolumler(): SearchResponse? {
+        val name = this.selectFirst("b.series-name")?.text() ?: ""
+        val szn = this.selectFirst("span.season")?.text()?.replace(".SEZON", "") ?: ""
+        val ep = this.selectFirst("b.episode")?.text()?.replace(".BÖLÜM", "") ?: ""
+        val epName = "${szn}x$ep"
+
+        val title = "$name - $epName"
+
+        val epDoc = fixUrlNull(this.selectFirst("a")?.attr("href"))?.let { app.get(it).document }
+
+        val href = fixUrlNull(epDoc?.selectFirst("a.archive-title")?.attr("href")) ?: return null
+
+        val posterUrl = fixUrlNull(epDoc?.selectFirst("img.small-thumbnail")?.attr("src"))?.replace("50x50","200x290")
+
+        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+            this.posterUrl = posterUrl
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -197,14 +296,15 @@ class DiziBox : MainAPI() {
             val vidUrl        = Regex("""file: '(.*)',""").find(decryptedDoc.html())?.groupValues?.get(1) ?: return false
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    referer = vidUrl,
-                    quality = getQualityFromName("4k"),
-                    isM3u8  = true
-                )
+                    type    = ExtractorLinkType.M3U8
+                ) {
+                    this.referer = vidUrl
+                    this.quality = getQualityFromName("4k")
+                }
             )
 
         } else if (iframe.contains("/player/moly/moly.php")) {
