@@ -92,7 +92,7 @@ class FullHDFilm : MainAPI() {
 
     private fun getIframe(sourceCode: String): String {
         // Base64 kodlu iframe'i içeren script bloğunu yakala
-        val base64ScriptRegex = Regex("""<script[^>]*>(PCEtLWJhc2xpazpQVUJQbGF5ZXIs[^<]*)</script>""")
+        val base64ScriptRegex = Regex("""<script[^>]*>(PCEtLWJhc2xpazp[^<]*)</script>""")
         val base64Encoded = base64ScriptRegex.find(sourceCode)?.groupValues?.get(1) ?: return ""
     
         return try {
