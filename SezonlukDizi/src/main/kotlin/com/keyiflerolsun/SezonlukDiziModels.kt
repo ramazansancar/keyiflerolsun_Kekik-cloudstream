@@ -20,3 +20,7 @@ data class AspData(
     val alternatif : String,
     val embed : String
 )
+
+data class Ruby(
+    @JsonProperty("file") val file: String
+)

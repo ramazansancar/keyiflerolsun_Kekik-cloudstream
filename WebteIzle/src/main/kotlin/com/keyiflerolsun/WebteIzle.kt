@@ -2,6 +2,7 @@
 
 package com.keyiflerolsun
 
+import android.util.Base64
 import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -16,6 +17,7 @@ import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
@@ -26,9 +28,11 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -36,7 +40,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 
 class WebteIzle : MainAPI() {
-    override var mainUrl              = "https://webteizle.info"
+    override var mainUrl              = "https://webteizle1.xyz"
     override var name                 = "WebteIzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -176,8 +180,9 @@ class WebteIzle : MainAPI() {
                     "bot"    to "0"
                 )
             ).text
+            Log.d("WBTI", "playerApi -> $playerApi")
             val playerData = AppUtils.tryParseJson<DataAlternatif>(playerApi) ?: return@forEach
-
+            Log.d("WBTI", "playerData -> $playerData")
             for (thisEmbed in playerData.data) { 
                 val embedApi = app.post(
                     "${mainUrl}/ajax/dataEmbed.asp",
@@ -189,7 +194,7 @@ class WebteIzle : MainAPI() {
 
                 if (iframe == null) {
                     val scriptSource = embedApi.html()
-                    val matchResult  = Regex("""(vidmoly|okru|filemoon)\('([\d\w]+)','""").find(scriptSource)
+                    val matchResult  = Regex("""(vidmoly|okru|filemoon|pixel)\('([\d\w]+)','""").find(scriptSource)
 
                     if (matchResult == null) {
                         Log.d("WBTI", "scriptSource » $scriptSource")
@@ -201,6 +206,7 @@ class WebteIzle : MainAPI() {
                             "vidmoly"  -> "https://vidmoly.to/embed-${vidId}.html"
                             "okru"     -> "https://odnoklassniki.ru/videoembed/${vidId}"
                             "filemoon" -> "https://filemoon.sx/e/${vidId}"
+                            "pixel"    -> "https://pixeldrain.com/u/${vidId}?embed&style=hacker"
                             else       -> null
                         }
                     }
@@ -231,34 +237,53 @@ class WebteIzle : MainAPI() {
                     }
 
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = m3uLink,
-                            referer = "${mainUrl}/",
-                            quality = getQualityFromName("1440p"),
-                            isM3u8  = true
-                        )
+                            type    = ExtractorLinkType.M3U8,
+                        ) {
+                            this.referer = "${mainUrl}/"
+                            this.quality = getQualityFromName("1440p")
+                        }
                     )
 
                     continue
                 } else if (iframe.contains("playerjs-three.vercel.app") || iframe.contains("cstkcstk.github.io")) {
-                    val decoded = iframe.substringAfter("&v=").let { query ->
-                        val hexString = query.replace("\\x", "")
+                    val decoded = iframe.substringAfter("?v=").let { query ->
+                        Log.d("WBTI", query)
+                        val splittedQuery = query.split("&t=")
+                        val encHex = splittedQuery[0]
+                        val encCaptions = splittedQuery[1]
+                        val hexString = base64Decode(encHex).replace("\\x", "")
+                        val captions = base64Decode(encCaptions)
+                        val tracks:List<Track> = jacksonObjectMapper().readValue("[${captions}]")
+                        for (track in tracks) {
+                            if (track.file == null || track.label == null) continue
+                            if (track.label.contains("Forced")) continue
+                            subtitleCallback.invoke(
+                                SubtitleFile(
+                                    lang = track.label.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç"),
+                                    url  = fixUrl(track.file).replace("\\", "")
+                                )
+                            )
+                        }
+                        //val hexString = query.replace("\\x", "")
                         val bytes     = hexString.chunked(2).map { chunk -> chunk.toInt(16).toByte() }.toByteArray()
-
                         bytes.toString(Charsets.UTF_8)
+
                     }
 
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = fixUrl(decoded),
-                            referer = "${mainUrl}/",
-                            quality = Qualities.Unknown.value,
-                            isM3u8  = true
-                        )
+                            type    = ExtractorLinkType.M3U8,
+                        ) {
+                            this.referer = "${mainUrl}/"
+                            this.quality = Qualities.Unknown.value
+                        }
                     )
                 }
 

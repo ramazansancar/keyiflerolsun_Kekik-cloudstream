@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.fasterxml.jackson.annotation.JsonProperty
 
 class SinemaCX : MainAPI() {
-    override var mainUrl              = "https://www.sinemax.cc"
+    override var mainUrl              = "https://www.sinema.sh"
     override var name                 = "SinemaCX"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -132,14 +132,33 @@ class SinemaCX : MainAPI() {
             ).parsedSafe<Panel>()?.securedLink ?: return false
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    referer = iframe,
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = iframe
+                    this.quality = Qualities.Unknown.value
+                }
+            )
+        } else if (iframe.contains("player.filmizle.in")) {
+            val vidUrl = app.post(
+                "https://player.filmizle.in/player/index.php?data=" + iframe.split("/").last() + "&do=getVideo",
+                headers = mapOf("X-Requested-With" to "XMLHttpRequest"),
+                referer = "${mainUrl}/"
+            ).parsedSafe<Panel>()?.securedLink ?: return false
+
+            callback.invoke(
+                newExtractorLink(
+                    source  = this.name,
+                    name    = this.name,
+                    url     = vidUrl,
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = iframe
+                    this.quality = Qualities.Unknown.value
+                }
             )
         } else {
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)

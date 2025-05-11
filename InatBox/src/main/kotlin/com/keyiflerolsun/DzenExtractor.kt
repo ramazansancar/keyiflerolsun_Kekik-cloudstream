@@ -12,23 +12,25 @@ class Dzen : ExtractorApi(){
         val type = if (url.contains(".m3u8")) "m3u8" else if(url.contains(".mpd")) "dash" else null
 
         val extractorLink = when(type) {
-            "m3u8" -> ExtractorLink(
+            "m3u8" -> newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = url,
-                referer = "",
-                quality = Qualities.Unknown.value,
                 type    = ExtractorLinkType.M3U8
-            )
+            ) {
+                this.referer = ""
+                this.quality = Qualities.Unknown.value
+            }
 
-            "dash" -> ExtractorLink(
+            "dash" -> newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = url,
-                referer = "",
-                quality = Qualities.Unknown.value,
                 type    = ExtractorLinkType.DASH
-            )
+            ) {
+                this.referer = ""
+                this.quality = Qualities.Unknown.value
+            }
 
             else -> null
         }

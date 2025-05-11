@@ -206,7 +206,8 @@ class SetFilmIzle : MainAPI() {
             Triple(name, sourceId, partKey)
         }.forEach { (name, sourceId, partKey) ->
             if (sourceId.contains("event")) return@forEach
-            if (partKey == "" || sourceId == "") return@forEach
+            if (sourceId == "") return@forEach
+            var setKey= "SetPlay"
 
             val nonce        = Regex("""nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
             val multiPart    = sendMultipartRequest(nonce, sourceId, name, partKey, data)

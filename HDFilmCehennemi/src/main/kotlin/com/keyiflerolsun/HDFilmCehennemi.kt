@@ -149,15 +149,16 @@ class HDFilmCehennemi : MainAPI() {
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = source,
                 name    = source,
                 url     = base64Decode(videoData),
-                referer = "${mainUrl}/",
-                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
+            ) {
+                this.referer = "${mainUrl}/"
+                this.quality = Qualities.Unknown.value
                 // isM3u8  = true
-            )
+            }
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {

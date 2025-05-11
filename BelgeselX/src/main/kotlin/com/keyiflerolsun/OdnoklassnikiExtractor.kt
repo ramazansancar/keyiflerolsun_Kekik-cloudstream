@@ -5,6 +5,11 @@ package com.keyiflerolsun
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorApi
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.fasterxml.jackson.annotation.JsonProperty
 
 open class Odnoklassniki : ExtractorApi() {
@@ -40,15 +45,19 @@ open class Odnoklassniki : ExtractorApi() {
                 .replace("ULTRA",  "4k")
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = videoUrl,
-                    referer = url,
-                    quality = getQualityFromName(quality),
-                    headers = userAgent,
-                    isM3u8  = false
-                )
+                    type    = INFER_TYPE
+                ) {
+                    this.headers = userAgent
+                    this.quality = getQualityFromName(quality) // `Int` olarak ayarlandı
+                    /**
+                    * varsayılan olarak false olması gerekiyor şimdilik böyle kalsın ve ellemeyelim 
+                    * isM3u8  = false
+                    */
+                }
             )
         }
     }

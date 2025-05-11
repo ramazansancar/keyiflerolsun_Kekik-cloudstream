@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class DiziYou : MainAPI() {
-    override var mainUrl              = "https://www.diziyou5.com"
+    override var mainUrl              = "https://www.diziyou6.com"
     override var name                 = "DiziYou"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -135,14 +135,15 @@ class DiziYou : MainAPI() {
 
         for (stream in streamUrls) {
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = stream.name,
                     name    = stream.name,
                     url     = stream.url,
-                    referer = "${mainUrl}/",
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.referer = "${mainUrl}/"
+                    this.quality = Qualities.Unknown.value
+                }
             )
         }
 

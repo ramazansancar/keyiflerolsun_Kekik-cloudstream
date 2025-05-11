@@ -21,6 +21,8 @@ import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.INFER_TYPE
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class YTSMX : YTS(){
@@ -104,14 +106,15 @@ class YTSMX : YTS(){
                 val quality = it.ownText().substringBefore(".").replace("p", "").toInt()
                 val magnet = generateMagnetLink(TRACKER_LIST_URL, infoHash)
                 callback.invoke(
-                    ExtractorLink(
-                        "$name $quality",
-                        name,
-                        magnet,
-                        "",
-                        quality,
-                        ExtractorLinkType.MAGNET
-                    )
+                    newExtractorLink(
+                        source    = "$name $quality",
+                        name      = name,
+                        url       = magnet,
+                        type      = ExtractorLinkType.MAGNET
+                    ) {
+                        this.quality = quality
+                        this.referer = ""
+                    }
                 )
             }
         }

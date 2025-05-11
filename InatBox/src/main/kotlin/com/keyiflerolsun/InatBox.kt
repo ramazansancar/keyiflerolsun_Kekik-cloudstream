@@ -386,22 +386,31 @@ class InatBox : MainAPI() {
         val extractorFound =
             loadExtractor(sourceUrl, headers["Referer"], subtitleCallback){
                 callback.invoke(
-                    ExtractorLink(source = it.source,name = contentToProcess.chName, url = it.url, referer = it.referer, quality = it.quality, headers = it.headers, type = it.type)
+                    ExtractorLink(
+                        source = it.source,
+                        name = contentToProcess.chName,
+                        url = it.url,
+                        referer = it.referer,
+                        quality = it.quality,
+                        headers = it.headers,
+                        type = it.type
+                    )
                 )
             }
 
         //When no extractor found, try to load as generic
         if (!extractorFound) {
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source = this.name,
                     name = contentToProcess.chName,
                     url = sourceUrl,
-                    referer = "",
-                    quality = Qualities.Unknown.value,
-                    headers = headers,
                     type = if(sourceUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else if(sourceUrl.contains(".mpd")) ExtractorLinkType.DASH else ExtractorLinkType.VIDEO
-                )
+                ) {
+                    this.referer = ""
+                    this.quality = Qualities.Unknown.value
+                    this.headers = headers
+                }
             )
         }
     }

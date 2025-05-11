@@ -1,5 +1,5 @@
 // ! https://codeberg.org/coxju/cs-ext-coxju/src/branch/master/FullPorner/src/main/kotlin/com/coxju/FullPorner.kt
-// ! https://github.com/SaurabhKaperwan/CSX/blob/master/FullPorner/src/main/kotlin/com/megix/FullPorner.kt
+// ! https://github.com/SaurabhKaperwan/CSX/commits/master/FullPorner/src/main/kotlin/com/megix/FullPorner.kt
 
 package com.keyiflerolsun
 
@@ -14,6 +14,8 @@ class FullPorner : MainAPI() {
     override val hasMainPage          = true
     override var lang                 = "en"
     override val hasQuickSearch       = false
+    override val hasDownloadSupport   = true
+    override val hasChromecastSupport = true
     override val supportedTypes       = setOf(TvType.NSFW)
     override val vpnStatus            = VPNStatus.MightBeNeeded
 
@@ -108,7 +110,6 @@ class FullPorner : MainAPI() {
         "${mainUrl}/category/vr"                 to "VR",
         "${mainUrl}/category/webcam"             to "WebCam",
         "${mainUrl}/category/wife"               to "Wife",
-
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -157,7 +158,7 @@ class FullPorner : MainAPI() {
 
         val iframeDocument = app.get(iframeUrl).document
 
-        val videoID          = Regex("""var id = "(.+?)"""").find(iframeDocument.html())?.groupValues?.get(1)
+        val videoID          = Regex("""var id = \"(.+?)\"""").find(iframeDocument.html())?.groupValues?.get(1)
         val pornTrexDocument = app.get("https://www.porntrex.com/embed/${videoID}").document
         val matchResult      = Regex("""preview_url:\s*'([^']+)'""").find(pornTrexDocument.html())
         val poster           = matchResult?.groupValues?.get(1)
@@ -177,35 +178,38 @@ class FullPorner : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
         val document       = app.get(data).document
         val iframeUrl      = fixUrlNull(document.selectFirst("div.video-block div.single-video-left div.single-video iframe")?.attr("src")) ?: ""
-        val iframeDocument = app.get(iframeUrl).document
-        val videoID        = Regex("""var id = "(.+?)"""").find(iframeDocument.html())?.groupValues?.getOrNull(1)
-
         val extlinkList    = mutableListOf<ExtractorLink>()
+        val iframeDocument = app.get(iframeUrl).document
+        val videoID        = Regex("""var id = \"(.+?)\"""").find(iframeDocument.html())?.groupValues?.getOrNull(1)
 
         if (videoID != null) {
-            val pornTrexDocument = app.get("https://www.porntrex.com/embed/${videoID}").document
-            val videoUrlsRegex   = Regex("""(?:video_url|video_alt_url2|video_alt_url3): '(.+?)',""")
+            val pornTrexDocument = app.get("https://www.porntrex.com/embed/$videoID").document
+            val videoUrlsRegex   = Regex("""(?:video_url|video_alt_url2|video_alt_url3): \'(.+?)\',""")
             val matchResults     = videoUrlsRegex.findAll(pornTrexDocument.html())
 
             val videoUrls = matchResults.map { it.groupValues[1] }.toList()
 
             videoUrls.forEach { videoUrl ->
                 extlinkList.add(
-                    ExtractorLink(
-                        source  = name,
-                        name    = name,
-                        url     = videoUrl,
-                        referer = "",
-                        quality = Regex("""_(1080|720|480|360)p\.mp4""").find(videoUrl)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: Qualities.Unknown.value,
-                        type    = INFER_TYPE
-                    )
+                    newExtractorLink(
+                        source = name,
+                        name = name,
+                        url = videoUrl,
+                    ) {
+                        this.referer = ""
+                        this.quality = Regex("""_(1080|720|480|360)p\.mp4""").find(videoUrl)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: Qualities.Unknown.value
+                    }
                 )
             }
         }
-
         extlinkList.forEach(callback)
 
         return true

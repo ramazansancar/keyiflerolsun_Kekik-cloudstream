@@ -3,6 +3,10 @@
 package com.keyiflerolsun
 
 import android.util.Log
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -128,19 +132,23 @@ class SezonlukDizi : MainAPI() {
             val iframe = fixUrlNull(veriResponse.selectFirst("iframe")?.attr("src")) ?: return@forEach
             Log.d("SZD", "dil»1 | iframe » $iframe")
 
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
-                callback.invoke(
-                    ExtractorLink(
-                        source        = "AltYazı - ${veri.baslik}",
-                        name          = "AltYazı - ${veri.baslik}",
-                        url           = link.url,
-                        referer       = link.referer,
-                        quality       = link.quality,
-                        headers       = link.headers,
-                        extractorData = link.extractorData,
-                        type          = link.type
+            if (iframe.contains("ruby")) {
+                extractRuby(iframe, callback, veri, "Altyazı")
+            } else {
+                loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
+                    callback.invoke(
+                        ExtractorLink(
+                            source        = "AltYazı - ${veri.baslik}",
+                            name          = "AltYazı - ${veri.baslik}",
+                            url           = link.url,
+                            referer       = link.referer,
+                            quality       = link.quality,
+                            headers       = link.headers,
+                            extractorData = link.extractorData,
+                            type          = link.type
+                        )
                     )
-                )
+                }
             }
         }
 
@@ -164,23 +172,73 @@ class SezonlukDizi : MainAPI() {
             val iframe = fixUrlNull(veriResponse.selectFirst("iframe")?.attr("src")) ?: return@forEach
             Log.d("SZD", "dil»0 | iframe » $iframe")
 
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
-                callback.invoke(
-                    ExtractorLink(
-                        source        = "Dublaj - ${veri.baslik}",
-                        name          = "Dublaj - ${veri.baslik}",
-                        url           = link.url,
-                        referer       = link.referer,
-                        quality       = link.quality,
-                        headers       = link.headers,
-                        extractorData = link.extractorData,
-                        type          = link.type
+            if (iframe.contains("ruby")) {
+                extractRuby(iframe, callback, veri, "Dublaj")
+            } else {
+                loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
+                    callback.invoke(
+                        ExtractorLink(
+                            source        = "Dublaj - ${veri.baslik}",
+                            name          = "Dublaj - ${veri.baslik}",
+                            url           = link.url,
+                            referer       = link.referer,
+                            quality       = link.quality,
+                            headers       = link.headers,
+                            extractorData = link.extractorData,
+                            type          = link.type
+                        )
                     )
-                )
+                }
             }
         }
 
         return true
+    }
+
+    private suspend fun extractRuby(
+        iframe: String,
+        callback: (ExtractorLink) -> Unit,
+        veri: Veri,
+        dil: String
+    ) {
+        val header = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Referer" to "${mainUrl}/",
+        )
+        val son = app.get(
+            iframe,
+            referer = "${mainUrl}/",
+            headers = header
+        ).document.select("script").find { it.data().contains("function(p,a,c,k,e") }?.data() ?: ""
+        val unPacked = JsUnpacker(son).unpack()
+        val file =
+            unPacked?.substringAfter("sources:[")?.substringBefore("],")?.addMarks("file") ?: ""
+        val subtitle = unPacked?.substringAfter("tracks:[")?.substringBefore(",{")?.addMarks("file")
+            ?.addMarks("kind")
+        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        val sonFile = objectMapper.readValue<Ruby>(file)
+        /*val generateM3u8 = M3u8Helper.generateM3u8(
+            "StreamRuby",
+            sonFile.file,
+            "https://sezonlukdizi6.com/"
+        )*/
+        callback.invoke(
+            newExtractorLink(
+                source = "$dil - ${veri.baslik}",
+                name = "$dil - ${veri.baslik}",
+                url = sonFile.file,
+                ExtractorLinkType.M3U8
+            ) {
+                this.referer = "$mainUrl/"
+                this.quality = Qualities.Unknown.value
+            }
+        )
+    }
+
+    private fun String.addMarks(str: String): String {
+        return this.replace(Regex("\"?$str\"?"), "\"$str\"")
     }
 
     //Helper function for getting the number (probably some kind of version?) after the dataAlternatif and dataEmbed

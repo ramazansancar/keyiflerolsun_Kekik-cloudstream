@@ -15,19 +15,20 @@ class Vk : ExtractorApi() {
             referer = this.mainUrl,
         )
 
-        val m3u8Regex     = Regex(""""([^"]*m3u8[^"]*)"""")
+        val m3u8Regex     = Regex("""\"([^"]*m3u8[^"]*)\"""")
         val m3u8SourceUrl = m3u8Regex.find(response.text)?.groupValues?.get(1)?.replace("\\/", "/")
 
         if (m3u8SourceUrl != null) {
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = m3u8SourceUrl,
-                    referer = this.mainUrl,
-                    quality = Qualities.Unknown.value,
                     type    = ExtractorLinkType.M3U8
-                )
+                ) {
+                    this.referer = mainUrl
+                    this.quality = Qualities.Unknown.value
+                }
             )
         } else {
             return

@@ -99,16 +99,18 @@ class PornHub : MainAPI() {
         val m3uLink        = extractedValue.replace("\\", "")
         Log.d("PHub", "extractedValue » $extractedValue")
         Log.d("PHub", "m3uLink » $m3uLink")
+        // ! Video Qualitys: https://www.pornhub.com/video/get_media?s=
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
-                referer = "${mainUrl}/",
-                quality = Qualities.Unknown.value,
-                isM3u8  = true
-            )
+                type    = ExtractorLinkType.M3U8
+            ) {
+                this.referer = "${mainUrl}/"
+                this.quality = Qualities.Unknown.value
+            }
         )
 
         return true

@@ -84,17 +84,18 @@ open class YTS : MainAPI() {
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         val document = app.get(data).document
         document.select("p.hidden-md.hidden-lg a").amap {
-            val href=getURL(it.attr("href").replace(" ","%20"))
-            val quality =it.ownText().substringBefore(".").replace("p","").toInt()
+            val href    = getURL(it.attr("href").replace(" ","%20"))
+            val quality = it.ownText().substringBefore(".").replace("p","").toInt()
             callback.invoke(
-                ExtractorLink(
-                    "$name $quality",
-                    name,
-                    fixUrl( href),
-                    "",
-                    quality,
-                    INFER_TYPE
-                )
+                newExtractorLink(
+                    source    = "$name $quality",
+                    name      = name,
+                    url       = fixUrl(href),
+                    type      = INFER_TYPE
+                ) {
+                    this.quality = quality
+                    this.referer = ""
+                }
             )
         }
         return true

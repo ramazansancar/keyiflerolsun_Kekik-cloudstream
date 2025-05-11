@@ -64,15 +64,15 @@ class BelgeselX : MainAPI() {
         val cx = "016376594590146270301:iwmy65ijgrm" // ! Might change in the future
 
         val tokenResponse = app.get("https://cse.google.com/cse.js?cx=${cx}")
-        val cseLibVersion = Regex("""cselibVersion": "(.*)"""").find(tokenResponse.text)?.groupValues?.get(1)
-        val cseToken      = Regex("""cse_token": "(.*)"""").find(tokenResponse.text)?.groupValues?.get(1)
+        val cseLibVersion = Regex("""cselibVersion": \"(.*)\"""").find(tokenResponse.text)?.groupValues?.get(1)
+        val cseToken      = Regex("""cse_token": \"(.*)\"""").find(tokenResponse.text)?.groupValues?.get(1)
 
         val response = app.get("https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=100&hl=tr&source=gcsc&cselibv=${cseLibVersion}&cx=${cx}&q=${query}&safe=off&cse_tok=${cseToken}&oq=${query}&callback=google.search.cse.api9969&rurl=https%3A%2F%2Fbelgeselx.com%2F")
         Log.d("BLX","Search result: ${response.text}")
 
-        val titles     = Regex(""""titleNoFormatting": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
-        val urls       = Regex(""""url": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
-        val posterUrls = Regex(""""ogImage": "(.*)"""").findAll(response.text).map { it.groupValues[1] }.toList()
+        val titles     = Regex(""""titleNoFormatting": \"(.*)\"""").findAll(response.text).map { it.groupValues[1] }.toList()
+        val urls       = Regex(""""url": \"(.*)\"""").findAll(response.text).map { it.groupValues[1] }.toList()
+        val posterUrls = Regex(""""ogImage": \"(.*)\"""").findAll(response.text).map { it.groupValues[1] }.toList()
 
         val searchResponses = mutableListOf<TvSeriesSearchResponse>()
 
@@ -131,13 +131,14 @@ class BelgeselX : MainAPI() {
         Log.d("BLX", "data » $data")
         val source = app.get(data)
 
-        Regex("""<iframe\s+[^>]*src=\\"([^\\"']+)\\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
-            val alternatifUrl  = alternatifUrlMatchResult.groupValues[1]
-            Log.d("BLX", "alternatifUrl » $alternatifUrl")
-            val alternatifResp = app.get(alternatifUrl, referer=data)
+        val script = source.document.select("script").find { it.data().contains("var hedefA = document.getElementById") }?.data() ?: ""
+        val belgeselId = script.substringAfter("getElementById('").substringBefore("');")
 
-            if (alternatifUrl.contains("new4.php")) {
-                Regex("""file:"([^"]+)", label: "([^"]+)""").findAll(alternatifResp.text).forEach {
+        for (i in 2 .. 5) {
+            val url = "https://belgeselx.com/video/data/new$i.php?id=$belgeselId"
+            val resp = app.get(url, referer = data)
+            if (url.contains("new4.php")) {
+                Regex("""file:"([^"]+)", label: "([^"]+)""").findAll(resp.text).forEach {
                     var thisName  = this.name
                     val videoUrl  = it.groupValues[1]
                     var quality   = it.groupValues[2]
@@ -148,23 +149,23 @@ class BelgeselX : MainAPI() {
                     Log.d("BLX", "quality » $quality")
                     Log.d("BLX", "videoUrl » $videoUrl")
 
-                    callback.invoke(
-                        ExtractorLink(
-                            source  = thisName,
-                            name    = thisName,
-                            url     = videoUrl,
-                            referer = data,
-                            quality = getQualityFromName(quality),
-                            type    = INFER_TYPE
-                        )
-                    )
+                    callback.invoke(newExtractorLink(source = thisName, name= thisName, url = videoUrl, type = ExtractorLinkType.VIDEO ) {
+                        this.referer = data
+                        this.quality = getQualityFromName(quality)
+                    })
                 }
             } else {
-                val iframe = fixUrlNull(alternatifResp.document.selectFirst("iframe")?.attr("src")) ?: return@forEach
+                val iframe = fixUrlNull(resp.document.selectFirst("iframe")?.attr("src")) ?: continue
                 Log.d("BLX", "iframe » $iframe")
-
                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
+        }
+
+        Regex("""<iframe\s+[^>]*src=\\"([^\\"']+)\"""").findAll(source.text).forEach { alternatifUrlMatchResult ->
+            val alternatifUrl  = alternatifUrlMatchResult.groupValues[1]
+            Log.d("BLX", "alternatifUrl » $alternatifUrl")
+            val alternatifResp = app.get(alternatifUrl, referer=data)
+
         }
 
         return true

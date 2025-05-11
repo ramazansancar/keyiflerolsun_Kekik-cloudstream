@@ -19,8 +19,8 @@ import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class `4KFilmIzlesene` : MainAPI() {
@@ -34,6 +34,9 @@ class `4KFilmIzlesene` : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
+        "${mainUrl}/turkce-dublaj-hd-filmler/"      to "Türkçe Dublaj",
+        "${mainUrl}/turkce-altyazili-hd-filmler/"   to "Türkçe Altyazılı",
+
         "${mainUrl}/tur/aile-filmleri/"             to "Aile",
         "${mainUrl}/tur/aksiyon-filmleri/"          to "Aksiyon",
         "${mainUrl}/tur/animasyon-filmleri/"        to "Animasyon",
@@ -59,7 +62,7 @@ class `4KFilmIzlesene` : MainAPI() {
         "${mainUrl}/tur/suc/"                       to "Suç",
         "${mainUrl}/tur/tarih/"                     to "Tarih",
         "${mainUrl}/tur/western-kovboy-filmleri/"   to "Western & Kovboy",
-        "${mainUrl}/tur/yerli-film-izle/"           to "Yerli"
+        "${mainUrl}/tur/yerli-film-izle/"           to "Yerli",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

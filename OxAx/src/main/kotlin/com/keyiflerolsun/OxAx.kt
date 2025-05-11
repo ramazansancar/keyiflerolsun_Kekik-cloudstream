@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.fasterxml.jackson.annotation.JsonProperty
 
 class OxAx : MainAPI() {
-    override var mainUrl              = "https://ythls.kekikakademi.org/oxax/cs3"
+    override var mainUrl              = "https://api.ramsan.tr/oxax"
     override var name                 = "OxAx"
     override val hasMainPage          = true
     override var lang                 = "ru"

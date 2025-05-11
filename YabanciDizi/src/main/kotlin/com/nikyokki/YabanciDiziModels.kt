@@ -159,3 +159,8 @@ data class JsonResponse(
     val data: Data,
     val type: String?
 )
+
+data class Series(
+    @JsonProperty("data") val data: String,
+    @JsonProperty("success") val success: Int,
+)

@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class SuperFilmGeldi : MainAPI() {
-    override var mainUrl              = "https://www.superfilmgeldi.me"
+    override var mainUrl              = "https://www.superfilmgeldi.info"
     override var name                 = "SuperFilmGeldi"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -129,14 +129,16 @@ class SuperFilmGeldi : MainAPI() {
             Log.d("SFG", "m3uLink » $m3uLink")
 
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = m3uLink,
-                    referer = iframe,
-                    quality = Qualities.Unknown.value,
-                    isM3u8  = true
-                )
+                    type    = ExtractorLinkType.M3U8
+                ) {
+                    this.referer = iframe
+                    this.headers = mapOf("Referer" to iframe)
+                    this.quality = Qualities.Unknown.value
+                }
             )
         } else {
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)

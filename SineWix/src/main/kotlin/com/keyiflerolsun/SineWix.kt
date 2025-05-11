@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class SineWix : MainAPI() {
-    override var mainUrl              = "https://ythls.kekikakademi.org"
+    override var mainUrl              = "https://ythls.ramsan.tr"
     override var name                 = "SineWix"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -166,14 +166,15 @@ class SineWix : MainAPI() {
                     loadExtractor(video.link, twitter, subtitleCallback, callback)
                 } else {
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = this.name,
                             name    = this.name,
                             url     = video.link,
-                            referer = twitter,
-                            quality = Qualities.Unknown.value,
                             type    = INFER_TYPE
-                        )
+                        ) {
+                            this.referer = video.link
+                            this.quality = Qualities.Unknown.value
+                        }
                     )
                 }
 
@@ -184,14 +185,15 @@ class SineWix : MainAPI() {
                 loadExtractor(data.substringAfter("&source="), twitter, subtitleCallback, callback)
             } else {
                 callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                         source  = this.name,
                         name    = this.name,
                         url     = data.substringAfter("&source="),
-                        referer = twitter,
-                        quality = Qualities.Unknown.value,
                         type    = INFER_TYPE
-                    )
+                    ) {
+                        this.referer = twitter
+                        this.quality = Qualities.Unknown.value
+                    }
                 )
             }
 
