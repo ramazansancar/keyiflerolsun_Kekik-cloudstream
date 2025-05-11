@@ -53,7 +53,7 @@ class FullHDFilm : MainAPI() {
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("img")?.attr("alt")?.text() ?: return null
+        val title     = this.selectFirst("img")?.attr("alt")?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
