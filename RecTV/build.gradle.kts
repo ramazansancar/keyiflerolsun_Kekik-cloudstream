@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie", "Live", "TvSeries")
-    iconUrl = "https://rectvapk.cc/wp-content/uploads/2023/02/Rec-TV.webp"
+    iconUrl = "https://rectvapp.com.tr/wp-content/uploads/2024/08/cropped-cropped-Screenshot_2023-08-31_at_11.02.55_PM-removebg-preview-32x32.webp"
 }
