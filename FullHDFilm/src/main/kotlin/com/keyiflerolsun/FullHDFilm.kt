@@ -91,21 +91,21 @@ class FullHDFilm : MainAPI() {
     }
 
     private fun getIframe(sourceCode: String): String {
-        // <script> içindeki iframe HTML-escaped formatta saklanmış (örneğin: &lt;iframe ...)
-        val escapedIframe = Regex("""<script[^>]*>\\?PCEtLWJhc2xpazpQVUJQbGF5ZXIs[^<]*</script>""")
-            .find(sourceCode)
-            ?.value
-            ?.substringAfter(">")  // sadece script içeriğini al
-            ?.substringBefore("</script>")
-            ?.trim() ?: return ""
+        // Base64 kodlu iframe'i içeren script bloğunu yakala
+        val base64ScriptRegex = Regex("""<script[^>]*>(PCEtLWJhc2xpazpQVUJQbGF5ZXIs[^<]*)</script>""")
+        val base64Encoded = base64ScriptRegex.find(sourceCode)?.groupValues?.get(1) ?: return ""
     
-        // HTML encoded string'i geri çözüyoruz (örneğin: &lt; -> <)
-        val decodedHtml = org.jsoup.parser.Parser.unescapeEntities(escapedIframe, false)
+        return try {
+            // Base64 decode
+            val decodedHtml = String(Base64.decode(base64Encoded, Base64.DEFAULT), Charsets.UTF_8)
     
-        // Jsoup ile parse edip iframe src'yi alıyoruz
-        val iframeSrc = Jsoup.parse(decodedHtml).selectFirst("iframe")?.attr("src")
+            // Jsoup ile parse edip iframe src'sini al
+            val iframeSrc = Jsoup.parse(decodedHtml).selectFirst("iframe")?.attr("src")
     
-        return fixUrlNull(iframeSrc) ?: ""
+            fixUrlNull(iframeSrc) ?: ""
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
