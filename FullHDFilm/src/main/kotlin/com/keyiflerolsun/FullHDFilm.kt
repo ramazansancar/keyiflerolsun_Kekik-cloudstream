@@ -24,25 +24,25 @@ class FullHDFilm : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/tur/turkce-altyazili-film-izle/page" to "Altyazılı Filmler",
-        "${mainUrl}/tur/yerli-film-izle/page"			 to "Yerli Film",
-        "${mainUrl}/tur/netflix-filmleri-izle/page"		 to "Netflix",
-        "${mainUrl}/category/aile-filmleri-izle/page"	 to "Aile",
-        "${mainUrl}/category/aksiyon-filmleri-izle/page" to "Aksiyon",
-        "${mainUrl}/category/animasyon-filmleri-izle/page"	 to "Animasyon",
-        "${mainUrl}/category/belgesel-filmleri-izle/page"	to "Belgesel",
-        "${mainUrl}/category/bilim-kurgu-filmleri-izle/page" to "Bilim-Kurgu",
-        "${mainUrl}/category/biyografi-filmleri-izle/page"			 to "Biyografi",
-        "${mainUrl}/category/dram-filmleri-izle/page"				     to "Dram",
-        "${mainUrl}/category/fantastik-filmler-izle/page"		 to "Fantastik",
-        "${mainUrl}/category/gerilim-filmleri-izle/page"		 to "Gerilim",
-        "${mainUrl}/category/gizem-filmleri-izle/page"				 to "Gizem",
-        "${mainUrl}/category/komedi-filmleri-izle/page"				 to "Komedi",
-        "${mainUrl}/category/korku-filmleri-izle/page"			 to "Korku",
-        "${mainUrl}/category/macera-filmleri-izle/page"		 to "Macera",
-        "${mainUrl}/category/romantik-filmler-izle/page"			     to "Romantik",
-        "${mainUrl}/category/savas-filmleri-izle/page"		 to "Savaş",
-        "${mainUrl}/category/suc-filmleri-izle/page"			     to "Suç"
+        "${mainUrl}/tur/turkce-altyazili-film-izle/page"       to "Altyazılı Filmler",
+        "${mainUrl}/tur/netflix-filmleri-izle/page"		       to "Netflix",
+        "${mainUrl}/category/aile-filmleri-izle/page"	       to "Aile",
+        "${mainUrl}/category/aksiyon-filmleri-izle/page"       to "Aksiyon",
+        "${mainUrl}/category/animasyon-filmleri-izle/page"	   to "Animasyon",
+        "${mainUrl}/category/belgesel-filmleri-izle/page"	   to "Belgesel",
+        "${mainUrl}/category/bilim-kurgu-filmleri-izle/page"   to "Bilim-Kurgu",
+        "${mainUrl}/category/biyografi-filmleri-izle/page"	   to "Biyografi",
+        "${mainUrl}/category/dram-filmleri-izle/page"		   to "Dram",
+        "${mainUrl}/category/fantastik-filmler-izle/page"	   to "Fantastik",
+        "${mainUrl}/category/gerilim-filmleri-izle/page"	   to "Gerilim",
+        "${mainUrl}/category/gizem-filmleri-izle/page"		   to "Gizem",
+        "${mainUrl}/category/komedi-filmleri-izle/page"		   to "Komedi",
+        "${mainUrl}/category/korku-filmleri-izle/page"		   to "Korku",
+        "${mainUrl}/category/macera-filmleri-izle/page"		   to "Macera",
+        "${mainUrl}/category/romantik-filmler-izle/page"	   to "Romantik",
+        "${mainUrl}/category/savas-filmleri-izle/page"		   to "Savaş",
+        "${mainUrl}/category/suc-filmleri-izle/page"		   to "Suç",
+        "${mainUrl}/tur/yerli-film-izle/page"			       to "Yerli Film"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -53,7 +53,7 @@ class FullHDFilm : MainAPI() {
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
-        val title     = this.selectFirst("img[alt]")?.text() ?: return null
+        val title     = this.selectFirst("img")?.attr("alt")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
 
@@ -74,11 +74,11 @@ class FullHDFilm : MainAPI() {
         val title       = document.selectFirst("h1")?.text() ?: return null
     
         val poster      = fixUrlNull(document.selectFirst("div.poster img")?.attr("src"))
-        val description = document.selectFirst("div.poster")?.text()?.trim()
+        val description = document.select("#details > div:nth-child(2) > div")?.text()?.trim()
         val tags        = document.select("h4 a").map { it.text() }
         val rating      = document.selectFirst("div.button-custom")?.text()?.trim()?.split(" ")?.first()?.toRatingInt()
         val year        = Regex("""(\d+)""").find(document.selectFirst("div.release")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
-        val actors      = document.select("div.oyuncular h4").map { Actor(it.text()) }
+        val actors = document.selectFirst("div.oyuncular")?.ownText() ?.split(",") ?.map { Actor(it.trim()) } ?: emptyList()
     
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
@@ -109,10 +109,16 @@ class FullHDFilm : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("FHDF", "data » $data")
+     Log.d("FHDF", "data » $data")
 
-        loadExtractor(data, "${mainUrl}/", subtitleCallback, callback)
+    val document = app.get(data).document
+    val iframeSrc = getIframe(document.outerHtml())  // kaynak koddan iframe src'yi al
 
+    if (iframeSrc.isNotEmpty()) {
+        loadExtractor(iframeSrc, mainUrl, subtitleCallback, callback)  // iframe'e yönlendir
         return true
     }
+
+    return false
+}
 }

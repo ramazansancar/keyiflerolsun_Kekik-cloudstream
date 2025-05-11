@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Anime")
-    iconUrl = "https://www.google.com/s2/favicons?domain=anm.cx&sz=%size%"
+    iconUrl = "https://anm.cx/favicon.ico"
 }
