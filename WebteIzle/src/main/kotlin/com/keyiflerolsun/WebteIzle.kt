@@ -291,17 +291,16 @@ class WebteIzle : MainAPI() {
                     Log.d("WBTI", "iframe » $iframe")
                     loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
                         callback.invoke(
-                            newExtractorLink(
+                            ExtractorLink(
                                 source        = "$dilAd - ${link.name}",
                                 name          = "$dilAd - ${link.name}",
                                 url           = link.url,
-                                type          = link.type,
-                            ) {
-                                this.referer       = link.referer
-                                this.quality       = link.quality
-                                this.headers       = link.headers
-                                this.extractorData = link.extractorData
-                            }
+                                referer       = link.referer,
+                                quality       = link.quality,
+                                headers       = link.headers,
+                                extractorData = link.extractorData,
+                                type          = link.type
+                            )
                         )
                     }
                 }
