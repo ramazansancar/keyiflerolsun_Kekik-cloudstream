@@ -2,6 +2,7 @@
 
 package com.keyiflerolsun
 
+import android.util.Base64
 import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -16,6 +17,7 @@ import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
@@ -26,9 +28,11 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -36,7 +40,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 
 class WebteIzle : MainAPI() {
-    override var mainUrl              = "https://webteizle.info"
+    override var mainUrl              = "https://webteizle1.xyz"
     override var name                 = "WebteIzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -251,14 +255,15 @@ class WebteIzle : MainAPI() {
                     }
 
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = fixUrl(decoded),
-                            referer = "${mainUrl}/",
-                            quality = Qualities.Unknown.value,
-                            isM3u8  = true
-                        )
+                            type    = ExtractorLinkType.M3U8,
+                        ) {
+                            this.referer = "${mainUrl}/"
+                            this.quality = Qualities.Unknown.value
+                        }
                     )
                 }
 
@@ -266,16 +271,17 @@ class WebteIzle : MainAPI() {
                     Log.d("WBTI", "iframe » $iframe")
                     loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
                         callback.invoke(
-                            ExtractorLink(
+                            newExtractorLink(
                                 source        = "$dilAd - ${link.name}",
                                 name          = "$dilAd - ${link.name}",
                                 url           = link.url,
-                                referer       = link.referer,
-                                quality       = link.quality,
-                                headers       = link.headers,
-                                extractorData = link.extractorData,
-                                type          = link.type
-                            )
+                                type          = link.type,
+                            ) {
+                                this.referer       = link.referer
+                                this.quality       = link.quality
+                                this.headers       = link.headers
+                                this.extractorData = link.extractorData
+                            }
                         )
                     }
                 }

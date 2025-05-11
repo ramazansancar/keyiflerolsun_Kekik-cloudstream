@@ -20,14 +20,18 @@ import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class WFilmIzle : MainAPI() {
-    override var mainUrl = "https://www.wfilmizle.vip/"
+    override var mainUrl = "https://www.wfilmizle.club"
     override var name = "WFilmİzle"
     override val hasMainPage = true
     override var lang = "tr"
@@ -163,19 +167,20 @@ class WFilmIzle : MainAPI() {
             val master = updatedVideoData.videoSource ?: ""
             Log.d("WFI", "Master: $master")
             callback.invoke(
-                ExtractorLink(
+                newExtractorLink(
                     source = name,
                     name = name,
                     url = master,
-                    referer = mainUrl,
-                    headers = mapOf(
+                    type = ExtractorLinkType.M3U8
+                ) {
+                    this.referer = mainUrl
+                    this.headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox",
                         "Accept" to "*/*", "X-Requested-With" to "XMLHttpRequest",
                         "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8"
-                    ),
-                    quality = Qualities.Unknown.value,
-                    isM3u8 = true
-                )
+                    )
+                    this.quality = Qualities.Unknown.value
+                }
             )
         }
         //loadExtractor(iframe.toS, "${mainUrl}/", subtitleCallback, callback)

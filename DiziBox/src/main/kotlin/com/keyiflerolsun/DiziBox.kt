@@ -169,10 +169,10 @@ class DiziBox : MainAPI() {
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src")) ?: fixUrlNull(this.selectFirst("img")?.attr("data-src")) ?: return null
 
-        Log.d("DZBX", "toMainPageResult", "Title: $title, Href: $href, Poster: $posterUrl")
+        Log.d("DZBX", "toMainPageResult - Title: ${title}, Href: ${href}, Poster: ${posterUrl}")
 
         if (title == null || href == null) {
-            Log.w("DZBX", "toMainPageResult", "Article eksik veri içeriyor, atlanıyor!")
+            Log.w("DZBX", "toMainPageResult - Article eksik veri içeriyor, atlanıyor!")
             return null
         }
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }

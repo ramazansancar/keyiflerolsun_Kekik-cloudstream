@@ -26,7 +26,7 @@ class Vk : ExtractorApi() {
                     url     = m3u8SourceUrl,
                     type    = ExtractorLinkType.M3U8
                 ) {
-                    this.referer = this.mainUrl
+                    this.referer = mainUrl
                     this.quality = Qualities.Unknown.value
                 }
             )

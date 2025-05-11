@@ -405,7 +405,7 @@ class InatBox : MainAPI() {
                     source = this.name,
                     name = contentToProcess.chName,
                     url = sourceUrl,
-                    type = if(sourceUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else if(sourceUrl.cnotains(".mpd")) ExtractorLinkType.DASH else ExtractorLinkType.VIDEO
+                    type = if(sourceUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else if(sourceUrl.contains(".mpd")) ExtractorLinkType.DASH else ExtractorLinkType.VIDEO
                 ) {
                     this.referer = ""
                     this.quality = Qualities.Unknown.value
