@@ -223,7 +223,7 @@ override suspend fun loadLinks(
         if (youtubeUrl != null) {
         Log.d("DDizi:", "Calling loadExtractor with $youtubeUrl")
             try {
-                loadExtractor(youtubeUrl, youtubeUrl, subtitleCallback, callback)
+                loadExtractor(youtubeUrl, "", subtitleCallback, callback)
                 return true
             } catch (e: Exception) {
                 Log.e("DDizi:", "loadExtractor failed: ${e.message}", e)
