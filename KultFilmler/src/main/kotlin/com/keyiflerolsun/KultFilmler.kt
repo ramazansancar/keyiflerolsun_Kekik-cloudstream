@@ -14,6 +14,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import android.util.Base64
 import org.jsoup.Jsoup
+import java.util.regex.Pattern
 
 class KultFilmler : MainAPI() {
     override var mainUrl              = "https://kultfilmler.net"
@@ -174,6 +175,42 @@ class KultFilmler : MainAPI() {
         return fixUrlNull(iframe.selectFirst("iframe")?.attr("src")) ?: ""
     }
 
+    private fun extractSubtitleUrl(sourceCode: String): String? {
+        // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
+        val patterns = listOf(
+            Pattern.compile("var playerjsSubtitle = \"\\[Türkçe\\](https?://[^\\s\"]+?\\.srt)\";"),
+            Pattern.compile("var playerjsSubtitle = \"(https?://[^\\s\"]+?\\.srt)\";"), // Türkçe etiketi olmadan
+            Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"") // Alternatif subtitle formatı
+        )
+        for (pattern in patterns) {
+            val matcher = pattern.matcher(sourceCode)
+            if (matcher.find()) {
+                val subtitleUrl = matcher.group(1)
+                Log.d("FHDF", "Found subtitle URL: $subtitleUrl")
+                return subtitleUrl
+            }
+        }
+        Log.d("FHDF", "No subtitle URL found in source code")
+        return null
+    }
+
+    private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
+        if (iframeUrl.isEmpty()) return null
+        try {
+            val headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Referer" to mainUrl
+            )
+            val iframeResponse = app.get(iframeUrl, headers=headers)
+            val iframeSource = iframeResponse.text
+            Log.d("FHDF", "Iframe source length: ${iframeSource.length}")
+            return extractSubtitleUrl(iframeSource)
+        } catch (e: Exception) {
+            Log.d("FHDF", "Iframe subtitle extraction error: ${e.message}")
+            return null
+        }
+    }
+
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("KLT", "data » $data")
         val document = app.get(data).document
@@ -214,6 +251,16 @@ class KultFilmler : MainAPI() {
             }
                 )
             } else {
+            // Extract subtitle for other iframes
+            val subtitleUrl = extractSubtitleFromIframe(iframe)
+            if (subtitleUrl != null) {
+                subtitleCallback.invoke(
+                    SubtitleFile(
+                        lang = "Türkçe",
+                        url = subtitleUrl
+                    )
+                )
+            }
                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
         }
