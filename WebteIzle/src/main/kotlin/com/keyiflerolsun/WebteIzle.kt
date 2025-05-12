@@ -38,7 +38,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 
 class WebteIzle : MainAPI() {
-    override var mainUrl              = "https://webteizle1.xyz/"
+    override var mainUrl              = "https://webteizle1.xyz"
     override var name                 = "WebteIzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -69,26 +69,26 @@ class WebteIzle : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/film-izle/" to "Güncel",
-        "${mainUrl}/yeni-filmler/" to "Yeni",
-        "${mainUrl}/tavsiye-filmler/" to "Tavsiye",
-        "${mainUrl}/filtre/SAYFA?tur=Aile" to "Aile",
-        "${mainUrl}/filtre/SAYFA?tur=Aksiyon" to "Aksiyon",
-        "${mainUrl}/filtre/SAYFA?tur=Animasyon" to "Animasyon",
-        "${mainUrl}/filtre/SAYFA?tur=Belgesel" to "Belgesel",
+        "${mainUrl}/film-izle/"                   to "Güncel",
+        "${mainUrl}/yeni-filmler/"                to "Yeni",
+        "${mainUrl}/tavsiye-filmler/"             to "Tavsiye",
+        "${mainUrl}/filtre/SAYFA?tur=Aile"        to "Aile",
+        "${mainUrl}/filtre/SAYFA?tur=Aksiyon"     to "Aksiyon",
+        "${mainUrl}/filtre/SAYFA?tur=Animasyon"   to "Animasyon",
+        "${mainUrl}/filtre/SAYFA?tur=Belgesel"    to "Belgesel",
         "${mainUrl}/filtre/SAYFA?tur=Bilim-Kurgu" to "Bilim Kurgu",
-        "${mainUrl}/filtre/SAYFA?tur=Biyografi" to "Biyografi",
-        "${mainUrl}/filtre/SAYFA?tur=Dram" to "Dram",
-        "${mainUrl}/filtre/SAYFA?tur=Fantastik" to "Fantastik",
-        "${mainUrl}/filtre/SAYFA?tur=Gerilim" to "Gerilim",
-        "${mainUrl}/filtre/SAYFA?tur=Gizem" to "Gizem",
-        "${mainUrl}/filtre/SAYFA?tur=Komedi" to "Komedi",
-        "${mainUrl}/filtre/SAYFA?tur=Korku" to "Korku",
-        "${mainUrl}/filtre/SAYFA?tur=Macera" to "Macera",
-        "${mainUrl}/filtre/SAYFA?tur=Romantik" to "Romantik",
-        "${mainUrl}/filtre/SAYFA?tur=Spor" to "Spor",
-        "${mainUrl}/filtre/SAYFA?tur=Tarihi" to "Tarihi",
-        "${mainUrl}/filtre/SAYFA?tur=Western" to "Western"
+        "${mainUrl}/filtre/SAYFA?tur=Biyografi"   to "Biyografi",
+        "${mainUrl}/filtre/SAYFA?tur=Dram"        to "Dram",
+        "${mainUrl}/filtre/SAYFA?tur=Fantastik"   to "Fantastik",
+        "${mainUrl}/filtre/SAYFA?tur=Gerilim"     to "Gerilim",
+        "${mainUrl}/filtre/SAYFA?tur=Gizem"       to "Gizem",
+        "${mainUrl}/filtre/SAYFA?tur=Komedi"      to "Komedi",
+        "${mainUrl}/filtre/SAYFA?tur=Korku"       to "Korku",
+        "${mainUrl}/filtre/SAYFA?tur=Macera"      to "Macera",
+        "${mainUrl}/filtre/SAYFA?tur=Romantik"    to "Romantik",
+        "${mainUrl}/filtre/SAYFA?tur=Spor"        to "Spor",
+        "${mainUrl}/filtre/SAYFA?tur=Tarihi"      to "Tarihi",
+        "${mainUrl}/filtre/SAYFA?tur=Western"     to "Western"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
