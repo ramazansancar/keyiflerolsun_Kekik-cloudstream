@@ -12,7 +12,7 @@ import org.jsoup.Jsoup
 
 class TRanimaci : MainAPI() {
     override var mainUrl              = "https://tranimaci.com"
-    override var name                 = "Animaci"
+    override var name                 = "TrAnimeci"
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = false

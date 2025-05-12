@@ -1,9 +1,9 @@
-version = 15
+version = 16
 
 cloudstream {
     authors     = listOf("keyiflerolsun")
     language    = "tr"
-    description = "TRanimaci - Türkiye'nin Online Anime izleme sitesi."
+    description = "TRanimeci - Türkiye'nin Online Anime izleme sitesi."
 
     /**
      * Status int as the following:
