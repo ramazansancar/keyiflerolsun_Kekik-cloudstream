@@ -46,8 +46,12 @@ class FullHDFilm : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val userAgent = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-        val document = app.get("${request.data}/${page}/", headers=userAgent).document
+        val headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Referer" to "https://fullhdfilm.us/"
+            )
+        val document = app.get("${request.data}/${page}/", headers=headers).document
         val home     = document.select("div.movie-poster").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
