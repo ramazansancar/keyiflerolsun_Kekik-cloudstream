@@ -171,7 +171,7 @@ override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallbac
                 source = thisName,
                 name = thisName,
                 url = videoUrl,
-                type = ExtractorLinkType.VIDEO
+                type = INFER_TYPE
             ) {
                 headers = mapOf("Referer" to "")
                 quality = getQualityFromName(quality).toString()
