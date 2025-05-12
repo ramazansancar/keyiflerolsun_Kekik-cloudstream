@@ -86,6 +86,10 @@ class DiziBox : MainAPI() {
             ),
             interceptor = interceptor, cacheTime = 60
         ).document
+        if (request.name == "Dizi Arşivi") {
+            val home = document.select("article.detailed-article").mapNotNull { it.toMainPageResult() }
+            return newHomePageResponse(request.name, home)
+        }
         val home = document.select("article.article-series-poster").mapNotNull {
         it.toMainPageResult()
     }
