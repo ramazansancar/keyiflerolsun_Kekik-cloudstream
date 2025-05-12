@@ -103,7 +103,7 @@ class HDFilmCehennemi : MainAPI() {
             }
 
         return if (tvType == TvType.TvSeries) {
-            val trailer  = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/")?.let { "https://www.youtube.com/embed/$it" }
+            val trailer  = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/embed/$it" else null }
             val episodes = document.select("div.seasons-tab-content a").mapNotNull {
                 val epName    = it.selectFirst("h4")?.text()?.trim() ?: return@mapNotNull null
                 val epHref    = fixUrlNull(it.attr("href")) ?: return@mapNotNull null
@@ -128,7 +128,7 @@ class HDFilmCehennemi : MainAPI() {
                 addTrailer(trailer)
             }
         } else {
-            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/")?.let { "https://www.youtube.com/embed/$it" }
+            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/embed/$it" else null }
 
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl       = poster
