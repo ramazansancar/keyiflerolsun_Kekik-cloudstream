@@ -25,6 +25,7 @@ class SinemaCX : MainAPI() {
 	*/
 
     override val mainPage = mainPageOf(
+        "${mainUrl}/page/"			                     to		"Son Eklenen Filmler",
         "${mainUrl}/izle/aile-filmleri/page/"			 to		"Aile Filmleri",
         "${mainUrl}/izle/aksiyon-filmleri/page/"		 to		"Aksiyon Filmleri",
         "${mainUrl}/izle/animasyon-filmleri/page/"		 to		"Animasyon Filmleri",
@@ -42,7 +43,7 @@ class SinemaCX : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${page}").document
-        val home     = document.select("div.icerik div.frag-k").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.son div.frag-k, div.icerik div.frag-k").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
     }
