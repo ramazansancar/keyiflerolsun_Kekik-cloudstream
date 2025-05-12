@@ -115,13 +115,38 @@ class FullHDFilm : MainAPI() {
     }
 
     private fun extractSubtitleUrl(sourceCode: String): String? {
-        // playerjsSubtitle değişkenini regex ile bul
-        val subtitleRegex = Pattern.compile("var playerjsSubtitle = \"\\[Türkçe\\](https?://[^\\s\"]+?\\.srt)\";")
-        val matcher = subtitleRegex.matcher(sourceCode)
-        return if (matcher.find()) {
-            matcher.group(1) // Altyazı URL’sini döndür
-        } else {
-            null
+        // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
+        val patterns = listOf(
+            Pattern.compile("var playerjsSubtitle = \"\\[Türkçe\\](https?://[^\\s\"]+?\\.srt)\";"),
+            Pattern.compile("var playerjsSubtitle = \"(https?://[^\\s\"]+?\\.srt)\";"), // Türkçe etiketi olmadan
+            Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"") // Alternatif subtitle formatı
+        )
+        for (pattern in patterns) {
+            val matcher = pattern.matcher(sourceCode)
+            if (matcher.find()) {
+                val subtitleUrl = matcher.group(1)
+                Log.d("FHDF", "Found subtitle URL: $subtitleUrl")
+                return subtitleUrl
+            }
+        }
+        Log.d("FHDF", "No subtitle URL found in source code")
+        return null
+    }
+
+    private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
+        if (iframeUrl.isEmpty()) return null
+        try {
+            val headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Referer" to mainUrl
+            )
+            val iframeResponse = app.get(iframeUrl, headers=headers)
+            val iframeSource = iframeResponse.text
+            Log.d("FHDF", "Iframe source length: ${iframeSource.length}")
+            return extractSubtitleUrl(iframeSource)
+        } catch (e: Exception) {
+            Log.d("FHDF", "Iframe subtitle extraction error: ${e.message}")
+            return null
         }
     }
 
@@ -133,16 +158,38 @@ class FullHDFilm : MainAPI() {
     ): Boolean {
         Log.d("FHDF", "data » $data")
 
-        val document = app.get(data).document
-        val sourceCode = document.outerHtml()
-        val iframeSrc = getIframe(sourceCode) // Kaynak koddan iframe src'yi al
-        Log.d("FHDF", "iframeSrc » $iframeSrc")
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+            "Referer" to mainUrl
+        )
+        val response = app.get(data, headers=headers)
+        val sourceCode = response.text
+        Log.d("FHDF", "Source code length: ${sourceCode.length}")
 
-        // Altyazı URL’sini çek
-        val subtitleUrl = extractSubtitleUrl(sourceCode)
+        // Ana sayfadan altyazı URL’sini çek
+        var subtitleUrl = extractSubtitleUrl(sourceCode)
+
+        // Iframe’den altyazı URL’sini çek
+        val iframeSrc = getIframe(sourceCode)
+        Log.d("FHDF", "iframeSrc: $iframeSrc")
+        if (subtitleUrl == null && iframeSrc.isNotEmpty()) {
+            subtitleUrl = extractSubtitleFromIframe(iframeSrc)
+        }
+
+        // Altyazı bulunursa subtitleCallback ile gönder
         if (subtitleUrl != null) {
-            Log.d("FHDF", "subtitleUrl » $subtitleUrl")
-            subtitleCallback(SubtitleFile("Türkçe", subtitleUrl))
+            try {
+                // Altyazı URL’sinin erişilebilirliğini kontrol et
+                val subtitleResponse = app.get(subtitleUrl, headers=headers, allowRedirects=true)
+                if (subtitleResponse.isSuccessful) {
+                    subtitleCallback(SubtitleFile("Türkçe", subtitleUrl))
+                    Log.d("FHDF", "Subtitle added: $subtitleUrl")
+                } else {
+                    Log.d("FHDF", "Subtitle URL inaccessible: ${subtitleResponse.code}")
+                }
+            } catch (e: Exception) {
+                Log.d("FHDF", "Subtitle URL error: ${e.message}")
+            }
         }
 
         if (iframeSrc.isNotEmpty()) {
