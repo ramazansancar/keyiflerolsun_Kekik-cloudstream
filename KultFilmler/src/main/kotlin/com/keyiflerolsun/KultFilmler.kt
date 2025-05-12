@@ -186,11 +186,11 @@ class KultFilmler : MainAPI() {
             val matcher = pattern.matcher(sourceCode)
             if (matcher.find()) {
                 val subtitleUrl = matcher.group(1)
-                Log.d("FHDF", "Found subtitle URL: $subtitleUrl")
+                Log.d("KLT", "Found subtitle URL: $subtitleUrl")
                 return subtitleUrl
             }
         }
-        Log.d("FHDF", "No subtitle URL found in source code")
+        Log.d("KLT", "No subtitle URL found in source code")
         return null
     }
 
@@ -203,10 +203,8 @@ class KultFilmler : MainAPI() {
             )
             val iframeResponse = app.get(iframeUrl, headers=headers)
             val iframeSource = iframeResponse.text
-            Log.d("FHDF", "Iframe source length: ${iframeSource.length}")
             return extractSubtitleUrl(iframeSource)
         } catch (e: Exception) {
-            Log.d("FHDF", "Iframe subtitle extraction error: ${e.message}")
             return null
         }
     }
@@ -252,7 +250,7 @@ class KultFilmler : MainAPI() {
                 )
             } else {
             // Extract subtitle for other iframes
-            val subtitleUrl = extractSubtitleFromIframe(iframe)
+            val subtitleUrl = extractSubtitleFromIframe(data)
             if (subtitleUrl != null) {
                 subtitleCallback.invoke(
                     SubtitleFile(
