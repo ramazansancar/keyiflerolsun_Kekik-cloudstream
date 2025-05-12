@@ -61,7 +61,7 @@ class FullHDFilm : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/wp-json/keremiya/search/?keyword=${query}&nonce=39de52abd9").document
+        val document = app.get("${mainUrl}/?s=${query}").document
 
         return document.select("div.movie-poster").mapNotNull { it.toMainPageResult() }
     }
