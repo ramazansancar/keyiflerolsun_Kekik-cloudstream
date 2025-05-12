@@ -221,7 +221,7 @@ override suspend fun loadLinks(
         // Extract the YouTube URL from the id parameter
         val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
         if (youtubeUrl != null) {
-		Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
+        Log.d("DDizi:", "Calling loadExtractor with $youtubeUrl")
             try {
                 loadExtractor(youtubeUrl, youtubeUrl, subtitleCallback, callback)
                 return true
