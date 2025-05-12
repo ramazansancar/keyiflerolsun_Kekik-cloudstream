@@ -212,22 +212,13 @@ override suspend fun loadLinks(
 ): Boolean {
     val document = app.get(data, headers = getHeaders(mainUrl)).document
 
-    // Check for iframe with YouTube in src
-    val iframeSrc = document.selectFirst("iframe")?.attr("src")
-    if (iframeSrc?.contains("youtube", ignoreCase = true) == true) {
-        // Log the iframe src for debugging
-        Log.d("DDizi:", "iframeSrc = $iframeSrc")
-        
-        // Extract the YouTube URL from the id parameter
-        val youtubeUrl = Regex("""id=(https://.*?)(?:&|$)""").find(iframeSrc)?.groupValues?.get(1)
-        if (youtubeUrl != null) {
-            Log.d("DDizi:", "Extracted YouTube URL = $youtubeUrl")
-            loadExtractor(youtubeUrl, youtubeUrl, subtitleCallback, callback)
-            return true
-        } else {
-            // Log failure to extract YouTube URL
-            Log.d("DDizi:", "Failed to extract YouTube URL from iframeSrc = $iframeSrc")
-        }
+    val youtubeLink = document.selectFirst("a[href*=\"youtube.com/watch\"]")?.attr("href")
+    if (youtubeLink != null) {
+        Log.d("DDizi:", "Found YouTube link = $youtubeLink")
+        loadExtractor(youtubeLink, youtubeLink, subtitleCallback, callback)
+        return true
+    } else {
+        Log.d("DDizi:", "YouTube link not found in <a> tags")
     }
 
     // Proceed to og:video extraction if YouTube iframe is not present or fails
