@@ -14,6 +14,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import android.util.Base64
 import org.jsoup.Jsoup
+import java.util.regex.Pattern
 
 class FullHDFilm : MainAPI() {
     override var mainUrl              = "https://fullhdfilm.us"
@@ -113,17 +114,42 @@ class FullHDFilm : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-     Log.d("FHDF", "data » $data")
-
-    val document = app.get(data).document
-    val iframeSrc = getIframe(document.outerHtml())  // kaynak koddan iframe src'yi al
-     Log.d("FHDF", "iframeSrc » $iframeSrc")
-    if (iframeSrc.isNotEmpty()) {
-        loadExtractor(iframeSrc, mainUrl, subtitleCallback, callback)  // iframe'e yönlendir
-        return true
+    private fun extractSubtitleUrl(sourceCode: String): String? {
+        // playerjsSubtitle değişkenini regex ile bul
+        val subtitleRegex = Pattern.compile("var playerjsSubtitle = \"\\[Türkçe\\](https?://[^\\s\"]+?\\.srt)\";")
+        val matcher = subtitleRegex.matcher(sourceCode)
+        return if (matcher.find()) {
+            matcher.group(1) // Altyazı URL’sini döndür
+        } else {
+            null
+        }
     }
 
-    return false
-}
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        Log.d("FHDF", "data » $data")
+
+        val document = app.get(data).document
+        val sourceCode = document.outerHtml()
+        val iframeSrc = getIframe(sourceCode) // Kaynak koddan iframe src'yi al
+        Log.d("FHDF", "iframeSrc » $iframeSrc")
+
+        // Altyazı URL’sini çek
+        val subtitleUrl = extractSubtitleUrl(sourceCode)
+        if (subtitleUrl != null) {
+            Log.d("FHDF", "subtitleUrl » $subtitleUrl")
+            subtitleCallback(SubtitleFile("Türkçe", subtitleUrl))
+        }
+
+        if (iframeSrc.isNotEmpty()) {
+            loadExtractor(iframeSrc, mainUrl, subtitleCallback, callback) // iframe'e yönlendir
+            return true
+        }
+
+        return false
+    }
 }
