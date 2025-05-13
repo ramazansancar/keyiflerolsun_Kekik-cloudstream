@@ -45,8 +45,8 @@ open class ContentX : ExtractorApi() {
 	Log.d("Kekik_${this.name}", "m4uLink: $m4uLink")
 	val m4uLinkext =app.get(m4uLink, referer = m4uLink).text
     Log.d("Kekik_${this.name}", "m4uLinkext » $m4uLinkext")	
-    val m5uLink = Regex("""URI="([^"]+)"""").find(m4uLinkext)?.groups[1]?.value?.let { "URI=$it" } 
-            ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
+    val m5uLink = Regex("""URI="([^"]+)"""").find(m4uLinkext)?.groups?.get(1)
+    ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
 
     callback.invoke(
         newExtractorLink(
@@ -65,9 +65,10 @@ open class ContentX : ExtractorApi() {
         val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
         val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)!!.groups[1]?.value ?: throw ErrorLoadingException("dublajExtract is null")
         val dublajLink = dublajExtract.replace("\\", "")
-        val dublaj2Link = app.get(dublajLink.replace(Regex("m\\.php"), "master.m3u8"), referer = extRef).text
-        val dublaj5Link = Regex("""URI="([^"]+)"""").find(dublaj2Link)?.groups[1]?.value?.let { "URI=$it" } 
-                ?: throw ErrorLoadingException("dublaj5Link URI could not be extracted")
+        val dublaj2Link = dublajLink.replace(Regex("m.php"), "master.m3u8")
+        val dublaj2Linkext = app.get(dublaj2Link, referer = dublaj2Link).text
+        val dublaj5Link = Regex("""URI="([^"]+)"""").find(dublaj2Linkext)?.groups?.get(1)
+    ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
 
         callback.invoke(
             newExtractorLink(
