@@ -60,12 +60,13 @@ open class ContentX : ExtractorApi() {
         val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
         val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)!!.groups[1]?.value ?: throw ErrorLoadingException("dublajExtract is null")
         val dublajLink = dublajExtract.replace("\\", "")
+        val dublaj2Link = dublajLink.replace(Regex("m\\.php"), "master.m3u8")
 
         callback.invoke(
             newExtractorLink(
                 source = "${this.name} Türkçe Dublaj",
                 name = "${this.name} Türkçe Dublaj",
-                url = dublajLink,
+                url = dublaj2Link,
                 type = ExtractorLinkType.M3U8
             ) {
                 headers = mapOf("Referer" to url)
