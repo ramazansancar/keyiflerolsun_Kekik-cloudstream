@@ -41,13 +41,15 @@ open class ContentX : ExtractorApi() {
     val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
     val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)!!.groups[1]?.value ?: throw ErrorLoadingException("vidExtract is null")
     val m3uLink = vidExtract.replace("\\", "")
-    val m4uLink = m3uLink.replace(Regex("m\\.php"), "master.m3u8")
+    val m4uLink = app.get(m3uLink.replace(Regex("m\\.php"), "master.m3u8"), referer = extRef).text
+    val m5uLink = Regex("""URI="([^"]+)"""").find(m4uLink)?.groups[1]?.value?.let { "URI=$it" } 
+            ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
 
     callback.invoke(
         newExtractorLink(
             source = this.name,
             name = this.name,
-            url = m4uLink,
+            url = m5uLink,
             type = ExtractorLinkType.M3U8
         ) {
             headers = mapOf("Referer" to url)
@@ -60,13 +62,15 @@ open class ContentX : ExtractorApi() {
         val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
         val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)!!.groups[1]?.value ?: throw ErrorLoadingException("dublajExtract is null")
         val dublajLink = dublajExtract.replace("\\", "")
-        val dublaj2Link = dublajLink.replace(Regex("m\\.php"), "master.m3u8")
+        val dublaj2Link = app.get(dublajLink.replace(Regex("m\\.php"), "master.m3u8"), referer = extRef).text
+        val dublaj5Link = Regex("""URI="([^"]+)"""").find(dublaj2Link)?.groups[1]?.value?.let { "URI=$it" } 
+                ?: throw ErrorLoadingException("dublaj5Link URI could not be extracted")
 
         callback.invoke(
             newExtractorLink(
                 source = "${this.name} Türkçe Dublaj",
                 name = "${this.name} Türkçe Dublaj",
-                url = dublaj2Link,
+                url = dublaj5Link,
                 type = ExtractorLinkType.M3U8
             ) {
                 headers = mapOf("Referer" to url)
