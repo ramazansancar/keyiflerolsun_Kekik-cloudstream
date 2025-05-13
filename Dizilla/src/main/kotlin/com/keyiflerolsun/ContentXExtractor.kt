@@ -41,9 +41,10 @@ open class ContentX : ExtractorApi() {
     val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
     val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)!!.groups[1]?.value ?: throw ErrorLoadingException("vidExtract is null")
     val m3uLink = vidExtract.replace("\\", "")
-    val m4uLink = app.get(m3uLink.replace(Regex("m\\.php"), "master.m3u8"), referer = extRef).text
-    Log.d("Kekik_${this.name}", "m4uLink » $m4uLink")	
-    val m5uLink = Regex("""URI="([^"]+)"""").find(m4uLink)?.groups[1]?.value?.let { "URI=$it" } 
+    val m4uLink = m3uLink.replace(Regex("m\\.php"), "master.m3u8")
+	val m4uLinkext =app.get("m4uLink", referer = extRef).text 
+    Log.d("Kekik_${this.name}", "m4uLinkext » $m4uLinkext")	
+    val m5uLink = Regex("""URI="([^"]+)"""").find(m4uLinkext)?.groups[1]?.value?.let { "URI=$it" } 
             ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
 
     callback.invoke(
