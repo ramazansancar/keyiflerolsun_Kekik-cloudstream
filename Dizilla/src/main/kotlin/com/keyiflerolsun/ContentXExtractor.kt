@@ -41,13 +41,14 @@ open class ContentX : ExtractorApi() {
     val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
     val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)!!.groups[1]?.value ?: throw ErrorLoadingException("vidExtract is null")
     val m3uLink = vidExtract.replace("\\", "")
+    val m4uLink = m3uLink.replace(Regex("m\\.php"), "master.m3u8")
 
     callback.invoke(
         newExtractorLink(
             source = this.name,
             name = this.name,
-            url = m3uLink,
-            type = ExtractorLinkType.DASH
+            url = m4uLink,
+            type = ExtractorLinkType.M3U8
         ) {
             headers = mapOf("Referer" to url)
             quality = Qualities.Unknown.value
@@ -65,7 +66,7 @@ open class ContentX : ExtractorApi() {
                 source = "${this.name} Türkçe Dublaj",
                 name = "${this.name} Türkçe Dublaj",
                 url = dublajLink,
-                type = ExtractorLinkType.DASH
+                type = ExtractorLinkType.M3U8
             ) {
                 headers = mapOf("Referer" to url)
                 quality = Qualities.Unknown.value
