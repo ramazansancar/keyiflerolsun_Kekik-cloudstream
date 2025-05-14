@@ -32,7 +32,7 @@ open class ContentX : ExtractorApi() {
 
         subtitleCallback.invoke(
             SubtitleFile(
-                lang = subLang.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç"),
+                lang = subLang.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç").replace("\\u011f", "ğ").replace("\\u015f", "ş"),
                 url = fixUrl(subUrl.replace("\\", ""))
             )
         )
