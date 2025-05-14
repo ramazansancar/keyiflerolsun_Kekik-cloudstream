@@ -41,18 +41,12 @@ open class ContentX : ExtractorApi() {
     val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
     val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value ?: throw ErrorLoadingException("vidExtract is null")
     val m3uLink = vidExtract.replace("\\", "")
-    val m4uLink = m3uLink.replace(Regex("m.php"), "master.m3u8")
-	Log.d("Kekik_${this.name}", "m4uLink: $m4uLink")
-	val m4uLinkext =app.get(m4uLink, referer = m4uLink).text
-    Log.d("Kekik_${this.name}", "m4uLinkext » $m4uLinkext")	
-    val m5uLink = Regex("""URI="([^"]+)"""").find(m4uLinkext)?.groups?.get(1)?.value
-        ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
 
     callback.invoke(
         newExtractorLink(
             source = this.name,
             name = this.name,
-            url = m5uLink,
+            url = m3uLink,
             type = ExtractorLinkType.M3U8
         ) {
             headers = mapOf("Referer" to url,
@@ -66,16 +60,12 @@ open class ContentX : ExtractorApi() {
         val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
         val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)!!.groups[1]?.value ?: throw ErrorLoadingException("dublajExtract is null")
         val dublajLink = dublajExtract.replace("\\", "")
-        val dublaj2Link = dublajLink.replace(Regex("m.php"), "master.m3u8")
-        val dublaj2Linkext = app.get(dublaj2Link, referer = dublaj2Link).text
-        val dublaj5Link = Regex("""URI="([^"]+)"""").find(dublaj2Linkext)?.groups?.get(1)?.value
-            ?: throw ErrorLoadingException("m5uLink URI could not be extracted")
 
         callback.invoke(
             newExtractorLink(
                 source = "${this.name} Türkçe Dublaj",
                 name = "${this.name} Türkçe Dublaj",
-                url = dublaj5Link,
+                url = dublajLink,
                 type = ExtractorLinkType.M3U8
             ) {
                 headers = mapOf("Referer" to url,
