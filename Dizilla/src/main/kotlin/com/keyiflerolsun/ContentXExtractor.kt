@@ -39,7 +39,7 @@ open class ContentX : ExtractorApi() {
     }
 
     val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
-    val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)!!.groups[1]?.value ?: throw ErrorLoadingException("vidExtract is null")
+    val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value ?: throw ErrorLoadingException("vidExtract is null")
     val m3uLink = vidExtract.replace("\\", "")
     val m4uLink = m3uLink.replace(Regex("m.php"), "master.m3u8")
 	Log.d("Kekik_${this.name}", "m4uLink: $m4uLink")
@@ -53,14 +53,15 @@ open class ContentX : ExtractorApi() {
             source = this.name,
             name = this.name,
             url = m5uLink,
-            type = ExtractorLinkType.DASH
+            type = ExtractorLinkType.M3U8
         ) {
-            headers = mapOf("Referer" to url)
+            headers = mapOf("Referer" to url,
+			"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
             quality = Qualities.Unknown.value
         }
     )
 
-    val iDublaj = Regex(""","([^']+)","Türkçe""").find(iSource)!!.groups[1]?.value
+    val iDublaj = Regex(""","([^']+)","Türkçe""").find(iSource)?.groups?.get(1)?.value
     if (iDublaj != null) {
         val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
         val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)!!.groups[1]?.value ?: throw ErrorLoadingException("dublajExtract is null")
@@ -75,9 +76,10 @@ open class ContentX : ExtractorApi() {
                 source = "${this.name} Türkçe Dublaj",
                 name = "${this.name} Türkçe Dublaj",
                 url = dublaj5Link,
-                type = ExtractorLinkType.DASH
+                type = ExtractorLinkType.M3U8
             ) {
-                headers = mapOf("Referer" to url)
+                headers = mapOf("Referer" to url,
+				"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
                 quality = Qualities.Unknown.value
             }
         )
