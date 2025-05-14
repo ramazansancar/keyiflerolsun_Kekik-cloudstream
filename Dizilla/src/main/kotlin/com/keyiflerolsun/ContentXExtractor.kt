@@ -24,16 +24,19 @@ open class ContentX : ExtractorApi() {
     val iExtract = Regex("""window\.openPlayer\('([^']+)'""").find(iSource)!!.groups[1]?.value ?: throw ErrorLoadingException("iExtract is null")
 
     val subUrls = mutableSetOf<String>()
-    Regex(""""file":"([^"]+)","label":"([^"]+)"""").findAll(iSource).forEach {
-        val (subUrl, subLang) = it.destructured
+    Regex(""""file":"((?:\\\\\"|[^"])+)","label":"((?:\\\\\"|[^"])+)"""").findAll(iSource).forEach {
+        val (subUrlExt, subLangExt) = it.destructured
+
+            val subUrl = subUrlExt.replace("\\/", "/").replace("\\u0026", "&").replace("\\", "")
+            val subLang = subLangExt.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç").replace("\\u011f", "ğ").replace("\\u015f", "ş")
 
         if (subUrl in subUrls) { return@forEach }
         subUrls.add(subUrl)
 
         subtitleCallback.invoke(
             SubtitleFile(
-                lang = subLang.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç").replace("\\u011f", "ğ").replace("\\u015f", "ş"),
-                url = fixUrl(subUrl.replace("\\", ""))
+                lang = subLang
+                url = fixUrl(subUrl)
             )
         )
     }
