@@ -103,7 +103,7 @@ class HDFilmCehennemi : MainAPI() {
             }
 
         return if (tvType == TvType.TvSeries) {
-            val trailer  = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/embed/$it" else null }
+            val trailer  = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
             Log.d("HDCH", "Trailer: $trailer")
             val episodes = document.select("div.seasons-tab-content a").mapNotNull {
                 val epName    = it.selectFirst("h4")?.text()?.trim() ?: return@mapNotNull null
@@ -129,7 +129,7 @@ class HDFilmCehennemi : MainAPI() {
                 addTrailer(trailer)
             }
         } else {
-            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/embed/$it" else null }
+            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
             Log.d("HDCH", "Trailer: $trailer")
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl       = poster
@@ -139,7 +139,7 @@ class HDFilmCehennemi : MainAPI() {
                 this.rating          = rating
                 this.recommendations = recommendations
                 addActors(actors)
-                addTrailer("https://www.youtube.com/embed/HAQfDRvrU0s")
+                addTrailer("trailer")
             }
         }
     }
