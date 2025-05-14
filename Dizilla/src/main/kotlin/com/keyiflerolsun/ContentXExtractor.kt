@@ -50,9 +50,9 @@ open class ContentX : ExtractorApi() {
     callback.invoke(
         newExtractorLink(
             source = this.name,
-            name = this.name,
-            url = m3uLink,
-            type = ExtractorLinkType.M3U8
+            name   = this.name,
+            url    = m3uLink,
+            type   = ExtractorLinkType.M3U8
         ) {
             headers = mapOf("Referer" to url,
 			"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
@@ -68,10 +68,10 @@ open class ContentX : ExtractorApi() {
 
         callback.invoke(
             newExtractorLink(
-                source = "${this.name} Türkçe Dublaj",
-                name = "${this.name} Türkçe Dublaj",
-                url = dublajLink,
-                type = ExtractorLinkType.M3U8
+                source = this.name,
+                name   = this.name,
+                url    = dublajLink,
+                type   = ExtractorLinkType.M3U8
             ) {
                 headers = mapOf("Referer" to url,
 				"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
