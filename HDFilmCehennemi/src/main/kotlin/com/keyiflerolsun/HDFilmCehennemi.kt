@@ -139,7 +139,7 @@ class HDFilmCehennemi : MainAPI() {
                 this.rating          = rating
                 this.recommendations = recommendations
                 addActors(actors)
-                addTrailer("trailer")
+                addTrailer(trailer)
             }
         }
     }
