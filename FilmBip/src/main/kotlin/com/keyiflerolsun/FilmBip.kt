@@ -9,6 +9,8 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.extractors.YoutubeExtractor
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 import org.jsoup.Jsoup
 
 class FilmBip : MainAPI() {
@@ -116,27 +118,30 @@ private fun Element.toSearchResult(): SearchResponse? {
 
         val title  = document.selectFirst("div.page-title h1")?.text()?.trim() ?: return null
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
-        val trailerUrl = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
-        Log.d("FLB", "Trailer: $trailerUrl")
-        var trailerStreamUrl: String? = null
-    
-        // YouTube Extractor ile stream URL’yi çek
-        if (trailerUrl != null) {
-            YoutubeExtractor().getUrl(
-                trailerUrl,
-                referer = null,
-                subtitleCallback = {},
-                callback = {
-                    trailerStreamUrl = it.url
-                }
-            )
-        }
+        val trailerStreamUrl = document.selectFirst("div.series-profile-trailer")
+            ?.attr("data-yt")
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { extractYoutubeStreamUrl("https://www.youtube.com/watch?v=$it") }
+
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
             addTrailer(trailerStreamUrl)
         }
     }
+
+     suspend fun extractYoutubeStreamUrl(youtubeUrl: String): String? {
+         return suspendCancellableCoroutine { cont ->
+             YoutubeExtractor().getUrl(
+                 youtubeUrl,
+                 referer = null,
+                 subtitleCallback = {},
+                 callback = { link ->
+                     cont.resume(link.url)
+                 }
+             )
+         }
+     }
 
      override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("FLB", "data » $data")
