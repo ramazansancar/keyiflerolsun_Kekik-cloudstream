@@ -1,4 +1,4 @@
-version = 9
+version = 10
 
 cloudstream {
     authors     = listOf("keyiflerolsun")
@@ -13,6 +13,6 @@ cloudstream {
      * 3: Beta only
     **/
     status  = 1 // will be 3 if unspecified
-    tvTypes = listOf("TvSeries")
+    tvTypes = listOf("Movie")
     iconUrl = "https://filmbip.com/uploads/favicon/original/favicon.webp"
 }
