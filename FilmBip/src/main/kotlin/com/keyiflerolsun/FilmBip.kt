@@ -117,9 +117,11 @@ private fun Element.toSearchResult(): SearchResponse? {
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
         val trailerUrl = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
         Log.d("FLB", "Trailer: $trailerUrl")
+        val trailerStreamUrl = trailerUrl?.let { YoutubeExtractor().getUrl(it) }
+
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-            addTrailer(trailerUrl)
+            addTrailer(trailerStreamUrl)
         }
     }
 

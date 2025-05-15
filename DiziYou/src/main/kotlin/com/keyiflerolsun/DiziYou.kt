@@ -84,7 +84,7 @@ class DiziYou : MainAPI() {
         }
         if (dikkat.isNotEmpty()) home.add(HomePageList("Dikkat Çeken Diziler", dikkat))
     
-        return HomePageResponse(home)
+        return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
