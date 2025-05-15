@@ -131,7 +131,7 @@ private fun Element.toSearchResult(): SearchResponse? {
         Log.d("FLB", "data » $data")
         val document = app.get(data).document
 
-    val trailerUrl = doc.selectFirst("div.series-profile-trailer")
+    val trailerUrl = document.selectFirst("div.series-profile-trailer")
         ?.attr("data-yt")
         ?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
         if (trailerUrl != null) {
