@@ -8,6 +8,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.extractors.YoutubeExtractor
 import org.jsoup.Jsoup
 
 class FilmBip : MainAPI() {
@@ -117,7 +118,19 @@ private fun Element.toSearchResult(): SearchResponse? {
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
         val trailerUrl = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
         Log.d("FLB", "Trailer: $trailerUrl")
-        val trailerStreamUrl = trailerUrl?.let { YoutubeExtractor().getUrl(it) }
+        var trailerStreamUrl: String? = null
+    
+        // YouTube Extractor ile stream URL’yi çek
+        if (trailerUrl != null) {
+            YoutubeExtractor().getUrl(
+                trailerUrl,
+                referer = null,
+                subtitleCallback = {},
+                callback = {
+                    trailerStreamUrl = it.url
+                }
+            )
+        }
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
