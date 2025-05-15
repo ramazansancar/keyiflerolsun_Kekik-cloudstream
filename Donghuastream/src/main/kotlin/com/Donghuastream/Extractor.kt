@@ -138,7 +138,7 @@ class Rumble : ExtractorApi() {
         Log.d("DHS", "response » $response")
         val playerScript =
             response.document.selectFirst("script:containsData(mp4)")?.data()
-                ?.substringAfter("\"url\": \"")?.?.substringBefore("\"")?.replace("\\/", "/") ?:""
+                ?.substringAfter("\"url\": \"")?.?.substringBefore("\"")?.replace("\\/", "/")
         val regex = """"url":"((?:[^\\"]|\\\/)*?)"|\"h\":(\d+)""".toRegex()
         val matches = regex.findAll(playerScript)
         for (match in matches) {
