@@ -118,30 +118,24 @@ private fun Element.toSearchResult(): SearchResponse? {
 
         val title  = document.selectFirst("div.page-title h1")?.text()?.trim() ?: return null
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
-        val trailerStreamUrl = document.selectFirst("div.series-profile-trailer")
-            ?.attr("data-yt")
-            ?.takeIf { it.isNotEmpty() }
-            ?.let { extractYoutubeStreamUrl("https://www.youtube.com/watch?v=$it") }
+        val trailerId = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")
+        val trailerUrl = trailerId?.takeIf { it.isNotEmpty() }?.let { "https://www.youtube.com/watch?v=$it" }
 
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-            addTrailer(trailerStreamUrl)
+        if (trailerUrl != null) {
+            YoutubeExtractor().getUrl(
+                trailerUrl,
+                referer = null,
+                subtitleCallback = {},
+                callback = {
+                    addExtractor(it)
+                }
+            )
+        }
         }
     }
-
-     suspend fun extractYoutubeStreamUrl(youtubeUrl: String): String? {
-         return suspendCancellableCoroutine { cont ->
-             YoutubeExtractor().getUrl(
-                 youtubeUrl,
-                 referer = null,
-                 subtitleCallback = {},
-                 callback = { link ->
-                     cont.resume(link.url)
-                 }
-             )
-         }
-     }
 
      override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("FLB", "data » $data")
