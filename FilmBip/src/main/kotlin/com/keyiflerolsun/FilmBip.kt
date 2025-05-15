@@ -120,20 +120,11 @@ private fun Element.toSearchResult(): SearchResponse? {
         val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content")) ?: return null
         val trailerId = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")
         val trailerUrl = trailerId?.takeIf { it.isNotEmpty() }?.let { "https://www.youtube.com/watch?v=$it" }
+        val videoUrl = if (trailerUrl != null) "$url::trailer=$trailerUrl" else url
 
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-        if (trailerUrl != null) {
-            YoutubeExtractor().getUrl(
-                trailerUrl,
-                referer = null,
-                subtitleCallback = {},
-                callback = {
-                    addTrailer(it.url)
-                }
-            )
-        }
         }
     }
 
@@ -141,6 +132,15 @@ private fun Element.toSearchResult(): SearchResponse? {
         Log.d("FLB", "data » $data")
         val document = app.get(data).document
 
+        val trailerUrl = Regex("::trailer=(.*)$").find(data)?.groupValues?.get(1)
+        if (trailerUrl != null) {
+            YoutubeExtractor().getUrl(
+                trailerUrl,
+                referer = null,
+                subtitleCallback = subtitleCallback,
+                callback = callback
+            )
+        }
         document.select("div#tv-spoox2").forEach {
             val iframe = fixUrlNull(it.selectFirst("iframe")?.attr("src")) ?: return@forEach
             Log.d("FLB", "iframe » $iframe")
