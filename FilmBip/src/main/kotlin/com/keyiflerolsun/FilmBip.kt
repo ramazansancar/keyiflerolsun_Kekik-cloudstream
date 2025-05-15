@@ -130,7 +130,7 @@ private fun Element.toSearchResult(): SearchResponse? {
                 referer = null,
                 subtitleCallback = {},
                 callback = {
-                    addExtractor(it)
+                    addTrailer(it.url)
                 }
             )
         }
