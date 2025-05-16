@@ -257,4 +257,14 @@ override suspend fun loadLinks(
     data class Results(
         @JsonProperty("results") val results: List<String> = arrayListOf()
     )
+    data class HDFC(
+        @JsonProperty("html") val html: String,
+        @JsonProperty("meta") val meta: Meta
+    )
+
+    data class Meta(
+        @JsonProperty("title") val title: String,
+        @JsonProperty("canonical") val canonical: Boolean,
+        @JsonProperty("keywords") val keywords: Boolean
+    )
 }
