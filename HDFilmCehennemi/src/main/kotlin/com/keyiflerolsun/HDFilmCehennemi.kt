@@ -20,35 +20,47 @@ class HDFilmCehennemi : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
 
     override val mainPage = mainPageOf(
-        mainUrl to "Yeni Eklenen Filmler",
-        "${mainUrl}/yabancidiziizle-2"                    to "Yeni Eklenen Diziler",
-        "${mainUrl}/category/tavsiye-filmler-izle2"       to "Tavsiye Filmler",
-        "${mainUrl}/imdb-7-puan-uzeri-filmler"            to "IMDB 7+ Filmler",
-        "${mainUrl}/en-cok-yorumlananlar-1"               to "En Çok Yorumlananlar",
-        "${mainUrl}/en-cok-begenilen-filmleri-izle"       to "En Çok Beğenilenler",
-        "${mainUrl}/tur/aile-filmleri-izleyin-6"          to "Aile Filmleri",
-        "${mainUrl}/tur/aksiyon-filmleri-izleyin-3"       to "Aksiyon Filmleri",
-        "${mainUrl}/tur/animasyon-filmlerini-izleyin-4"   to "Animasyon Filmleri",
-        "${mainUrl}/tur/belgesel-filmlerini-izle-1"       to "Belgesel Filmleri",
-        "${mainUrl}/tur/bilim-kurgu-filmlerini-izleyin-2" to "Bilim Kurgu Filmleri",
-        "${mainUrl}/tur/komedi-filmlerini-izleyin-1"      to "Komedi Filmleri",
-        "${mainUrl}/tur/korku-filmlerini-izle-2/"         to "Korku Filmleri",
-        "${mainUrl}/tur/romantik-filmleri-izle-1"         to "Romantik Filmleri"
+        "${mainUrl}/load/page/sayfano/home/"                                       to "Yeni Eklenen Filmler",
+        "${mainUrl}/load/page/sayfano/categories/nette-ilk-filmler/"               to "Nette İlk Filmler",
+        "${mainUrl}/load/page/sayfano/home-series/"                                to "Yeni Eklenen Diziler",
+        "${mainUrl}/load/page/sayfano/categories/tavsiye-filmler-izle2/"           to "Tavsiye Filmler",
+        "${mainUrl}/load/page/sayfano/imdb7/"                                      to "IMDB 7+ Filmler",
+        "${mainUrl}/load/page/sayfano/mostCommented/"                              to "En Çok Yorumlananlar",
+        "${mainUrl}/load/page/sayfano/mostLiked/"                                  to "En Çok Beğenilenler",
+        "${mainUrl}/load/page/sayfano/genres/aile-filmleri-izleyin-6/"             to "Aile Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/aksiyon-filmleri-izleyin-5/"          to "Aksiyon Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/animasyon-filmlerini-izleyin-5/"      to "Animasyon Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/belgesel-filmlerini-izle-1/"          to "Belgesel Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/bilim-kurgu-filmlerini-izleyin-3/"    to "Bilim Kurgu Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/komedi-filmlerini-izleyin-1/"         to "Komedi Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/korku-filmlerini-izle-4/"             to "Korku Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/romantik-filmleri-izle-2/"            to "Romantik Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data).document
-
+        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        val url = request.data.replace("sayfano", page.toString())
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+            "Accept" to "*/*", "X-Requested-With" to "fetch"
+        )
+        val doc = app.get(url, headers = headers, referer = mainUrl)
         val home: List<SearchResponse>?
+        if (!doc.toString().contains("Sayfa Bulunamadı")) {
+            val aa: HDFC = objectMapper.readValue(doc.toString())
+            val document = Jsoup.parse(aa.html)
 
-        home = document.select("div.section-content a.poster").mapNotNull { it.toSearchResult() }
-
-        return newHomePageResponse(request.name, home)
+            home = document.select("a").mapNotNull { it.toSearchResult() }
+            return newHomePageResponse(request.name, home)
+        }
+        return newHomePageResponse(request.name, emptyList())
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("strong.poster-title")?.text() ?: return null
-        val href      = fixUrlNull(this.attr("href")) ?: return null
+        val title = this.attr("title")
+        val href = fixUrlNull(this.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
