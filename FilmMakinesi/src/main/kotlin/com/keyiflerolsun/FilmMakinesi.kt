@@ -119,7 +119,9 @@ private fun Element.toSearchResult(): SearchResponse? {
             Actor(it.trim())
         }
 
-        val trailer         = fixUrlNull(document.selectXpath("//iframe[@title='Fragman']").attr("data-src"))
+        val trailer = document.selectFirst("div.left a.trailer-button")?.attr("data-video_url")?.substringAfter("embed/", "")?.let { 
+    if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null 
+}
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl       = poster
