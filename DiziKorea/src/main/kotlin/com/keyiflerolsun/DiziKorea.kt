@@ -84,7 +84,8 @@ class DiziKorea : MainAPI() {
         val tags        = document.select("div.series-profile-type a").mapNotNull { it.text().trim() }
         val rating      = document.selectFirst("span.color-imdb")?.text()?.trim()?.toRatingInt()
         val duration    = document.selectXpath("//span[text()='Süre']//following-sibling::p").text().trim().split(" ").first().toIntOrNull()
-        val trailer     = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")
+        val trailerId     = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")
+        val trailerUrl = trailerId?.takeIf { it.isNotEmpty() }?.let { "https://www.youtube.com/watch?v=$it" }
         val actors      = document.select("div.series-profile-cast li").map {
             Actor(it.selectFirst("h5")!!.text(), it.selectFirst("img")!!.attr("data-src"))
         }
@@ -114,7 +115,7 @@ class DiziKorea : MainAPI() {
                 this.rating    = rating
                 this.duration  = duration
                 addActors(actors)
-                addTrailer("https://www.youtube.com/embed/${trailer}")
+                addTrailer(trailerUrl)
             }
         } else {
             return newMovieLoadResponse(title, url, TvType.AsianDrama, url) {
@@ -125,7 +126,7 @@ class DiziKorea : MainAPI() {
                 this.rating    = rating
                 this.duration  = duration
                 addActors(actors)
-                addTrailer("https://www.youtube.com/embed/${trailer}")
+                addTrailer(trailerUrl)
             }
         }
     }
