@@ -238,7 +238,7 @@ override suspend fun loadLinks(
             var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
             Log.d("HDCH", "$iframe » $iframe")
             if (iframe.contains("rapidrame")) {
-                iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
+                iframe = "${mainUrl}/rplayer/" + iframe.substringAfter("?rapidrame_id=")
             } else if (iframe.contains("rplayer")) {
                 iframe = "${mainUrl}/playerr/" + iframe.substringAfter("/rplayer/")
             }
