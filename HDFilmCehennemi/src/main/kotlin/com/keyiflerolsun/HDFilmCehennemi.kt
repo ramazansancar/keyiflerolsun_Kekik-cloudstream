@@ -239,8 +239,8 @@ override suspend fun loadLinks(
             Log.d("HDCH", "$iframe » $iframe")
             if (iframe.contains("rapidrame")) {
                 iframe = "${mainUrl}/rplayer/" + iframe.substringAfter("?rapidrame_id=")
-            } else if (iframe.contains("rplayer")) {
-                iframe = "${mainUrl}/playerr/" + iframe.substringAfter("/rplayer/")
+            } else if (iframe.contains("mobi")) {
+                iframe = fixUrlNull(it.selectFirst("iframe")?.attr("data-src"))
             }
             Log.d("HDCH", "$source » $videoID » $iframe")
             invokeLocalSource(source, iframe, subtitleCallback, callback)
