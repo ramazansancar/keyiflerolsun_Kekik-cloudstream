@@ -34,7 +34,7 @@ val iSource = app.get(url, referer = extRef)
         else -> "$mainUrl/$src"
     }
     val label = it.attr("label") ?: "Altyazı"
-            Log.d("Kekik_${this.name}", "fullUrl » $fullUrl)
+            Log.d("Kekik_${this.name}", "fullUrl » $full Url")
 
     // Altyazıyı callback ile bildiriyoruz
     subtitleCallback(
