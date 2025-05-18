@@ -30,8 +30,7 @@ open class CloseLoad : ExtractorApi() {
             subtitleCallback.invoke(
                 SubtitleFile(
                     lang = it.attr("label"),
-                    url = if (it.attr("src").startsWith("http")) it.attr("src") else "https:${it.attr("src")}",
-                    Log.d("Kekik_${this.name}", "url » $url")
+                    url = if (it.attr("src").startsWith("http")) it.attr("src") else "https:${it.attr("src")}"
 )
             )
         }
