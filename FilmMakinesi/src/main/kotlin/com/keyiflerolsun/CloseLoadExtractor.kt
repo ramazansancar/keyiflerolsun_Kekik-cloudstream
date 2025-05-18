@@ -26,18 +26,19 @@ open class CloseLoad : ExtractorApi() {
         val extRef = referer ?: ""
         Log.d("Kekik_${this.name}", "url » $url")
 
-        val iSource = app.get(url, referer = extRef)
+        iSource.document.select("track").forEach {
+    val src = it.attr("src")
+    val fullUrl = when {
+        src.startsWith("http") -> src
+        src.startsWith("/") -> "$mainUrl$src"
+        else -> "$mainUrl/$src"
+    }
+    val label = it.attr("label") ?: "Altyazı"
 
-        // Altyazıları SubtitleFile listesine al
-        val subtitles = iSource.document.select("track").mapNotNull {
-            val src = it.attr("src")
-            val fullUrl = when {
-                src.startsWith("http") -> src
-                src.startsWith("/") -> "$mainUrl$src"
-                else -> "$mainUrl/$src"
-            }
-            val label = it.attr("label") ?: "Altyazı"
-            SubtitleFile(label, fullUrl)
+    // Altyazıyı callback ile bildiriyoruz
+    subtitleCallback.invoke(
+        SubtitleFile(label, fullUrl)
+    )
         }
 
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
@@ -60,7 +61,6 @@ open class CloseLoad : ExtractorApi() {
                 ) {
                     quality = Qualities.Unknown.value
                     headers = mapOf("Referer" to url)
-                    subtitleTracks = subtitles // işte burası altyazıları ekler
                 }
             )
         }
