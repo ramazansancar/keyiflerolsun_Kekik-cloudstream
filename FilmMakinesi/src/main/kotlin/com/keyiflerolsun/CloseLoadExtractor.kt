@@ -29,9 +29,11 @@ open class CloseLoad : ExtractorApi() {
         iSource.document.select("track").forEach {
             subtitleCallback.invoke(
                 SubtitleFile(
-                    lang = it.attr("label"),
-                    val url = if (it.attr("src").startsWith("http")) it.attr("src") else if (it.attr("src").startsWith("/")) "$mainUrl${it.attr("src")}" else "$mainUrl/${it.attr("src")}"
-            )
+    lang = it.attr("label"),
+    url = if (it.attr("src").startsWith("http")) it.attr("src")
+          else if (it.attr("src").startsWith("/")) "$mainUrl${it.attr("src")}"
+          else "$mainUrl/${it.attr("src")}"
+)
         }
 
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
