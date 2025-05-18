@@ -25,7 +25,7 @@ open class CloseLoad : ExtractorApi() {
     ) {
         val extRef = referer ?: ""
         Log.d("Kekik_${this.name}", "url » $url")
-
+val iSource = app.get(url, referer = extRef)
         iSource.document.select("track").forEach {
     val src = it.attr("src")
     val fullUrl = when {
