@@ -34,6 +34,7 @@ open class CloseLoad : ExtractorApi() {
           else if (it.attr("src").startsWith("/")) "$mainUrl${it.attr("src")}"
           else "$mainUrl/${it.attr("src")}"
 )
+               ) 
         }
 
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
