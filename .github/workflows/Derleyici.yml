@@ -32,7 +32,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle 
-        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'AsyaAnimeleri.cs3' ! -name 'AnimeciX.cs3' ! -name 'AsyaWatch.cs3'  ! -name 'WebDramaTurkey.cs3' ! -name 'InatBox.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3'  -delete
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'AsyaAnimeleri.cs3' ! -name 'AsyaFilmIzlesene.cs3' ! -name 'Kanal7.cs3' ! -name 'Puhu.cs3' ! -name 'AnimeciX.cs3' ! -name 'AsyaWatch.cs3'  ! -name 'WebDramaTurkey.cs3' ! -name 'InatBox.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3'  -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -126,6 +126,72 @@ jobs:
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "AsyaAnimeleri zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+      - name: AsyaFilmIzlesene Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "AsyaFilmIzlesene")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["Movie"],
+              "version": 1,
+              "internalName": "AsyaFilmIzlesene",
+              "description": "AsyaFilmIzlesene için CloudStream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/AsyaFilmIzlesene.cs3",
+              "name": "AsyaFilmIzlesene",
+              "iconUrl": "https://asyafilmizlesene.org/wp-content/uploads/2022/09/rsm.png"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "AsyaFilmIzlesene zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+      - name: Kanal7 Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "Kanal7")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["TvSeries"],
+              "version": 1,
+              "internalName": "Kanal7",
+              "description": "Kanal7 için CloudStream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/Kanal7.cs3",
+              "name": "Kanal7",
+              "iconUrl": "https://turkey.mom-rsf.org/uploads/tx_lfrogmom/media/241-101_import.png"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "Kanal7 zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+      - name: Puhu Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "Puhu")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["TvSeries"],
+              "version": 1,
+              "internalName": "Puhu",
+              "description": "Puhu için CloudStream eklentisi",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/Puhu.cs3",
+              "name": "Puhu",
+              "iconUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/35/c3/b7/35c3b7b0-4a84-cceb-d3e2-349e19712b07/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "Puhu zaten plugins.json'da mevcut, eklenmedi."
           fi
 
       - name: AsyaWatch Eklentisini plugins.json'a Elle Ekle
