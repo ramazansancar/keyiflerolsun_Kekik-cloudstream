@@ -29,7 +29,7 @@ open class CloseLoad : ExtractorApi() {
         )
         Log.d("Kekik_${this.name}", "url » $url")
 
-        val iSource = app.get(url, referer = mainUrl, headers2=headers2)
+        val iSource = app.get(url, referer = mainUrl, headers=headers2)
 
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
         val rawScript = getAndUnpack(obfuscatedScript)
