@@ -6,7 +6,7 @@ import com.lagradost.cloudstream3.utils.*
 import android.util.Base64
 
 private fun getm3uLink(data: String): String {
-    val first  = Base64.decode(data, Base64.DEFAULT).reversedArray()
+    val first = Base64.decode(data, Base64.DEFAULT).reversedArray()
     val second = Base64.decode(first, Base64.DEFAULT)
     val result = second.toString(Charsets.UTF_8).split("|")[1]
     return result
@@ -25,23 +25,31 @@ open class CloseLoad : ExtractorApi() {
     ) {
         val extRef = referer ?: ""
         Log.d("Kekik_${this.name}", "url » $url")
-val iSource = app.get(url, referer = extRef)
-        iSource.document.select("track").forEach {
-    val src = it.attr("src")
-    val fullUrl = when {
-        src.startsWith("http") -> src
-        src.startsWith("/") -> "$mainUrl$src"
-        else -> "$mainUrl/$src"
-    }
-    val label = it.attr("label") ?: "Altyazı"
-            Log.d("Kekik_${this.name}", "fullUrl » $fullUrl")
 
-    // Altyazıyı callback ile bildiriyoruz
-    subtitleCallback(
-        SubtitleFile(label, fullUrl)
-    )
+        // HTTP GET isteği
+        val iSource = app.get(url, referer = extRef)
+
+        // Altyazılar
+        iSource.document.select("track").forEach {
+            val rawSrc = it.attr("src")?.trim().orEmpty()
+            if (rawSrc.isBlank()) return@forEach  // src boşsa atla
+
+            val fullUrl = when {
+                rawSrc.startsWith("http") -> rawSrc
+                rawSrc.startsWith("/") -> "$mainUrl$rawSrc"
+                else -> "$mainUrl/$rawSrc"
+            }
+
+            if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
+                val label = it.attr("label")?.ifBlank { "Altyazı" } ?: "Altyazı"
+                Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
+                subtitleCallback(SubtitleFile(label, fullUrl))
+            } else {
+                Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
+            }
         }
 
+        // Video link çözümleme
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
         val rawScript = getAndUnpack(obfuscatedScript)
         val regex = Regex("var player=this\\}\\);var(.*?);myPlayer\\.src")
@@ -57,7 +65,7 @@ val iSource = app.get(url, referer = extRef)
                 newExtractorLink(
                     source = this.name,
                     name = this.name,
-                    url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                    url = m3uLink,
                     type = ExtractorLinkType.M3U8
                 ) {
                     quality = Qualities.Unknown.value
