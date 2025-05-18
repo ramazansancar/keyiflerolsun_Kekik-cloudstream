@@ -29,8 +29,9 @@ open class CloseLoad : ExtractorApi() {
         iSource.document.select("track").forEach {
             subtitleCallback.invoke(
                 SubtitleFile(
-    lang = it.attr("label"),
-    url = if (it.attr("src").startsWith("http")) it.attr("src") else "https:${it.attr("src")}"
+                    lang = it.attr("label"),
+                    url = if (it.attr("src").startsWith("http")) it.attr("src") else "https:${it.attr("src")}",
+                    Log.d("Kekik_${this.name}", "url » $url")
 )
             )
         }
