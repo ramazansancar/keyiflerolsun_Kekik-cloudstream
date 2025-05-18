@@ -24,12 +24,12 @@ open class CloseLoad : ExtractorApi() {
         callback: (ExtractorLink) -> Unit
     ) {
         val extRef = referer ?: ""
-		        val headers = mapOf(
+	val headers2 = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
         )
         Log.d("Kekik_${this.name}", "url » $url")
 
-        val iSource = app.get(url, referer = mainUrl, headers=headers)
+        val iSource = app.get(url, referer = mainUrl, headers2=headers2)
 
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
         val rawScript = getAndUnpack(obfuscatedScript)
