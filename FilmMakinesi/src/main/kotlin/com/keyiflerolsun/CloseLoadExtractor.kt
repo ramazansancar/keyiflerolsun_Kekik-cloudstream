@@ -26,30 +26,8 @@ open class CloseLoad : ExtractorApi() {
         val extRef = referer ?: ""
         Log.d("Kekik_${this.name}", "url » $url")
 
-        // HTTP GET isteği
         val iSource = app.get(url, referer = extRef)
 
-        // Altyazılar
-        iSource.document.select("track").forEach {
-            val rawSrc = it.attr("src")?.trim().orEmpty()
-            if (rawSrc.isBlank()) return@forEach  // src boşsa atla
-
-            val fullUrl = when {
-                rawSrc.startsWith("http") -> rawSrc
-                rawSrc.startsWith("/") -> "$mainUrl$rawSrc"
-                else -> "$mainUrl/$rawSrc"
-            }
-
-            if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
-                val label = it.attr("label")?.ifBlank { "Altyazı" } ?: "Altyazı"
-                Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
-                subtitleCallback(SubtitleFile(label, fullUrl))
-            } else {
-                Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
-            }
-        }
-
-        // Video link çözümleme
         val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
         val rawScript = getAndUnpack(obfuscatedScript)
         val regex = Regex("var player=this\\}\\);var(.*?);myPlayer\\.src")
@@ -65,13 +43,33 @@ open class CloseLoad : ExtractorApi() {
                 newExtractorLink(
                     source = this.name,
                     name = this.name,
-                    url = m3uLink,
+                    url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
                     type = ExtractorLinkType.M3U8
                 ) {
                     quality = Qualities.Unknown.value
                     headers = mapOf("Referer" to url)
                 }
             )
+
+            // Şimdi altyazıları gönder
+            iSource.document.select("track").forEach {
+                val rawSrc = it.attr("src")?.trim().orEmpty()
+                if (rawSrc.isBlank()) return@forEach
+
+                val fullUrl = when {
+                    rawSrc.startsWith("http") -> rawSrc
+                    rawSrc.startsWith("/") -> "$mainUrl$rawSrc"
+                    else -> "$mainUrl/$rawSrc"
+                }
+
+                if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
+                    val label = it.attr("label")?.ifBlank { "Altyazı" } ?: "Altyazı"
+                    Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
+                    subtitleCallback(SubtitleFile(label, fullUrl))
+                } else {
+                    Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
+                }
+            }
         }
     }
 }
