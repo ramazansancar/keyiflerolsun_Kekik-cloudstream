@@ -30,7 +30,8 @@ open class CloseLoad : ExtractorApi() {
             subtitleCallback.invoke(
                 SubtitleFile(
                     lang = it.attr("label"),
-                    url  = fixUrl(it.attr("src"))
+                    val src = it.attr("src")
+                    val url = if (src.startsWith("http")) src else "https:$src"
                 )
             )
         }
