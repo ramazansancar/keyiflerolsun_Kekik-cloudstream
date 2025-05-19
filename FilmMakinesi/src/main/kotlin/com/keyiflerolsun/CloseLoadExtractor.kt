@@ -54,32 +54,43 @@ open class CloseLoad : ExtractorApi() {
                 }
             )
 
-         // Şimdi altyazıları gönder
-         iSource.document.select("track").forEach {
-             val rawSrc = it.attr("src").trim()
-             if (rawSrc.isBlank()) return@forEach
-         
-             val fullUrl = when {
-                 rawSrc.startsWith("http") -> rawSrc
-                 rawSrc.startsWith("/") -> "$mainUrl$rawSrc"
-                 else -> "$mainUrl/$rawSrc"
-             }
-         
-             if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
-                 val label = it.attr("label").ifBlank { "Altyazı" }
-                 Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
-         
-                 val subtitleResponse = app.get(fullUrl, headers = headers2)
-                 if (subtitleResponse.isSuccessful) {
-                     subtitleCallback(SubtitleFile(label, fullUrl))
-                     Log.d("FLMM", "Subtitle added: $fullUrl")
-                 } else {
-                     Log.d("FLMM", "Subtitle URL inaccessible: ${subtitleResponse.code}")
-                 }
-             } else {
-                 Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
-             }
-         }
+        // Şimdi altyazıları gönder
+        iSource.document.select("track").forEach {
+            val rawSrc = it.attr("src").trim()
+        
+            // Eğer src boşsa veya anlamlı bir yol değilse atla
+            if (rawSrc.isBlank() || (!rawSrc.startsWith("http") && !rawSrc.startsWith("/"))) {
+                Log.w("Kekik_${this.name}", "Geçersiz veya boş altyazı src: [$rawSrc]")
+                return@forEach
+            }
+        
+            // URL'yi düzgün oluştur
+            val fullUrl = if (rawSrc.startsWith("http")) {
+                rawSrc
+            } else {
+                mainUrl.trimEnd('/') + rawSrc
+            }
+        
+            // Tam URL'nin geçerli bir http(s) adresi olup olmadığını kontrol et
+            if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
+                val label = it.attr("label").ifBlank { "Altyazı" }
+                Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
+        
+                try {
+                    val subtitleResponse = app.get(fullUrl, headers = headers2)
+                    if (subtitleResponse.isSuccessful) {
+                        subtitleCallback(SubtitleFile(label, fullUrl))
+                        Log.d("FLMM", "Subtitle added: $fullUrl")
+                    } else {
+                        Log.d("FLMM", "Subtitle URL erişilemedi: ${subtitleResponse.code}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("Kekik_${this.name}", "Altyazı indirme hatası: ${e.localizedMessage}")
+                }
+            } else {
+                Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
+            }
+        }
         }
     }
 }
