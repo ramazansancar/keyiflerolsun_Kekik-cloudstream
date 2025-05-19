@@ -22,6 +22,7 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.utils.httpsify
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.newHomePageResponse
@@ -206,7 +207,7 @@ class HDFilmCehennemi : MainAPI() {
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {
             subtitleCallback.invoke(
-                SubtitleFile(it.label.toString(), fixUrl(it.file.toString()))
+                SubtitleFile(it.label.toString(), httpsify(it.file.toString()))
             )
         }
     }
