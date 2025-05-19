@@ -54,25 +54,32 @@ open class CloseLoad : ExtractorApi() {
                 }
             )
 
-            // Şimdi altyazıları gönder
-            iSource.document.select("track").forEach {
-                val rawSrc = it.attr("src")?.trim().orEmpty()
-                if (rawSrc.isBlank()) return@forEach
-
-                val fullUrl = when {
-                    rawSrc.startsWith("http") -> rawSrc
-                    rawSrc.startsWith("/") -> "$mainUrl$rawSrc"
-                    else -> "$mainUrl/$rawSrc"
-                }
-
-                if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
-                    val label = it.attr("label")?.ifBlank { "Altyazı" } ?: "Altyazı"
-                    Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
-                    subtitleCallback(SubtitleFile(label, fullUrl))
-                } else {
-                    Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
-                }
-            }
+         // Şimdi altyazıları gönder
+         iSource.document.select("track").forEach {
+             val rawSrc = it.attr("src").trim()
+             if (rawSrc.isBlank()) return@forEach
+         
+             val fullUrl = when {
+                 rawSrc.startsWith("http") -> rawSrc
+                 rawSrc.startsWith("/") -> "$mainUrl$rawSrc"
+                 else -> "$mainUrl/$rawSrc"
+             }
+         
+             if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
+                 val label = it.attr("label").ifBlank { "Altyazı" }
+                 Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
+         
+                 val subtitleResponse = app.get(fullUrl, headers = headers)
+                 if (subtitleResponse.isSuccessful) {
+                     subtitleCallback(SubtitleFile(label, fullUrl))
+                     Log.d("FHDF", "Subtitle added: $fullUrl")
+                 } else {
+                     Log.d("FHDF", "Subtitle URL inaccessible: ${subtitleResponse.code}")
+                 }
+             } else {
+                 Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
+             }
+         }
         }
     }
 }
