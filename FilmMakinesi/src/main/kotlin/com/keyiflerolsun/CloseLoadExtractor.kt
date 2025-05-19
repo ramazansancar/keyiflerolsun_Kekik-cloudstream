@@ -69,12 +69,12 @@ open class CloseLoad : ExtractorApi() {
                  val label = it.attr("label").ifBlank { "Altyazı" }
                  Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
          
-                 val subtitleResponse = app.get(fullUrl, headers = headers)
+                 val subtitleResponse = app.get(fullUrl, headers = headers2)
                  if (subtitleResponse.isSuccessful) {
                      subtitleCallback(SubtitleFile(label, fullUrl))
-                     Log.d("FHDF", "Subtitle added: $fullUrl")
+                     Log.d("FLMM", "Subtitle added: $fullUrl")
                  } else {
-                     Log.d("FHDF", "Subtitle URL inaccessible: ${subtitleResponse.code}")
+                     Log.d("FLMM", "Subtitle URL inaccessible: ${subtitleResponse.code}")
                  }
              } else {
                  Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
