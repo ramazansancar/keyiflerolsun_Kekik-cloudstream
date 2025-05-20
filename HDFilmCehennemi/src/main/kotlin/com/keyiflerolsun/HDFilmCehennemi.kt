@@ -206,7 +206,7 @@ class HDFilmCehennemi : MainAPI() {
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.forEach {
-            val subtitleUrl = "${mainUrl}${it.file}/"
+            val subtitleUrl = "${mainUrl}${it.file}"
     val subtitleResponse = app.get(subtitleUrl, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
                     subtitleCallback(SubtitleFile(it.label.toString(), subtitleUrl))
