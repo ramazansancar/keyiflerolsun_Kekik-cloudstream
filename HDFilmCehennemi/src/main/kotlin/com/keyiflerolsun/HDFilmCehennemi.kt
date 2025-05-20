@@ -209,7 +209,7 @@ class HDFilmCehennemi : MainAPI() {
             val subtitleUrl = "${mainUrl}${it.file}/"
     val subtitleResponse = app.get(subtitleUrl, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
-                    subtitleCallback(SubtitleFile(label, subtitleUrl))
+                    subtitleCallback(SubtitleFile(it.label.toString(), subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
                 } else {
                     Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
