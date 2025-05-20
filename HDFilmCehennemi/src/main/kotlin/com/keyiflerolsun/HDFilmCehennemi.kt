@@ -197,9 +197,8 @@ class HDFilmCehennemi : MainAPI() {
 
 	    val headers = mapOf(
         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Content-Type" to "text/vtt;charset=utf-8",
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0", // Uygun User-Agent
-        "Referer" to subtitleUrl
+        "Referer" to "subtitleUrl"
     )
     val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
