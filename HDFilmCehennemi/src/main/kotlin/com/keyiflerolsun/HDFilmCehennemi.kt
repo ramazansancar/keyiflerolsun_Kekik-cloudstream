@@ -38,6 +38,7 @@ import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.SubtitleData
+import com.lagradost.cloudstream3.ui.player.SubtitleOrigin
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
