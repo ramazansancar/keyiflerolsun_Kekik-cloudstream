@@ -207,6 +207,13 @@ class HDFilmCehennemi : MainAPI() {
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.forEach {
             val subtitleUrl = "${mainUrl}${it.file}/"
+
+	    val headers = mapOf(
+        "Accept" to "text/vtt, application/vtt",
+        "Content-Type" to "text/vtt",
+        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0", // Uygun User-Agent
+        "Referer" to $url
+    )
     val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
                     subtitleCallback(SubtitleFile("Türkçe", subtitleUrl))
