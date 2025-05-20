@@ -208,9 +208,11 @@ class HDFilmCehennemi : MainAPI() {
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.forEach {
-            subtitleCallback.invoke(
-                SubtitleData(it.label.toString(),headers = mapOf("Referer" to url), "${mainUrl}${it.file}/")
-            )
+            val subtitleUrl = "${mainUrl}${it.file}/"
+subtitleCallback(
+    SubtitleFile(it.label.toString(), subtitleUrl)
+)
+Log.d("HDCH", "Subtitle added: $subtitleUrl")
         }
     }
 
