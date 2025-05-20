@@ -192,19 +192,6 @@ class HDFilmCehennemi : MainAPI() {
 		Log.d("HDCH", "videoData » $videoData")
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 		Log.d("HDCH", "subData » $subData")
-
-        callback.invoke(
-            newExtractorLink(
-                source  = source,
-                name    = source,
-                url     = base64Decode(videoData),
-                type    = INFER_TYPE
-			) {
-                headers = mapOf("Referer" to "${mainUrl}/")
-                quality = Qualities.Unknown.value
-            }
-        )
-
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.forEach {
             val subtitleUrl = "${mainUrl}${it.file}/"
 
@@ -222,6 +209,17 @@ class HDFilmCehennemi : MainAPI() {
                     Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
                 }
         }
+        callback.invoke(
+            newExtractorLink(
+                source  = source,
+                name    = source,
+                url     = base64Decode(videoData),
+                type    = INFER_TYPE
+			) {
+                headers = mapOf("Referer" to "${mainUrl}/")
+                quality = Qualities.Unknown.value
+            }
+        )
     }
 
 override suspend fun loadLinks(
