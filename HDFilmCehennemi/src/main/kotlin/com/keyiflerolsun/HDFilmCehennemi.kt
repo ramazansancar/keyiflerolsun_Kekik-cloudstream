@@ -205,7 +205,7 @@ class HDFilmCehennemi : MainAPI() {
             }
         )
 
-        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {
+        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.forEach {
             subtitleCallback.invoke(
                 SubtitleFile(it.label.toString(), "https://www.hdfilmcehennemi.nl${it.file}")
             )
