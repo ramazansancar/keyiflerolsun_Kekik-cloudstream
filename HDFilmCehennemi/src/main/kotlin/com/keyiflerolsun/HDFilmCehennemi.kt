@@ -207,7 +207,7 @@ class HDFilmCehennemi : MainAPI() {
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.forEach {
             val subtitleUrl = "${mainUrl}${it.file}/"
-    val subtitleResponse = app.get(subtitleUrl, allowRedirects=true)
+    val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
                     subtitleCallback(SubtitleFile("Türkçe", subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
