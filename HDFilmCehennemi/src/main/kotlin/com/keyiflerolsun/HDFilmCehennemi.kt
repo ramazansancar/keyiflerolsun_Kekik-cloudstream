@@ -202,7 +202,7 @@ class HDFilmCehennemi : MainAPI() {
     )
     val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
-                    subtitleCallback(SubtitleFile(it.label.toString(), subtitleUrl))
+                    subtitleCallback(SubtitleFile(it.language.toString(), subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
                 } else {
                     Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
@@ -262,7 +262,7 @@ override suspend fun loadLinks(
     private data class SubSource(
         @JsonProperty("file")    val file: String?  = null,
         @JsonProperty("label")   val label: String? = null,
-        @JsonProperty("srclang") val srclang: String? = null,
+        @JsonProperty("language") val language: String? = null,
         @JsonProperty("kind")    val kind: String?  = null
     )
 
