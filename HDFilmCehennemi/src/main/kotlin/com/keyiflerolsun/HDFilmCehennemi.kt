@@ -215,7 +215,7 @@ class HDFilmCehennemi : MainAPI() {
                 url     = base64Decode(videoData),
                 type    = INFER_TYPE
 			) {
-                headers = mapOf("Referer" to "${mainUrl}/")
+                headers = mapOf("Referer" to "${mainUrl}/", "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0")
                 quality = Qualities.Unknown.value
             }
         )
