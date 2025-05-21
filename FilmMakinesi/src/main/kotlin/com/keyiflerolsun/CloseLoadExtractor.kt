@@ -50,7 +50,7 @@ open class CloseLoad : ExtractorApi() {
                     type = ExtractorLinkType.M3U8
                 ) {
                     quality = Qualities.Unknown.value
-                    headers = mapOf("Referer" to url)
+                    headers = mapOf("Referer" to url, "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0")
                 }
             )
 
