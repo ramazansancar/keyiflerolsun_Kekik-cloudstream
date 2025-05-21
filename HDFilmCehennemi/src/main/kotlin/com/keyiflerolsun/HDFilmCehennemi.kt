@@ -192,7 +192,7 @@ class HDFilmCehennemi : MainAPI() {
 		Log.d("HDCH", "videoData » $videoData")
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 		Log.d("HDCH", "subData » $subData")
-        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" || it.srclang == "tr"}?.forEach {
+        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.forEach {
             val subtitleUrl = "${mainUrl}${it.file}/"
 
 	    val headers = mapOf(
@@ -202,7 +202,7 @@ class HDFilmCehennemi : MainAPI() {
     )
     val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
-                    subtitleCallback(SubtitleFile(it.srclang.toString(), subtitleUrl))
+                    subtitleCallback(SubtitleFile(it.label.toString(), subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
                 } else {
                     Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
