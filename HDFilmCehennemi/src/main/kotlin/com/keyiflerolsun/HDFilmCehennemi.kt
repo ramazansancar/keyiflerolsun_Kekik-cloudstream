@@ -197,12 +197,12 @@ class HDFilmCehennemi : MainAPI() {
 
 	    val headers = mapOf(
         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0", // Uygun User-Agent
+        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
         "Referer" to "subtitleUrl"
     )
     val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
                 if (subtitleResponse.isSuccessful) {
-                    subtitleCallback(SubtitleFile("Türkçe", subtitleUrl))
+                    subtitleCallback(SubtitleFile(it.srclang.toString(), subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
                 } else {
                     Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
@@ -260,9 +260,10 @@ override suspend fun loadLinks(
     return true
 }
     private data class SubSource(
-        @JsonProperty("file")  val file: String?  = null,
-        @JsonProperty("label") val label: String? = null,
-        @JsonProperty("kind")  val kind: String?  = null
+        @JsonProperty("file")    val file: String?  = null,
+        @JsonProperty("label")   val label: String? = null,
+        @JsonProperty("srclang") val srclang: String? = null,
+        @JsonProperty("kind")    val kind: String?  = null
     )
 
     data class Results(
