@@ -192,7 +192,7 @@ class HDFilmCehennemi : MainAPI() {
 		Log.d("HDCH", "videoData » $videoData")
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 		Log.d("HDCH", "subData » $subData")
-        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.forEach {
+        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.map {
             val subtitleUrl = "${mainUrl}${it.file}/"
 
 	    val headers = mapOf(
