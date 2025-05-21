@@ -177,11 +177,11 @@ class KultFilmler : MainAPI() {
 
     private fun extractSubtitleUrl(sourceCode: String): String? {
         // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
-        val patterns = listOf(
-            Pattern.compile("var playerjsSubtitle = \"\\[Türkçe\\](https?://[^\\s\"]+?\\.srt)\";"),
-            Pattern.compile("var playerjsSubtitle = \"(https?://[^\\s\"]+?\\.srt)\";"), // Türkçe etiketi olmadan
-            Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"") // Alternatif subtitle formatı
-        )
+val patterns = listOf(
+    Pattern.compile("var playerjsSubtitle\\s*=\\s*\"\[^\]*](https?://[^\\s\"]+?\\.srt)\";"),
+    Pattern.compile("var playerjsSubtitle\\s*=\\s*\"(https?://[^\\s\"]+?\\.srt)\";"),
+    Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"")
+)
         for (pattern in patterns) {
             val matcher = pattern.matcher(sourceCode)
             if (matcher.find()) {
