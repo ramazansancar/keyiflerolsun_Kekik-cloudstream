@@ -181,7 +181,8 @@ val patterns = listOf(
     Pattern.compile("var\\s+playerjsSubtitle\\s*=\\s*\"\[^\]*](https?://[^\\s\"]+?\\.srt)\";"),
     Pattern.compile("var\\s+playerjsSubtitle\\s*=\\s*\"(https?://[^\\s\"]+?\\.srt)\";"),
     Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"")
-)        for (pattern in patterns) {
+)
+	    for (pattern in patterns) {
             val matcher = pattern.matcher(sourceCode)
             if (matcher.find()) {
                 val subtitleUrl = matcher.group(1)
