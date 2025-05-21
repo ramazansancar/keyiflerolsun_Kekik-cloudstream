@@ -66,7 +66,7 @@ class DiziPal : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(
-            request.data,
+            request.data, headers = getHeaders(mainUrl)
         ).document
         val home     = if (request.data.contains("/diziler/son-bolumler")) {
             document.select("div.episode-item").mapNotNull { it.sonBolumler() } 
@@ -246,4 +246,13 @@ class DiziPal : MainAPI() {
 
         return true
     }
+        companion object {
+        private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+
+        private fun getHeaders(referer: String): Map<String, String> = mapOf(
+            "accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "user-agent" to USER_AGENT,
+            "referer" to referer
+        )
+        }
 }
