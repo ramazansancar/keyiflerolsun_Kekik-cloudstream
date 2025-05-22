@@ -178,7 +178,7 @@ class KultFilmler : MainAPI() {
     private fun extractSubtitleUrl(sourceCode: String): String? {
         // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
         val patterns = listOf(
-            Regex("""var\s+playerjsSubtitle\s*=\s*"\[[^\]]*](https?://[^\s"]+?\.srt)";"""),
+            Regex("""playerjsSubtitle\s*=\s*"\[[^\]]*](https?://[^\s"]+?\.srt)""""),
             Regex("""var\s+playerjsSubtitle\s*=\s*"(https?://[^\s"]+?\.srt)";"""),
             Regex("""subtitle:\s*"(https?://[^\s"]+?\.srt)"""")
         )
