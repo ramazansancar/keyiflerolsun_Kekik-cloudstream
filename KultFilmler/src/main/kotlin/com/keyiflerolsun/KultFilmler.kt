@@ -177,15 +177,15 @@ class KultFilmler : MainAPI() {
 
     private fun extractSubtitleUrl(sourceCode: String): String? {
         // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
-    val patterns = listOf(
-        Regex("""var\s+playerjsSubtitle\s*=\s*"\[[^\]]*](https?://[^\s"]+?\.srt)";"""),
-        Regex("""var\s+playerjsSubtitle\s*=\s*"(https?://[^\s"]+?\.srt)";"""),
-        Regex("""subtitle:\s*"(https?://[^\s"]+?\.srt)"""")
-    )
-	    for (pattern in patterns) {
-            val matcher = pattern.matcher(sourceCode)
-            if (matcher.find()) {
-                val subtitleUrl = matcher.group(1)
+        val patterns = listOf(
+            Regex("""var\s+playerjsSubtitle\s*=\s*"\[[^\]]*](https?://[^\s"]+?\.srt)";"""),
+            Regex("""var\s+playerjsSubtitle\s*=\s*"(https?://[^\s"]+?\.srt)";"""),
+            Regex("""subtitle:\s*"(https?://[^\s"]+?\.srt)"""")
+        )
+        for (pattern in patterns) {
+            val match = pattern.find(sourceCode)
+            if (match != null) {
+                val subtitleUrl = match.groupValues[1]
                 Log.d("KLT", "Found subtitle URL: $subtitleUrl")
                 return subtitleUrl
             }
