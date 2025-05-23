@@ -68,7 +68,7 @@ class DiziPal : MainAPI() {
         val document = app.get(
             request.data, timeout = 10000, headers = getHeaders(mainUrl)
         ).document
-        Log.d("DZP", "Ana sayfa HTML içeriği:\n${document.text}")
+        Log.d("DZP", "Ana sayfa HTML içeriği:\n${document.outerHtml()}")
         val home     = if (request.data.contains("/diziler/son-bolumler")) {
             document.select("div.episode-item").mapNotNull { it.sonBolumler() } 
         } else {
