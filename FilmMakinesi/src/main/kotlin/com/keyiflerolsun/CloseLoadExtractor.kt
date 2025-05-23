@@ -30,7 +30,7 @@ open class CloseLoad : ExtractorApi() {
             subtitleCallback.invoke(
                 SubtitleFile(
                     lang = it.attr("label"),
-                    url  = fixUrl(it.attr("src"))
+                    url  = "https://www.hdfilmcehennemi.mobi" + it.attr("src")
                 )
             )
         }
