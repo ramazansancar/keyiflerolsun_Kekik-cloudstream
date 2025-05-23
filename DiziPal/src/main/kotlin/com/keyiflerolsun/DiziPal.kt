@@ -66,7 +66,7 @@ class DiziPal : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(
-            request.data, headers = getHeaders(mainUrl)
+            request.data, timeout = 10000, headers = getHeaders(mainUrl)
         ).document
         val home     = if (request.data.contains("/diziler/son-bolumler")) {
             document.select("div.episode-item").mapNotNull { it.sonBolumler() } 
