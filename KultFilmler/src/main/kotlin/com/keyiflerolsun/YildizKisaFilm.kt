@@ -14,6 +14,11 @@ open class YildizKisaFilm : ExtractorApi() {
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef  = referer ?: ""
+        val subDoc = app.get(url, referer = mainUrl).document
+        val script = subDoc.select("script").find { it.data().contains("var playerjsSubtitle") }?.data() ?: ""
+        val lang = script.substringAfter("[").substringBefore("]")
+        val subUrl = script.substringAfter("]").substringBefore("\";")
+        subtitleCallback.invoke(SubtitleFile(lang, fixUrl(subUrl)))
         val vidId   = if (url.contains("video/")) {
             url.substringAfter("video/")
         } else {
