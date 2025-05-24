@@ -175,18 +175,42 @@ class KultFilmler : MainAPI() {
         return fixUrlNull(iframe.selectFirst("iframe")?.attr("src")) ?: ""
     }
 
-    private fun extractSubtitleUrl(sourceCode: String): String? {
-    val regex = Regex("""playerjsSubtitle\s*=\s*"(https?://[^\s"]+\.srt)"""")
-    val match = regex.find(sourceCode)
-    return if (match != null) {
-        val subtitleUrl = match.groupValues[1]
+   private fun extractSubtitleUrl(sourceCode: String): String? {
+    val key = "playerjsSubtitle = \""
+    val startIndex = sourceCode.indexOf(key)
+    if (startIndex == -1) {
+        Log.d("KLT", "playerjsSubtitle bulunamadı")
+        return null
+    }
+    
+    // playerjsSubtitle=" kısmının hemen sonrasından başla
+    val valueStart = startIndex + key.length
+    val valueEnd = sourceCode.indexOf("\"", valueStart)
+    if (valueEnd == -1) {
+        Log.d("KLT", "Altyazı değeri kapanan tırnak bulunamadı")
+        return null
+    }
+
+    // İçeriği al
+    val rawValue = sourceCode.substring(valueStart, valueEnd)
+    Log.d("KLT", "Raw value: $rawValue")
+
+    // Eğer başında [ttxxxxx] gibi bir şey varsa çıkar
+    val subtitleUrl = if (rawValue.contains("]")) {
+        rawValue.substringAfter("]")
+    } else {
+        rawValue
+    }
+
+    // Sadece .srt ile bitenleri kabul et
+    return if (subtitleUrl.endsWith(".srt")) {
         Log.d("KLT", "Found subtitle URL: $subtitleUrl")
         subtitleUrl
     } else {
-        Log.d("KLT", "No valid .srt subtitle URL found")
+        Log.d("KLT", "Geçerli .srt altyazı URL'si değil")
         null
     }
-}
+} 
 
     private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
