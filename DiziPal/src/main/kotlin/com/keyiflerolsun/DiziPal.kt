@@ -90,7 +90,7 @@ class DiziPal : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(
-            request.data, timeout = 10000, headers = getHeaders(mainUrl)
+            request.data, timeout = 10000, interceptor = interceptor, headers = getHeaders(mainUrl)
         ).document
         Log.d("DZP", "Ana sayfa HTML içeriği:\n${document.outerHtml()}")
         val home     = if (request.data.contains("/diziler/son-bolumler")) {
