@@ -175,38 +175,32 @@ class KultFilmler : MainAPI() {
         return fixUrlNull(iframe.selectFirst("iframe")?.attr("src")) ?: ""
     }
 
-private fun extractSubtitleUrl(sourceCode: String): String? {
-    // playerjsSubtitle içeren satırı bul
-    val line = sourceCode.lineSequence()
-        .firstOrNull { it.contains("playerjsSubtitle") }
-        ?: run {
-            Log.d("KLT", "playerjsSubtitle içeren satır bulunamadı")
-            return null
-        }
-
-    Log.d("KLT", "playerjsSubtitle satırı: $line")
-
-    // Çift tırnak arasındaki değeri çıkar
-    val firstQuote = line.indexOf("\"")
-    val lastQuote = line.lastIndexOf("\"")
-    if (firstQuote == -1 || lastQuote == -1 || lastQuote <= firstQuote) {
-        Log.d("KLT", "Altyazı linki için tırnak bulunamadı")
+   private fun extractSubtitleUrl(sourceCode: String): String? {
+    val marker = "playerjsSubtitle = \""
+    val startIndex = sourceCode.indexOf(marker)
+    if (startIndex == -1) {
+        Log.d("KLT", "playerjsSubtitle bulunamadı")
         return null
     }
 
-    val rawValue = line.substring(firstQuote + 1, lastQuote)
-    Log.d("KLT", "Raw value: $rawValue")
+    val afterMarker = sourceCode.substring(startIndex + marker.length)
+    val endIndex = afterMarker.indexOf("\";")
+    if (endIndex == -1) {
+        Log.d("KLT", "Altyazı bitişi bulunamadı")
+        return null
+    }
 
-    val subtitleUrl = if (rawValue.contains("]")) rawValue.substringAfter("]") else rawValue
+    val rawValue = afterMarker.substring(0, endIndex)
+    val subtitleUrl = rawValue.substringAfter("]") // Köşeli parantez varsa atla
 
     return if (subtitleUrl.endsWith(".srt")) {
         Log.d("KLT", "Found subtitle URL: $subtitleUrl")
         subtitleUrl
     } else {
-        Log.d("KLT", "Geçerli .srt altyazı URL'si değil")
+        Log.d("KLT", "Geçerli .srt altyazı URL'si bulunamadı")
         null
     }
-}
+} 
 
     private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
