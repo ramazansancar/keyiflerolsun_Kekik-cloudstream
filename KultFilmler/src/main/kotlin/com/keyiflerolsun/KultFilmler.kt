@@ -176,24 +176,17 @@ class KultFilmler : MainAPI() {
     }
 
     private fun extractSubtitleUrl(sourceCode: String): String? {
-    val startIndex = sourceCode.indexOf("playerjsSubtitle")
-    if (startIndex == -1) return null
-
-    val quoteStart = sourceCode.indexOf("\"", startIndex)
-    val quoteEnd = sourceCode.indexOf("\"", quoteStart + 1)
-    if (quoteStart == -1 || quoteEnd == -1) return null
-
-    val rawValue = sourceCode.substring(quoteStart + 1, quoteEnd)
-    val subtitleUrl = rawValue.substringAfter("]") // [ttxxxxxx] kısmını atla
-
-    return if (subtitleUrl.endsWith(".srt")) {
+    val regex = Regex("""playerjsSubtitle\s*=\s*"(https?://[^\s"]+\.srt)"""")
+    val match = regex.find(sourceCode)
+    return if (match != null) {
+        val subtitleUrl = match.groupValues[1]
         Log.d("KLT", "Found subtitle URL: $subtitleUrl")
         subtitleUrl
     } else {
         Log.d("KLT", "No valid .srt subtitle URL found")
         null
     }
-    }
+}
 
     private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
