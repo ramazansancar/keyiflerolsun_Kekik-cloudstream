@@ -176,22 +176,26 @@ class KultFilmler : MainAPI() {
     }
 
    private fun extractSubtitleUrl(sourceCode: String): String? {
-    val marker = "playerjsSubtitle = \""
-    val startIndex = sourceCode.indexOf(marker)
-    if (startIndex == -1) {
-        Log.d("KLT", "playerjsSubtitle bulunamadı")
+    // "playerjsSubtitle" ifadesi geçiyorsa
+    val subtitleLine = sourceCode.lines().find { it.contains("playerjsSubtitle") }
+    if (subtitleLine == null) {
+        Log.d("KLT", "playerjsSubtitle satırı bulunamadı")
         return null
     }
 
-    val afterMarker = sourceCode.substring(startIndex + marker.length)
-    val endIndex = afterMarker.indexOf("\";")
-    if (endIndex == -1) {
-        Log.d("KLT", "Altyazı bitişi bulunamadı")
+    Log.d("KLT", "Bulunan satır: $subtitleLine")
+
+    // Satırdaki değeri çıkar
+    val start = subtitleLine.indexOf("\"")
+    val end = subtitleLine.lastIndexOf("\"")
+
+    if (start == -1 || end == -1 || end <= start) {
+        Log.d("KLT", "Tırnak içeriği düzgün bulunamadı")
         return null
     }
 
-    val rawValue = afterMarker.substring(0, endIndex)
-    val subtitleUrl = rawValue.substringAfter("]") // Köşeli parantez varsa atla
+    val rawValue = subtitleLine.substring(start + 1, end)
+    val subtitleUrl = rawValue.substringAfter("]") // [ttxxxx] kısmını atla
 
     return if (subtitleUrl.endsWith(".srt")) {
         Log.d("KLT", "Found subtitle URL: $subtitleUrl")
@@ -200,7 +204,7 @@ class KultFilmler : MainAPI() {
         Log.d("KLT", "Geçerli .srt altyazı URL'si bulunamadı")
         null
     }
-} 
+}
 
     private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
