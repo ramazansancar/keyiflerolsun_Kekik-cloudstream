@@ -176,24 +176,18 @@ class KultFilmler : MainAPI() {
     }
 
    private fun extractSubtitleUrl(sourceCode: String): String? {
-        // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
-        val patterns = listOf(
-            Pattern.compile("var playerjsSubtitle = \"\\[[^\\]]+\\](https?://[^\\s\"]+?\\.srt)\";"),
-            Pattern.compile("var playerjsSubtitle = \"(https?://[^\\s\"]+?\\.srt)\";"), // Türkçe etiketi olmadan
-            Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"") // Alternatif subtitle formatı
-        )
-        for (pattern in patterns) {
-            val matcher = pattern.matcher(sourceCode)
-            if (matcher.find()) {
-                val subtitleUrl = matcher.group(1)
-                Log.d("KLT", "Found subtitle URL: $subtitleUrl")
-                return subtitleUrl
-            }
-        }
-        Log.d("KLT", "No subtitle URL found in source code")
-        return null
+    val pattern = Pattern.compile("var playerjsSubtitle = \"(?:\\[[^\\]]+\\])?(https?://[^\"]+?\\.srt)\";")
+    val matcher = pattern.matcher(sourceCode)
+    
+    if (matcher.find()) {
+        val subtitleUrl = matcher.group(1)
+        Log.d("KLT", "Found subtitle URL: $subtitleUrl")
+        return subtitleUrl
     }
-
+    
+    Log.d("KLT", "No subtitle URL found in source code")
+    return null
+}
     private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
         try {
