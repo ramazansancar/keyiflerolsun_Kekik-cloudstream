@@ -174,8 +174,12 @@ class KultFilmler : MainAPI() {
 
         return fixUrlNull(iframe.selectFirst("iframe")?.attr("src")) ?: ""
     }
-
-   private fun extractSubtitleUrl(sourceCode: String): String? {
+private fun extractSubtitleUrl(sourceCode: String): String? {
+    Log.d("KLT", "Source code length: ${sourceCode.length}")
+    Log.d("KLT", "Source code contains 'playerjsSubtitle': ${sourceCode.contains("playerjsSubtitle")}")
+    Log.d("KLT", "Source code contains '.srt': ${sourceCode.contains(".srt")}")
+    
+    // Basit pattern ile test
     val pattern = Pattern.compile("(https?://[^\"\\s]+\\.srt)")
     val matcher = pattern.matcher(sourceCode)
     
@@ -185,10 +189,12 @@ class KultFilmler : MainAPI() {
         return subtitleUrl
     }
     
+    // Bulunamazsa kaynak kodun bir kısmını logla
+    Log.d("KLT", "First 500 chars of source: ${sourceCode.take(500)}")
     Log.d("KLT", "No subtitle URL found in source code")
     return null
 }
-    private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
+       private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
         try {
             val headers = mapOf(
