@@ -176,35 +176,23 @@ class KultFilmler : MainAPI() {
     }
 
    private fun extractSubtitleUrl(sourceCode: String): String? {
-    // "playerjsSubtitle" ifadesi geçiyorsa
-    val subtitleLine = sourceCode.lines().find { it.contains("playerjsSubtitle") }
-    if (subtitleLine == null) {
-        Log.d("KLT", "playerjsSubtitle satırı bulunamadı")
+        // playerjsSubtitle değişkenini regex ile bul (genelleştirilmiş)
+        val patterns = listOf(
+            Pattern.compile("var playerjsSubtitle = \"\\[[^\\]]+\\](https?://[^\\s\"]+?\\.srt)\";"),
+            Pattern.compile("var playerjsSubtitle = \"(https?://[^\\s\"]+?\\.srt)\";"), // Türkçe etiketi olmadan
+            Pattern.compile("subtitle:\\s*\"(https?://[^\\s\"]+?\\.srt)\"") // Alternatif subtitle formatı
+        )
+        for (pattern in patterns) {
+            val matcher = pattern.matcher(sourceCode)
+            if (matcher.find()) {
+                val subtitleUrl = matcher.group(1)
+                Log.d("KLT", "Found subtitle URL: $subtitleUrl")
+                return subtitleUrl
+            }
+        }
+        Log.d("KLT", "No subtitle URL found in source code")
         return null
     }
-
-    Log.d("KLT", "Bulunan satır: $subtitleLine")
-
-    // Satırdaki değeri çıkar
-    val start = subtitleLine.indexOf("\"")
-    val end = subtitleLine.lastIndexOf("\"")
-
-    if (start == -1 || end == -1 || end <= start) {
-        Log.d("KLT", "Tırnak içeriği düzgün bulunamadı")
-        return null
-    }
-
-    val rawValue = subtitleLine.substring(start + 1, end)
-    val subtitleUrl = rawValue.substringAfter("]") // [ttxxxx] kısmını atla
-
-    return if (subtitleUrl.endsWith(".srt")) {
-        Log.d("KLT", "Found subtitle URL: $subtitleUrl")
-        subtitleUrl
-    } else {
-        Log.d("KLT", "Geçerli .srt altyazı URL'si bulunamadı")
-        null
-    }
-}
 
     private suspend fun extractSubtitleFromIframe(iframeUrl: String): String? {
         if (iframeUrl.isEmpty()) return null
