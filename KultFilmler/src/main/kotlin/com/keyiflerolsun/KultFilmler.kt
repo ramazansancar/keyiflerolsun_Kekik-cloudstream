@@ -176,7 +176,7 @@ class KultFilmler : MainAPI() {
     }
 
    private fun extractSubtitleUrl(sourceCode: String): String? {
-    val pattern = Pattern.compile("var playerjsSubtitle = \"(?:\\[[^\\]]+\\])?(https?://[^\"]+?\\.srt)\";")
+    val pattern = Pattern.compile("(https?://[^\"\\s]+\\.srt)")
     val matcher = pattern.matcher(sourceCode)
     
     if (matcher.find()) {
