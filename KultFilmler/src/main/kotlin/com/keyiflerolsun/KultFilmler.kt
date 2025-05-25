@@ -203,6 +203,7 @@ private fun extractSubtitleUrl(sourceCode: String): String? {
             )
             val iframeResponse = app.get(iframeUrl, headers=headers)
             val iframeSource = iframeResponse.text
+		Log.d("KLT", "iframeSource » $iframeSource")
             return extractSubtitleUrl(iframeSource)
         } catch (e: Exception) {
             return null
