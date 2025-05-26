@@ -71,8 +71,11 @@ class XPrime : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        var url = when {
-            request.name in listOf("Popüler Filmler", "Sinemalarda", "Popüler Diziler", "Yayında") -> {
+        val url = when {
+            request.name in listOf("Popüler Filmler", "Sinemalarda") -> {
+                request.data.replace("SAYFA", page.toString())
+            }
+            request.name in listOf("Popüler Diziler", "Yayında") -> {
                 request.data.replace("SAYFA", page.toString())
             }
             request.name in listOf("Popüler Diziler", "Yayında") -> {
@@ -82,10 +85,10 @@ class XPrime : MainAPI() {
                 "${mainUrl}/discover/movie?api_key=$apiKey&page=${page}&include_adult=false&with_watch_monetization_types=flatrate%7Cfree%7Cads&watch_region=TR&language=tr-TR&with_genres=${request.data}&sort_by=popularity.desc"
             }
         }
+        
         Log.d("XPR", "URL -> $url")
         val movies = app.get(url).parsedSafe<MovieResponse>()
-        val home =
-            movies?.results?.map { it.toMainPageResult() }
+        val home = movies?.results?.map { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home!!)
     }
@@ -130,9 +133,9 @@ class XPrime : MainAPI() {
         Log.d("XPR", "id -> $id, isTvSeries -> $isTvSeries")
         
         val apiUrl = if (isTvSeries) {
-            "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations"
+            "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
         } else {
-            "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations"
+            "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
         }
         
         Log.d("XPR", "apiUrl -> $apiUrl")
@@ -156,6 +159,7 @@ class XPrime : MainAPI() {
         val rating = content.vote.toString().toRatingInt()
         val duration = if (isTvSeries) content.episodeRunTime?.firstOrNull() else content.runtime
         
+        // Trailer
         val trailerUrl = if (isTvSeries) {
             "$mainUrl/tv/$id/videos?api_key=$apiKey"
         } else {
@@ -238,9 +242,9 @@ class XPrime : MainAPI() {
         Log.d("XPR", "id: $id, isTvSeries: $isTvSeries, season: $season, episode: $episode")
         
         val apiUrl = if (isTvSeries) {
-            "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations"
+            "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
         } else {
-            "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations"
+            "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
         }
         
         Log.d("XPR", "apiUrl -> $apiUrl")
@@ -249,7 +253,14 @@ class XPrime : MainAPI() {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         val content: XMovie = objectMapper.readValue(document.text)
         
-        val subtitleUrl = "https://sub.wyzie.ru/search?id=$id"
+        // Altyazı yükleme - Diziler için season ve episode parametreleri eklendi
+        val subtitleUrl = if (isTvSeries && season != null && episode != null) {
+            "https://sub.wyzie.ru/search?id=${content.externalIds?.imdbId ?: id}&season=$season&episode=$episode"
+        } else {
+            "https://sub.wyzie.ru/search?id=${content.externalIds?.imdbId ?: id}"
+        }
+        
+        Log.d("XPR", "Subtitle URL: $subtitleUrl")
         try {
             val subtitleDocument = app.get(subtitleUrl)
             val subtitles: List<Subtitle> = objectMapper.readValue(subtitleDocument.text)
@@ -271,6 +282,7 @@ class XPrime : MainAPI() {
             try {
                 loadServers(server, id, content, callback, subtitleCallback, season, episode)
             } catch (e: Exception) {
+                Log.e("XPR", "Error loading server ${server.name}: ${e.message}")
                 e.printStackTrace()
                 return@forEach
             }
@@ -290,84 +302,106 @@ class XPrime : MainAPI() {
         val contentName = content.originalTitle ?: content.originalName
         val year = content.releaseDate?.split("-")?.first()?.toIntOrNull() 
             ?: content.firstAirDate?.split("-")?.first()?.toIntOrNull()
-        val imdb = content.imdb
+        val imdb = content.externalIds?.imdbId ?: content.imdb
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         
-        if (server.name == "primebox" && server.status == "ok") {
+        Log.d("XPR", "Loading server: ${server.name}, status: ${server.status}")
+        Log.d("XPR", "Content: $contentName, Year: $year, IMDB: $imdb")
+        
+        if (server.status != "ok") {
+            Log.d("XPR", "Server ${server.name} is not OK, skipping...")
+            return
+        }
+        
+        if (server.name == "primebox") {
             val url = if (season != null && episode != null) {
                 "$backendUrl/primebox?name=$contentName&year=$year&id=$id&season=$season&episode=$episode"
             } else {
-                "$backendUrl/primebox?name=$contentName&year=$year&fallback_year=${year?.minus(1)}"
+                "$backendUrl/primebox?name=$contentName&year=$year&id=$id&fallback_year=${year?.minus(1)}"
             }
             
             Log.d("XPR", "Primebox URL: $url")
-            val document = app.get(url)
-            val streamText = document.text
-            val stream: Stream = objectMapper.readValue(streamText)
-            
-            stream.qualities.forEach { quality ->
-                val source = objectMapper.readTree(streamText).get("streams").get(quality).textValue()
-                val linkName = if (season != null && episode != null) {
-                    "${server.name.capitalize()} - $quality (S${season}E${episode})"
-                } else {
-                    "${server.name.capitalize()} - $quality"
-                }
+            try {
+                val document = app.get(url)
+                val streamText = document.text
+                val stream: Stream = objectMapper.readValue(streamText)
                 
-                callback.invoke(
-                    newExtractorLink(
-                        source = linkName,
-                        name = linkName,
-                        url = source,
-                        ExtractorLinkType.VIDEO
-                    ) {
-                        this.quality = getQualityFromName(quality)
-                        this.headers = mapOf("Origin" to "https://xprime.tv/")
-                        this.referer = "https://xprime.tv/"
+                stream.qualities.forEach { quality ->
+                    val source = objectMapper.readTree(streamText).get("streams").get(quality).textValue()
+                    val linkName = if (season != null && episode != null) {
+                        "${server.name.capitalize()} - $quality (S${season}E${episode})"
+                    } else {
+                        "${server.name.capitalize()} - $quality"
                     }
-                )
-            }
-            
-            if (stream.hasSubtitles) {
-                stream.subtitles.forEach { subtitle ->
-                    subtitleCallback.invoke(
-                        SubtitleFile(
-                            lang = subtitle.label.toString(),
-                            url = subtitle.file.toString()
-                        )
+                    
+                    callback.invoke(
+                        newExtractorLink(
+                            source = linkName,
+                            name = linkName,
+                            url = source,
+                            ExtractorLinkType.VIDEO
+                        ) {
+                            this.quality = getQualityFromName(quality)
+                            this.headers = mapOf("Origin" to "https://xprime.tv/")
+                            this.referer = "https://xprime.tv/"
+                        }
                     )
                 }
+                
+                if (stream.hasSubtitles) {
+                    stream.subtitles.forEach { subtitle ->
+                        subtitleCallback.invoke(
+                            SubtitleFile(
+                                lang = subtitle.label.toString(),
+                                url = subtitle.file.toString()
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("XPR", "Error loading primebox: ${e.message}")
             }
         } else {
-            if (server.status == "ok") {
-                val url = if (season != null && episode != null) {
-                    "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&imdb=$imdb&season=$season&episode=$episode"
-                } else {
-                    "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&imdb=$imdb"
-                }
-                
-                Log.d("XPR", "Server URL: $url")
+            val url = if (season != null && episode != null) {
+                "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&imdb=$imdb&season=$season&episode=$episode"
+            } else {
+                "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&imdb=$imdb"
+            }
+            
+            Log.d("XPR", "Server URL: $url")
+            try {
                 val document = app.get(url)
-                val source = objectMapper.readTree(document.text).get("url").textValue()
+                val responseText = document.text
+                Log.d("XPR", "Server response: $responseText")
                 
-                val linkName = if (season != null && episode != null) {
-                    "${server.name.capitalize()} (S${season}E${episode})"
-                } else {
-                    server.name.capitalize()
-                }
+                val jsonNode = objectMapper.readTree(responseText)
+                val source = jsonNode.get("url")?.textValue()
                 
-                callback.invoke(
-                    newExtractorLink(
-                        source = linkName,
-                        name = linkName,
-                        url = source,
-                        ExtractorLinkType.M3U8
-                    ) {
-                        this.headers = mapOf("Origin" to "https://xprime.tv/")
-                        this.quality = Qualities.Unknown.value
-                        this.referer = "https://xprime.tv/"
+                if (source != null && source.isNotEmpty()) {
+                    val linkName = if (season != null && episode != null) {
+                        "${server.name.capitalize()} (S${season}E${episode})"
+                    } else {
+                        server.name.capitalize()
                     }
-                )
+                    
+                    callback.invoke(
+                        newExtractorLink(
+                            source = linkName,
+                            name = linkName,
+                            url = source,
+                            ExtractorLinkType.M3U8
+                        ) {
+                            this.headers = mapOf("Origin" to "https://xprime.tv/")
+                            this.quality = Qualities.Unknown.value
+                            this.referer = "https://xprime.tv/"
+                        }
+                    )
+                } else {
+                    Log.d("XPR", "No valid URL found in server response")
+                }
+            } catch (e: Exception) {
+                Log.e("XPR", "Error loading server ${server.name}: ${e.message}")
             }
         }
     }
