@@ -38,6 +38,11 @@ data class XMovie(
     @JsonProperty("recommendations") val recommendations: Recommendations? = null,
     @JsonProperty("imdb_id") val imdb: String? = null,
     @JsonProperty("external_ids") val externalIds: ExternalIds? = null,
+
+    // Video ve Altyazı Bilgisi (Eksik Olanlar)
+    @JsonProperty("stream") val stream: Stream? = null,
+    @JsonProperty("trailers") val trailers: Trailers? = null,
+    @JsonProperty("servers") val servers: Servers? = null
 )
 
 data class ExternalIds(
