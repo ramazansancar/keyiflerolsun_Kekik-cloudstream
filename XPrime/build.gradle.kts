@@ -1,7 +1,7 @@
-version = 4
+version = 5
 
 cloudstream {
-    authors     = listOf("nikyokki")
+    authors     = listOf("kerimmkirac")
     language    = "tr"
     description = "XPrime.Tv"
 
@@ -13,6 +13,6 @@ cloudstream {
      * 3: Beta only
     **/
     status  = 1 // will be 3 if unspecified
-    tvTypes = listOf("Movie")
+    tvTypes = listOf("Movie","TvSeries")
     iconUrl = "https://www.google.com/s2/favicons?domain=xprime.tv&sz=%size%"
 }
