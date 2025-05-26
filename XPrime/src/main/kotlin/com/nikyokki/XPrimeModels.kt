@@ -37,6 +37,19 @@ data class XMovie(
     @JsonProperty("credits") val credits: Credits? = null,
     @JsonProperty("recommendations") val recommendations: Recommendations? = null,
     @JsonProperty("imdb_id") val imdb: String? = null,
+    @JsonProperty("external_ids") val externalIds: ExternalIds? = null, // Bu eksikti!
+)
+
+// Yeni eklenen ExternalIds modeli
+data class ExternalIds(
+    @JsonProperty("imdb_id") val imdbId: String? = null,
+    @JsonProperty("tvdb_id") val tvdbId: Int? = null,
+    @JsonProperty("freebase_mid") val freebaseMid: String? = null,
+    @JsonProperty("freebase_id") val freebaseId: String? = null,
+    @JsonProperty("tvrage_id") val tvrageId: Int? = null,
+    @JsonProperty("facebook_id") val facebookId: String? = null,
+    @JsonProperty("instagram_id") val instagramId: String? = null,
+    @JsonProperty("twitter_id") val twitterId: String? = null,
 )
 
 data class Season(
