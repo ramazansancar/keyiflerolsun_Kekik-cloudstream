@@ -1,14 +1,12 @@
-// ! Bu araç @Kraptor123 tarafından | @kekikanime için yazılmıştır.
-package com.kraptor
+package com.nikyokki
 
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
 import android.content.Context
 
 @CloudstreamPlugin
-class DiziMorePlugin: Plugin() {
+class XPrimePlugin: Plugin() {
     override fun load(context: Context) {
-        registerMainAPI(DiziMore())
-        registerExtractorAPI(DonilasPlay())
+        registerMainAPI(XPrime())
     }
 }

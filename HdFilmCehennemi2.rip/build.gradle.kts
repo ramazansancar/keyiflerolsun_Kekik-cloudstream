@@ -4,7 +4,7 @@ version = 1
 cloudstream {
     authors     = listOf("kerimmkirac")
     language    = "tr"
-    description = "Sadece Dizi izlemenin Tek Adresin yerli yabancı dizi izlemek için dizimore.com"
+    description = "Full hd film izleme keyfini hdfilmcehennemi2 ile yaşayın. Türkiye'nin en güncel yüksek hd kalitede film izleme sitesi."
 
     /**
      * Status int as the following:
@@ -14,6 +14,6 @@ cloudstream {
      * 3: Beta only
     **/
     status  = 1 // will be 3 if unspecified
-    tvTypes = listOf("TvSeries")
-    iconUrl = "view-source:https://dizimore.com/wp-content/uploads/2024/03/morefav.png"
+    tvTypes = listOf("Movie")
+    iconUrl = "https://hdfilmcehennemi2.rip/wp-content/uploads/2023/07/favi.png"
 }
