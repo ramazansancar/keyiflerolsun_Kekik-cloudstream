@@ -121,8 +121,8 @@ class XPrime : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         // Parse the URL to get media type and ID
         val urlParts = url.split(":")
-        val mediaType = urlParts[0] // "movie" or "tv"
-        val id = urlParts[1]
+        val mediaType = if (urlParts.size > 0) urlParts[0] else "movie" // Default to "movie" if not specified
+        val id = if (urlParts.size > 1) urlParts[1] else "" // Default to empty string if not specified
         
         Log.d("XPR", "mediaType -> $mediaType, id -> $id")
         
