@@ -304,9 +304,9 @@ class XPrime : MainAPI() {
         season: Int? = null,
         episode: Int? = null
     ) {
-        val contentName = content.originalTitle ?: content.name ?: content.original_name
+        val contentName = content.originalTitle ?: content.name ?: content.originalName
         val year = content.releaseDate?.split("-")?.first()?.toIntOrNull() 
-            ?: content.first_air_date?.split("-")?.first()?.toIntOrNull()
+            ?: content.firstAirDate?.split("-")?.first()?.toIntOrNull()
         val imdb = content.imdb
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
