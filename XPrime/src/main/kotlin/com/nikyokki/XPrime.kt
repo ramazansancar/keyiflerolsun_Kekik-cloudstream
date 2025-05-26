@@ -90,9 +90,11 @@ class XPrime : MainAPI() {
 
     private fun XMovie.toMainPageResult(): SearchResponse {
         val title = (this.title ?: this.name).toString()
-        val href = this.id.toString()
-        val posterUrl = imgUrl + this.posterPath
+        // Include media type in href to distinguish between movie and tv
         val tvType = if (this.mediaType == "tv" || this.firstAirDate != null) TvType.TvSeries else TvType.Movie
+        val mediaTypePrefix = if (tvType == TvType.TvSeries) "tv" else "movie"
+        val href = "$mediaTypePrefix:${this.id}"
+        val posterUrl = imgUrl + this.posterPath
 
         return if (tvType == TvType.TvSeries) {
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
@@ -117,23 +119,20 @@ class XPrime : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
-        val id = url.split("/").last()
-        Log.d("XPR", "id -> $id")
+        // Parse the URL to get media type and ID
+        val urlParts = url.split(":")
+        val mediaType = urlParts[0] // "movie" or "tv"
+        val id = urlParts[1]
         
-        // First, try to determine if it's a movie or TV series by checking both endpoints
+        Log.d("XPR", "mediaType -> $mediaType, id -> $id")
+        
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         
-        // Try movie first
-        val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
-        val movieResponse = try {
-            app.get(movieUrl)
-        } catch (e: Exception) {
-            null
-        }
-        
-        if (movieResponse != null && movieResponse.code == 200) {
+        if (mediaType == "movie") {
             // It's a movie
+            val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+            val movieResponse = app.get(movieUrl)
             val movie: XMovie = objectMapper.readValue(movieResponse.text)
             Log.d("XPR", "Movie: $movie")
             
@@ -168,7 +167,7 @@ class XPrime : MainAPI() {
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
         } else {
-            // Try TV series
+            // It's a TV series
             val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
             val tvResponse = app.get(tvUrl)
             val tvSeries: XMovie = objectMapper.readValue(tvResponse.text)
