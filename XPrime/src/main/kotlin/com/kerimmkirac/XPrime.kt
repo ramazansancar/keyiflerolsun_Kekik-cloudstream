@@ -115,10 +115,15 @@ class XPrime : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
+        Log.d("XPR", "load url -> $url")
+        
         // Parse the URL to get media type and ID
+        // URL format: "tv/100088" or "movie/100088"
         val urlParts = url.split("/")
         val mediaType = if (urlParts.size > 0) urlParts[0] else "movie"
         val id = if (urlParts.size > 1) urlParts[1] else ""
+        
+        Log.d("XPR", "parsed mediaType -> $mediaType, id -> $id")
         
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -126,6 +131,7 @@ class XPrime : MainAPI() {
         if (mediaType == "movie") {
             // It's a movie - build correct URL
             val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+            Log.d("XPR", "movie API URL -> $movieUrl")
             val movieResponse = app.get(movieUrl)
             val movie: XMovie = objectMapper.readValue(movieResponse.text)
             
@@ -162,6 +168,7 @@ class XPrime : MainAPI() {
         } else {
             // It's a TV series - build correct URL
             val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+            Log.d("XPR", "tv API URL -> $tvUrl")
             val tvResponse = app.get(tvUrl)
             val tvSeries: XMovie = objectMapper.readValue(tvResponse.text)
             
@@ -203,7 +210,7 @@ class XPrime : MainAPI() {
                         )
                     }
                 } catch (e: Exception) {
-                    // Ignore season loading errors for now
+                    Log.e("XPR", "Error loading season ${season.seasonNumber}: ${e.message}")
                 }
             }
             
@@ -226,17 +233,37 @@ class XPrime : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        Log.d("XPR", "loadLinks data -> $data")
         
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         
-        // Check if data contains episode info (format: id/season/episode)
+        // Check if data contains episode info (format: id/season/episode) or just URL (tv/id or movie/id)
         val dataParts = data.split("/")
-        val id = dataParts[0]
-        val season = if (dataParts.size > 1) dataParts[1].toIntOrNull() else null
-        val episode = if (dataParts.size > 2) dataParts[2].toIntOrNull() else null
         
-        val isMovie = season == null || episode == null
+        val (mediaType, id, season, episode) = when {
+            // If data starts with "tv/" or "movie/" (from load response)
+            dataParts.size >= 2 && (dataParts[0] == "tv" || dataParts[0] == "movie") -> {
+                val type = dataParts[0]
+                val contentId = dataParts[1]
+                listOf(type, contentId, null, null)
+            }
+            // If data is episode format (id/season/episode)
+            dataParts.size == 3 -> {
+                val contentId = dataParts[0]
+                val seasonNum = dataParts[1].toIntOrNull()
+                val episodeNum = dataParts[2].toIntOrNull()
+                listOf("tv", contentId, seasonNum, episodeNum)
+            }
+            // Default to movie if unclear
+            else -> {
+                listOf("movie", dataParts[0], null, null)
+            }
+        }
+        
+        val isMovie = mediaType == "movie" || season == null || episode == null
+        
+        Log.d("XPR", "parsed - mediaType: $mediaType, id: $id, season: $season, episode: $episode, isMovie: $isMovie")
         
         // Get content details
         val contentUrl = if (isMovie) {
@@ -245,6 +272,7 @@ class XPrime : MainAPI() {
             "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
         }
         
+        Log.d("XPR", "content API URL -> $contentUrl")
         val document = app.get(contentUrl)
         val content: XMovie = objectMapper.readValue(document.text)
         
@@ -267,7 +295,7 @@ class XPrime : MainAPI() {
                 )
             }
         } catch (e: Exception) {
-            // Ignore subtitle loading errors
+            Log.e("XPR", "Error loading subtitles: ${e.message}")
         }
         
         // Get servers and load streams
@@ -275,9 +303,9 @@ class XPrime : MainAPI() {
         val servers = app.get(serversUrl).parsedSafe<Servers>()
         servers?.servers?.forEach { server ->
             try {
-                loadServers(server, id, content, callback, subtitleCallback, season, episode)
+                loadServers(server, id, content, callback, subtitleCallback, season as? Int, episode as? Int)
             } catch (e: Exception) {
-                // Ignore individual server errors
+                Log.e("XPR", "Error loading server ${server.name}: ${e.message}")
             }
         }
         return true
