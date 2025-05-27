@@ -127,17 +127,18 @@ class XPrime : MainAPI() {
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-        // Önce gelen mediaType ile dene, hata alırsan diğerini dene
-        var responseText: String? = null
+        val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+        val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+
         var isMovie = mediaType == "movie"
+        var responseText: String? = null
+
         try {
-            val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
             responseText = app.get(movieUrl).text
             mediaType = "movie"
             isMovie = true
         } catch (e: Exception) {
             try {
-                val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
                 responseText = app.get(tvUrl).text
                 mediaType = "tv"
                 isMovie = false
@@ -147,11 +148,8 @@ class XPrime : MainAPI() {
             }
         }
 
-        // Sonrasında mediaType'a göre devam et
         if (isMovie) {
-            // It's a movie
-            val movieResponse = app.get(movieUrl)
-            val movie: XMovie = objectMapper.readValue(movieResponse.text)
+            val movie: XMovie = objectMapper.readValue(responseText!!)
             Log.d("XPR", "Movie: $movie")
 
             val title = movie.title
@@ -185,11 +183,7 @@ class XPrime : MainAPI() {
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
         } else {
-            // Try TV series
-            // It's a TV series
-            val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
-            val tvResponse = app.get(tvUrl)
-            val tvSeries: XMovie = objectMapper.readValue(tvResponse.text)
+            val tvSeries: XMovie = objectMapper.readValue(responseText!!)
             Log.d("XPR", "TV Series: $tvSeries")
 
             val title = tvSeries.name
