@@ -126,7 +126,7 @@ class FilmModu : MainAPI() {
                         source  = "${this.name} - $altName",
                         name    = "${this.name} - $altName",
                         url     = fixUrl(source.src),
-                        type    = INFER_TYPE
+                        type    = ExtractorLinkType.M3U8
                     ) {
                        headers = mapOf("Referer" to "${mainUrl}/")
                        quality = getQualityFromName(source.label)
