@@ -339,16 +339,17 @@ class XPrime : MainAPI() {
             val document = app.get(url)
             val streamText = document.text
             val stream: Stream = objectMapper.readValue(streamText)
-            stream.qualities.forEach {
-                val source = objectMapper.readTree(streamText).get("streams").get(it).textValue()
+            stream.qualities.forEach { quality ->
+                val qualityStr = quality.toString()
+                val source = objectMapper.readTree(streamText).get("streams").get(qualityStr).textValue()
                 callback.invoke(
                     newExtractorLink(
-                        source = server.name.capitalize() + " - " + it,
-                        name = server.name.capitalize() + " - " + it,
+                        source = server.name.capitalize() + " - " + qualityStr,
+                        name = server.name.capitalize() + " - " + qualityStr,
                         url = source,
                         ExtractorLinkType.VIDEO
                     ) {
-                        this.quality = getQualityFromName(it)
+                        this.quality = getQualityFromName(qualityStr)
                         this.headers = mapOf("Origin" to "https://xprime.tv/")
                         this.referer = "https://xprime.tv/"
                     }
