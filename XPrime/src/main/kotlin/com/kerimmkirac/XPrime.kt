@@ -81,6 +81,7 @@ class XPrime : MainAPI() {
                 "${mainUrl}/discover/movie?api_key=$apiKey&page=${page}&include_adult=false&with_watch_monetization_types=flatrate%7Cfree%7Cads&watch_region=TR&language=tr-TR&with_genres=${request.data}&sort_by=popularity.desc"
             }
         }
+        Log.d("XPR", "URL -> $url")
         val response = app.get(url).parsedSafe<MovieResponse>()
         val home = response?.results?.map { it.toMainPageResult() }
 
@@ -88,11 +89,9 @@ class XPrime : MainAPI() {
     }
 
     private fun XMovie.toMainPageResult(): SearchResponse {
-        val title = (this.title ?: this.name).toString()
-        // Include media type in href to distinguish between movie and tv
-        val tvType = if (this.mediaType == "tv" || this.firstAirDate != null) TvType.TvSeries else TvType.Movie
+        val title = (this.title ?: this.name).toString()val tvType = if (this.mediaType == "tv" || this.firstAirDate != null) TvType.TvSeries else TvType.Movie
         val mediaTypePrefix = if (tvType == TvType.TvSeries) "tv" else "movie"
-        val href = "$mediaTypePrefix/${this.id}"
+        val href = "$mediaTypePrefix:${this.id}"
         val posterUrl = imgUrl + this.posterPath
 
         return if (tvType == TvType.TvSeries) {
@@ -103,291 +102,269 @@ class XPrime : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse>? {
+        Log.d("XPR", "query -> $query")
         val url = "${mainUrl}/search/multi?api_key=$apiKey&query=$query&page=1"
+        Log.d("XPR", "Search url -> $url")
         val document = app.get(url)
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         val movies: MovieResponse = objectMapper.readValue(document.text)
+        Log.d("XPR", "Search document -> $document")
 
         return movies.results.filter { it.mediaType == "movie" || it.mediaType == "tv" }.map { it.toMainPageResult() }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
 
-    override suspend fun load(url: String): LoadResponse? {
-        Log.d("XPR", "load url -> $url")
-        
-        // Parse the URL to get media type and ID
-        // URL format: "tv/100088" or "movie/100088"
-        val urlParts = url.split("/")
-        val mediaType = if (urlParts.size > 0) urlParts[0] else "movie"
-        val id = if (urlParts.size > 1) urlParts[1] else ""
-        
-        Log.d("XPR", "parsed mediaType -> $mediaType, id -> $id")
-        
-        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        
-        if (mediaType == "movie") {
-            // It's a movie - build correct URL
-            val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
-            Log.d("XPR", "movie API URL -> $movieUrl")
-            val movieResponse = app.get(movieUrl)
-            val movie: XMovie = objectMapper.readValue(movieResponse.text)
-            
-            val title = movie.title
-            val orgTitle = movie.originalTitle
-            val totTitle = if (title?.isNotEmpty() == true && orgTitle != title) "$orgTitle - $title" else orgTitle
-            val poster = backImgUrl + movie.backdropPath
-            val description = movie.overview
-            val year = movie.releaseDate?.split("-")?.first()?.toIntOrNull()
-            val tags = movie.genres?.map { it.name }
-            val rating = movie.vote.toString().toRatingInt()
-            val duration = movie.runtime
-            val trailerUrl = "$mainUrl/movie/$id/videos?api_key=$apiKey"
-            val trailerDoc = app.get(trailerUrl)
-            val trailers: Trailers = objectMapper.readValue(trailerDoc.text)
-            var trailer = ""
-            if (trailers.results.filter { it.site == "YouTube" }.isNotEmpty()) {
-                trailer = trailers.results.filter { it.site == "YouTube" }[0].key
-            }
-            val actors = movie.credits?.cast?.map { Actor(it.name, imgUrl + it.profilePath) }
-            val recommendations = movie.recommendations?.results?.map { it.toMainPageResult() }
-            
-            return newMovieLoadResponse(totTitle.toString(), url, TvType.Movie, url) {
-                this.posterUrl = poster
-                this.plot = description
-                this.year = year
-                this.tags = tags
-                this.rating = rating
-                this.duration = duration
-                this.recommendations = recommendations
-                addActors(actors)
-                addTrailer("https://www.youtube.com/embed/${trailer}")
-            }
-        } else {
-            // It's a TV series - build correct URL
-            val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
-            Log.d("XPR", "tv API URL -> $tvUrl")
-            val tvResponse = app.get(tvUrl)
-            val tvSeries: XMovie = objectMapper.readValue(tvResponse.text)
-            
-            val title = tvSeries.name
-            val orgTitle = tvSeries.originalName
-            val totTitle = if (title?.isNotEmpty() == true && orgTitle != title) "$orgTitle - $title" else orgTitle
-            val poster = backImgUrl + tvSeries.backdropPath
-            val description = tvSeries.overview
-            val year = tvSeries.firstAirDate?.split("-")?.first()?.toIntOrNull()
-            val tags = tvSeries.genres?.map { it.name }
-            val rating = tvSeries.vote.toString().toRatingInt()
-            val trailerUrl = "$mainUrl/tv/$id/videos?api_key=$apiKey"
-            val trailerDoc = app.get(trailerUrl)
-            val trailers: Trailers = objectMapper.readValue(trailerDoc.text)
-            var trailer = ""
-            if (trailers.results.filter { it.site == "YouTube" }.isNotEmpty()) {
-                trailer = trailers.results.filter { it.site == "YouTube" }[0].key
-            }
-            val actors = tvSeries.credits?.cast?.map { Actor(it.name, imgUrl + it.profilePath) }
-            val recommendations = tvSeries.recommendations?.results?.map { it.toMainPageResult() }
-            
-            // Get seasons and episodes
-            val episodes = mutableListOf<Episode>()
-            tvSeries.seasons?.filter { it.seasonNumber > 0 }?.forEach { season ->
-                val seasonUrl = "$mainUrl/tv/$id/season/${season.seasonNumber}?api_key=$apiKey&language=tr-TR"
-                try {
-                    val seasonDoc = app.get(seasonUrl)
-                    val seasonDetails: SeasonDetails = objectMapper.readValue(seasonDoc.text)
-                    seasonDetails.episodes.forEach { episode ->
-                        episodes.add(
-                            Episode(
-                                data = "$id/${season.seasonNumber}/${episode.episodeNumber}",
-                                name = episode.name ?: "Episode ${episode.episodeNumber}",
-                                season = season.seasonNumber,
-                                episode = episode.episodeNumber,
-                                posterUrl = if (episode.stillPath != null) imgUrl + episode.stillPath else null,
-                                description = episode.overview
-                            )
+    override suspend fun load(url: String): LoadResponse? {val urlParts = url.split(":")
+    val mediaType = urlParts[0] // "movie" or "tv"
+    val id = urlParts[1]
+    
+    Log.d("XPR", "mediaType -> $mediaType, id -> $id")
+
+    // First, try to determine if it's a movie or TV series by checking both endpoints
+    val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)if (mediaType == "movie") {
+        // It's a movie
+        val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+        val movieResponse = app.get(movieUrl)
+        val movie: XMovie = objectMapper.readValue(movieResponse.text)
+        Log.d("XPR", "Movie: $movie")
+
+        val title = movie.title
+        val orgTitle = movie.originalTitle
+        val totTitle = if (title?.isNotEmpty() == true && orgTitle != title) "$orgTitle - $title" else orgTitle
+        val poster = backImgUrl + movie.backdropPath
+        val description = movie.overview
+        val year = movie.releaseDate?.split("-")?.first()?.toIntOrNull()
+        val tags = movie.genres?.map { it.name }
+        val rating = movie.vote.toString().toRatingInt()
+        val duration = movie.runtime
+        val trailerUrl = "$mainUrl/movie/$id/videos?api_key=$apiKey"
+        val trailerDoc = app.get(trailerUrl)
+        val trailers: Trailers = objectMapper.readValue(trailerDoc.text)
+        var trailer = ""
+        if (trailers.results.filter { it.site == "YouTube" }.isNotEmpty()) {
+            trailer = trailers.results.filter { it.site == "YouTube" }[0].key
+        }
+        val actors = movie.credits?.cast?.map { Actor(it.name, imgUrl + it.profilePath) }
+        val recommendations = movie.recommendations?.results?.map { it.toMainPageResult() }
+
+        return newMovieLoadResponse(totTitle.toString(), url, TvType.Movie, url) {
+            this.posterUrl = poster
+            this.plot = description
+            this.year = year
+            this.tags = tags
+            this.rating = rating
+            this.duration = duration
+            this.recommendations = recommendations
+            addActors(actors)
+            addTrailer("https://www.youtube.com/embed/${trailer}")
+        }
+    } else {
+        // Try TV series
+        // It's a TV series
+        val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+        val tvResponse = app.get(tvUrl)
+        val tvSeries: XMovie = objectMapper.readValue(tvResponse.text)
+        Log.d("XPR", "TV Series: $tvSeries")
+
+        val title = tvSeries.name
+        val orgTitle = tvSeries.originalName
+        val totTitle = if (title?.isNotEmpty() == true && orgTitle != title) "$orgTitle - $title" else orgTitle
+        val poster = backImgUrl + tvSeries.backdropPath
+        val description = tvSeries.overview
+        val year = tvSeries.firstAirDate?.split("-")?.first()?.toIntOrNull()
+        val tags = tvSeries.genres?.map { it.name }
+        val rating = tvSeries.vote.toString().toRatingInt()
+        val trailerUrl = "$mainUrl/tv/$id/videos?api_key=$apiKey"
+        val trailerDoc = app.get(trailerUrl)
+        val trailers: Trailers = objectMapper.readValue(trailerDoc.text)
+        var trailer = ""
+        if (trailers.results.filter { it.site == "YouTube" }.isNotEmpty()) {
+            trailer = trailers.results.filter { it.site == "YouTube" }[0].key
+        }
+        val actors = tvSeries.credits?.cast?.map { Actor(it.name, imgUrl + it.profilePath) }
+        val recommendations = tvSeries.recommendations?.results?.map { it.toMainPageResult() }
+
+        // Get seasons and episodes
+        val episodes = mutableListOf<Episode>()
+        tvSeries.seasons?.filter { it.seasonNumber > 0 }?.forEach { season ->
+            val seasonUrl = "$mainUrl/tv/$id/season/${season.seasonNumber}?api_key=$apiKey&language=tr-TR"
+            try {
+                val seasonDoc = app.get(seasonUrl)
+                val seasonDetails: SeasonDetails = objectMapper.readValue(seasonDoc.text)
+                seasonDetails.episodes.forEach { episode ->
+                    episodes.add(
+                        Episode(
+                            data = "$id:${season.seasonNumber}:${episode.episodeNumber}",
+                            name = episode.name ?: "Episode ${episode.episodeNumber}",
+                            season = season.seasonNumber,
+                            episode = episode.episodeNumber,
+                            posterUrl = if (episode.stillPath != null) imgUrl + episode.stillPath else null,
+                            description = episode.overview
                         )
-                    }
-                } catch (e: Exception) {
-                    Log.e("XPR", "Error loading season ${season.seasonNumber}: ${e.message}")
+                    )
                 }
+            } catch (e: Exception) {
+                Log.e("XPR", "Error loading season ${season.seasonNumber}: ${e.message}")
             }
-            
-            return newTvSeriesLoadResponse(totTitle.toString(), url, TvType.TvSeries, episodes) {
-                this.posterUrl = poster
-                this.plot = description
-                this.year = year
-                this.tags = tags
-                this.rating = rating
-                this.recommendations = recommendations
-                addActors(actors)
-                addTrailer("https://www.youtube.com/embed/${trailer}")
-            }
+        }
+
+        return newTvSeriesLoadResponse(totTitle.toString(), url, TvType.TvSeries, episodes) {
+            this.posterUrl = poster
+            this.plot = description
+            this.year = year
+            this.tags = tags
+            this.rating = rating
+            this.recommendations = recommendations
+            addActors(actors)
+            addTrailer("https://www.youtube.com/embed/${trailer}")
         }
     }
+}
 
-    override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ): Boolean {
-        Log.d("XPR", "loadLinks data -> $data")
-        
-        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        
-        // Check if data contains episode info (format: id/season/episode) or just URL (tv/id or movie/id)
-        val dataParts = data.split("/")
-        
-        val (mediaType, id, season, episode) = when {
-            // If data starts with "tv/" or "movie/" (from load response)
-            dataParts.size >= 2 && (dataParts[0] == "tv" || dataParts[0] == "movie") -> {
-                val type = dataParts[0]
-                val contentId = dataParts[1]
-                listOf(type, contentId, null, null)
-            }
-            // If data is episode format (id/season/episode)
-            dataParts.size == 3 -> {
-                val contentId = dataParts[0]
-                val seasonNum = dataParts[1].toIntOrNull()
-                val episodeNum = dataParts[2].toIntOrNull()
-                listOf("tv", contentId, seasonNum, episodeNum)
-            }
-            // Default to movie if unclear
-            else -> {
-                listOf("movie", dataParts[0], null, null)
-            }
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("XPR", "data » ${data}")
+
+    val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    // Check if data contains episode info (format: id:season:episode)
+    val dataParts = data.split(":")
+    val id = dataParts[0]
+    val season = if (dataParts.size > 1) dataParts[1].toIntOrNull() else null
+    val episode = if (dataParts.size > 2) dataParts[2].toIntOrNull() else null
+
+    val isMovie = season == null || episode == null
+
+    // Get content details
+    val contentUrl = if (isMovie) {
+        "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+    } else {
+        "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+    }
+
+    Log.d("XPR", "contentUrl -> $contentUrl")
+    val document = app.get(contentUrl)
+    val content: XMovie = objectMapper.readValue(document.text)
+
+    // Get subtitles
+    val subtitleUrl = if (isMovie) {
+        "https://sub.wyzie.ru/search?id=$id"
+    } else {
+        "https://sub.wyzie.ru/search?id=$id&season=$season&episode=$episode"
+    }
+
+    try {
+        val subtitleDocument = app.get(subtitleUrl)
+        val subtitles: List<Subtitle> = objectMapper.readValue(subtitleDocument.text)
+        subtitles.forEach { subtitle ->
+            subtitleCallback.invoke(
+                SubtitleFile(
+                    lang = subtitle.display,
+                    url = subtitle.url
+                )
+            )
         }
-        
-        val isMovie = mediaType == "movie" || season == null || episode == null
-        
-        Log.d("XPR", "parsed - mediaType: $mediaType, id: $id, season: $season, episode: $episode, isMovie: $isMovie")
-        
-        // Get content details
-        val contentUrl = if (isMovie) {
-            "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
-        } else {
-            "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
-        }
-        
-        Log.d("XPR", "content API URL -> $contentUrl")
-        val document = app.get(contentUrl)
-        val content: XMovie = objectMapper.readValue(document.text)
-        
-        // Get subtitles
-        val subtitleUrl = if (isMovie) {
-            "https://sub.wyzie.ru/search?id=$id"
-        } else {
-            "https://sub.wyzie.ru/search?id=$id&season=$season&episode=$episode"
-        }
-        
+    } catch (e: Exception) {
+        Log.e("XPR", "Error loading subtitles: ${e.message}")
+    }
+
+    // Get servers and load streams
+    val serversUrl = "https://backend.xprime.tv/servers"
+    val servers = app.get(serversUrl).parsedSafe<Servers>()
+    servers?.servers?.forEach { server ->
         try {
-            val subtitleDocument = app.get(subtitleUrl)
-            val subtitles: List<Subtitle> = objectMapper.readValue(subtitleDocument.text)
-            subtitles.forEach { subtitle ->
+            loadServers(server, id, content, callback, subtitleCallback, season, episode)
+        } catch (e: Exception) {
+            Log.e("XPR", "Error loading server ${server.name}: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+    return true
+}
+
+private suspend fun loadServers(
+    server: Server,
+    id: String,
+    content: XMovie,
+    callback: (ExtractorLink) -> Unit,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    season: Int? = null,
+    episode: Int? = null
+) {
+    val contentName = content.originalTitle ?: content.name ?: content.originalName
+    val year = content.releaseDate?.split("-")?.first()?.toIntOrNull() 
+        ?: content.firstAirDate?.split("-")?.first()?.toIntOrNull()
+    val imdb = content.imdb
+    val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    val isMovie = season == null || episode == null
+
+    if (server.name == "primebox" && server.status == "ok") {
+        val url = if (isMovie) {
+            "$backendUrl/primebox?name=$contentName&year=$year&fallback_year=${year?.minus(1)}"
+        } else {
+            "$backendUrl/primebox?name=$contentName&year=$year&id=$id&season=$season&episode=$episode"
+        }
+
+        val document = app.get(url)
+        val streamText = document.text
+        val stream: Stream = objectMapper.readValue(streamText)
+        stream.qualities.forEach {
+            val source = objectMapper.readTree(streamText).get("streams").get(it).textValue()
+            callback.invoke(
+                newExtractorLink(
+                    source = server.name.capitalize() + " - " + it,
+                    name = server.name.capitalize() + " - " + it,
+                    url = source,
+                    ExtractorLinkType.VIDEO
+                ) {
+                    this.quality = getQualityFromName(it)
+                    this.headers = mapOf("Origin" to "https://xprime.tv/")
+                    this.referer = "https://xprime.tv/"
+                }
+            )
+        }
+        if (stream.hasSubtitles) {
+            stream.subtitles.forEach {
                 subtitleCallback.invoke(
                     SubtitleFile(
-                        lang = subtitle.display,
-                        url = subtitle.url
+                        lang = it.label.toString(),
+                        url = it.file.toString()
                     )
                 )
             }
-        } catch (e: Exception) {
-            Log.e("XPR", "Error loading subtitles: ${e.message}")
         }
-        
-        // Get servers and load streams
-        val serversUrl = "https://backend.xprime.tv/servers"
-        val servers = app.get(serversUrl).parsedSafe<Servers>()
-        servers?.servers?.forEach { server ->
-            try {
-                loadServers(server, id, content, callback, subtitleCallback, season as? Int, episode as? Int)
-            } catch (e: Exception) {
-                Log.e("XPR", "Error loading server ${server.name}: ${e.message}")
-            }
-        }
-        return true
-    }
-
-    private suspend fun loadServers(
-        server: Server,
-        id: String,
-        content: XMovie,
-        callback: (ExtractorLink) -> Unit,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        season: Int? = null,
-        episode: Int? = null
-    ) {
-        val contentName = content.originalTitle ?: content.name ?: content.originalName
-        val year = content.releaseDate?.split("-")?.first()?.toIntOrNull() 
-            ?: content.firstAirDate?.split("-")?.first()?.toIntOrNull()
-        val imdb = content.imdb
-        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        
-        val isMovie = season == null || episode == null
-        
-        if (server.name == "primebox" && server.status == "ok") {
+    } else {
+        if (server.status == "ok") {
             val url = if (isMovie) {
-                "$backendUrl/primebox?name=$contentName&year=$year&fallback_year=${year?.minus(1)}"
+                "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&imdb=$imdb"
             } else {
-                "$backendUrl/primebox?name=$contentName&year=$year&id=$id&season=$season&episode=$episode"
+                "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&season=$season&episode=$episode"
             }
-            
+
             val document = app.get(url)
-            val streamText = document.text
-            val stream: Stream = objectMapper.readValue(streamText)
-            stream.qualities.forEach { quality ->
-                val qualityStr = quality.toString()
-                val source = objectMapper.readTree(streamText).get("streams").get(qualityStr).textValue()
-                callback.invoke(
-                    newExtractorLink(
-                        source = server.name.capitalize() + " - " + qualityStr,
-                        name = server.name.capitalize() + " - " + qualityStr,
-                        url = source,
-                        ExtractorLinkType.VIDEO
-                    ) {
-                        this.quality = getQualityFromName(qualityStr)
-                        this.headers = mapOf("Origin" to "https://xprime.tv/")
-                        this.referer = "https://xprime.tv/"
-                    }
-                )
-            }
-            if (stream.hasSubtitles) {
-                stream.subtitles.forEach {
-                    subtitleCallback.invoke(
-                        SubtitleFile(
-                            lang = it.label.toString(),
-                            url = it.file.toString()
-                        )
-                    )
+            val source = objectMapper.readTree(document.text).get("url").textValue()
+            callback.invoke(
+                newExtractorLink(
+                    source = server.name.capitalize(),
+                    name = server.name.capitalize(),
+                    url = source,
+                    ExtractorLinkType.M3U8
+                ) {
+                    this.headers = mapOf("Origin" to "https://xprime.tv/")
+                    this.quality = Qualities.Unknown.value
+                    this.referer = "https://xprime.tv/"
                 }
-            }
-        } else {
-            if (server.status == "ok") {
-                val url = if (isMovie) {
-                    "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&imdb=$imdb"
-                } else {
-                    "$backendUrl/${server.name}?name=$contentName&year=$year&id=$id&season=$season&episode=$episode"
-                }
-                
-                val document = app.get(url)
-                val source = objectMapper.readTree(document.text).get("url").textValue()
-                callback.invoke(
-                    newExtractorLink(
-                        source = server.name.capitalize(),
-                        name = server.name.capitalize(),
-                        url = source,
-                        ExtractorLinkType.M3U8
-                    ) {
-                        this.headers = mapOf("Origin" to "https://xprime.tv/")
-                        this.quality = Qualities.Unknown.value
-                        this.referer = "https://xprime.tv/"
-                    }
-                )
-            }
+            )
         }
     }
 }
