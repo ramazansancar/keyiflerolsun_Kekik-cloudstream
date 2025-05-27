@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class JetFilmizle : MainAPI() {
-    override var mainUrl              = "https://jetfilmizle.io"
+    override var mainUrl              = "https://jetfilmizle.watch"
     override var name                 = "JetFilmizle"
     override val hasMainPage          = true
     override var lang                 = "tr"
