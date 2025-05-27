@@ -262,8 +262,8 @@ class XPrime : MainAPI() {
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-        // Check if data contains episode info (format: id:season:episode)
-        val dataParts = data.split(":")
+        // Check if data contains episode info (format: id/season/episode)
+        val dataParts = data.split("/")
         val id = dataParts[0]
         val season = if (dataParts.size > 1) dataParts[1].toIntOrNull() else null
         val episode = if (dataParts.size > 2) dataParts[2].toIntOrNull() else null
