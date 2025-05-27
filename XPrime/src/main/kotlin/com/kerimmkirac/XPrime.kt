@@ -118,7 +118,7 @@ class XPrime : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
-        val urlParts = url.split(":")
+        val urlParts = url.split("/")
         var mediaType = urlParts[0] // "movie" or "tv"
         val id = urlParts[1]
 
@@ -163,7 +163,12 @@ class XPrime : MainAPI() {
             val duration = movie.runtime
             val trailerUrl = "$mainUrl/movie/$id/videos?api_key=$apiKey"
             val trailerDoc = app.get(trailerUrl)
-            val trailers: Trailers = objectMapper.readValue(trailerDoc.text)
+            val trailers: Trailers = try {
+                objectMapper.readValue(trailerDoc.text)
+            } catch (e: Exception) {
+                Log.e("XPR", "Trailer parse error: ${e.message}")
+                Trailers(0, emptyList())
+            }
             var trailer = ""
             if (trailers.results.filter { it.site == "YouTube" }.isNotEmpty()) {
                 trailer = trailers.results.filter { it.site == "YouTube" }[0].key
@@ -196,7 +201,12 @@ class XPrime : MainAPI() {
             val rating = tvSeries.vote.toString().toRatingInt()
             val trailerUrl = "$mainUrl/tv/$id/videos?api_key=$apiKey"
             val trailerDoc = app.get(trailerUrl)
-            val trailers: Trailers = objectMapper.readValue(trailerDoc.text)
+            val trailers: Trailers = try {
+                objectMapper.readValue(trailerDoc.text)
+            } catch (e: Exception) {
+                Log.e("XPR", "Trailer parse error: ${e.message}")
+                Trailers(0, emptyList())
+            }
             var trailer = ""
             if (trailers.results.filter { it.site == "YouTube" }.isNotEmpty()) {
                 trailer = trailers.results.filter { it.site == "YouTube" }[0].key
@@ -214,7 +224,7 @@ class XPrime : MainAPI() {
                     seasonDetails.episodes.forEach { episode ->
                         episodes.add(
                             Episode(
-                                data = "$id:${season.seasonNumber}:${episode.episodeNumber}",
+                                data = "$id/${season.seasonNumber}/${episode.episodeNumber}",
                                 name = episode.name ?: "Episode ${episode.episodeNumber}",
                                 season = season.seasonNumber,
                                 episode = episode.episodeNumber,
