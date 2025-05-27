@@ -92,7 +92,7 @@ class XPrime : MainAPI() {
         val title = (this.title ?: this.name).toString()
         val tvType = if (this.mediaType == "tv" || this.firstAirDate != null) TvType.TvSeries else TvType.Movie
         val mediaTypePrefix = if (tvType == TvType.TvSeries) "tv" else "movie"
-        val href = "$mediaTypePrefix:${this.id}"
+        val href = "$mediaTypePrefix/${this.id}"
         val posterUrl = imgUrl + this.posterPath
 
         return if (tvType == TvType.TvSeries) {
