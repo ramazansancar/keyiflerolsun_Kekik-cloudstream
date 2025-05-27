@@ -90,7 +90,11 @@ class XPrime : MainAPI() {
 
     private fun XMovie.toMainPageResult(): SearchResponse {
         val title = (this.title ?: this.name).toString()
-        val tvType = if (this.mediaType == "tv" || this.firstAirDate != null) TvType.TvSeries else TvType.Movie
+        val tvType = when (this.mediaType) {
+            "tv" -> TvType.TvSeries
+            "movie" -> TvType.Movie
+            else -> if (this.firstAirDate != null) TvType.TvSeries else TvType.Movie
+        }
         val mediaTypePrefix = if (tvType == TvType.TvSeries) "tv" else "movie"
         val href = "$mediaTypePrefix/${this.id}"
         val posterUrl = imgUrl + this.posterPath
