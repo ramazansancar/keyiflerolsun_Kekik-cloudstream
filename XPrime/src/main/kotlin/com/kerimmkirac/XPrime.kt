@@ -121,17 +121,19 @@ class XPrime : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         // Parse the URL to get media type and ID
         val urlParts = url.split(":")
-        val mediaType = if (urlParts.size > 0) urlParts[0] else "movie" // Default to "movie" if not specified
-        val id = if (urlParts.size > 1) urlParts[1] else "" // Default to empty string if not specified
+        val mediaType = if (urlParts.size > 0) urlParts[0] else "movie"
+        val id = if (urlParts.size > 1) urlParts[1] else ""
         
-        Log.d("XPR", "mediaType -> $mediaType, id -> $id")
+        Log.d("XPR", "Original URL: $url")
+        Log.d("XPR", "Parsed - mediaType: $mediaType, id: $id")
         
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         
         if (mediaType == "movie") {
-            // It's a movie
+            // It's a movie - build correct URL
             val movieUrl = "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+            Log.d("XPR", "Movie URL: $movieUrl")
             val movieResponse = app.get(movieUrl)
             val movie: XMovie = objectMapper.readValue(movieResponse.text)
             Log.d("XPR", "Movie: $movie")
@@ -167,8 +169,9 @@ class XPrime : MainAPI() {
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
         } else {
-            // It's a TV series
+            // It's a TV series - build correct URL
             val tvUrl = "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
+            Log.d("XPR", "TV URL: $tvUrl")
             val tvResponse = app.get(tvUrl)
             val tvSeries: XMovie = objectMapper.readValue(tvResponse.text)
             Log.d("XPR", "TV Series: $tvSeries")
@@ -195,6 +198,7 @@ class XPrime : MainAPI() {
             val episodes = mutableListOf<Episode>()
             tvSeries.seasons?.filter { it.seasonNumber > 0 }?.forEach { season ->
                 val seasonUrl = "$mainUrl/tv/$id/season/${season.seasonNumber}?api_key=$apiKey&language=tr-TR"
+                Log.d("XPR", "Season URL: $seasonUrl")
                 try {
                     val seasonDoc = app.get(seasonUrl)
                     val seasonDetails: SeasonDetails = objectMapper.readValue(seasonDoc.text)
@@ -234,7 +238,7 @@ class XPrime : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        Log.d("XPR", "data » ${data}")
+        Log.d("XPR", "loadLinks data: $data")
         
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -247,6 +251,8 @@ class XPrime : MainAPI() {
         
         val isMovie = season == null || episode == null
         
+        Log.d("XPR", "loadLinks - id: $id, season: $season, episode: $episode, isMovie: $isMovie")
+        
         // Get content details
         val contentUrl = if (isMovie) {
             "$mainUrl/movie/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
@@ -254,7 +260,7 @@ class XPrime : MainAPI() {
             "$mainUrl/tv/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,recommendations,external_ids"
         }
         
-        Log.d("XPR", "contentUrl -> $contentUrl")
+        Log.d("XPR", "Content URL: $contentUrl")
         val document = app.get(contentUrl)
         val content: XMovie = objectMapper.readValue(document.text)
         
