@@ -157,18 +157,25 @@ class DiziKorea : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("DZK", "data » $data")
-        val document = app.get(data).document
+    override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    Log.d("DZK", "data » $data")
+    val document = app.get(data).document
 
+    document.select("div.video-services button").forEach {
+        val rawHhs = it.attr("data-hhs")
+        Log.d("DZK", "Found button with data-hhs: $rawHhs")
 
-        document.select("div.series-watch-alternatives button").forEach {
-            val iframe = fixUrlNull(it.attr("data-hhs")) ?: return@forEach
-            Log.d("DZK", "iframe » $iframe")
+        val iframe = fixUrlNull(rawHhs) ?: return@forEach
+        Log.d("DZK", "iframe » $iframe")
 
-            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-        }
+        loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
+    }
 
-        return true
+    return true
     }
 }
