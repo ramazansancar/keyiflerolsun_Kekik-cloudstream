@@ -164,7 +164,7 @@ class DiziKorea : MainAPI() {
     callback: (ExtractorLink) -> Unit
 ): Boolean {
     Log.d("DZK", "data » $data")
-    val document = app.get(data).document
+    val document = app.get(data, interceptor = interceptor).document
 
     document.select("div.video-services button").forEach {
         val rawHhs = it.attr("data-hhs")
