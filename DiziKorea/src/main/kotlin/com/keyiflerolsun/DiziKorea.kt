@@ -54,6 +54,7 @@ class DiziKorea : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}${page}", interceptor = interceptor).document
+        Log.d("DZK", "Ana sayfa HTML içeriği:\n${document.outerHtml()}")
         val home     = document.select("div.poster-long").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
