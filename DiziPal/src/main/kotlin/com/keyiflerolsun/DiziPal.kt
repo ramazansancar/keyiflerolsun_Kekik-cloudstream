@@ -38,7 +38,7 @@ class DiziPal : MainAPI() {
             val response = chain.proceed(request)
             val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
 
-            if (doc.text().contains("Just a moment")) {
+            if (doc.html().contains("Just a moment")) {
                 return cloudflareKiller.intercept(chain)
             }
 
