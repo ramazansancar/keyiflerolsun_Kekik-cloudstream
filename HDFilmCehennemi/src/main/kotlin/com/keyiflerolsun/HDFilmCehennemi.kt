@@ -225,7 +225,7 @@ class HDFilmCehennemi : MainAPI() {
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
         "Referer" to "subtitleUrl"
     )
-    val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true)
+    val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true, interceptor = interceptor)
                 if (subtitleResponse.isSuccessful) {
                     subtitleCallback(SubtitleFile(it.language.toString(), subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
