@@ -262,7 +262,7 @@ override suspend fun loadLinks(
             button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
         }.forEach { (source, videoID) ->
             val apiGet = app.get(
-                "${mainUrl}/video/$videoID/",
+                "${mainUrl}/video/$videoID/", interceptor = interceptor,
                 headers = mapOf(
                     "Content-Type" to "application/json",
                     "X-Requested-With" to "fetch"
