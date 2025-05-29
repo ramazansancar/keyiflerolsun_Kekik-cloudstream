@@ -162,7 +162,7 @@ class DiziPal : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url, headers = getHeaders(mainUrl)).document
+        val document = app.get(url, interceptor = interceptor, headers = getHeaders(mainUrl)).document
 
         val poster      = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val year        = document.selectXpath("//div[text()='Yapım Yılı']//following-sibling::div").text().trim().toIntOrNull()
@@ -211,7 +211,7 @@ class DiziPal : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("DZP", "data » $data")
-        val document = app.get(data).document
+        val document = app.get(data, interceptor = interceptor, headers = getHeaders(mainUrl)).document
         val iframe   = document.selectFirst(".series-player-container iframe")?.attr("src") ?: document.selectFirst("div#vast_new iframe")?.attr("src") ?: return false
         Log.d("DZP", "iframe » $iframe")
 
