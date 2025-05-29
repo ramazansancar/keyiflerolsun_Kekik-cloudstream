@@ -63,7 +63,7 @@ class DiziKorea : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title     = this.selectFirst("h2")?.text()?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.poster-long-image img div.lazy")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.poster-long-image img.lazy")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) { this.posterUrl = posterUrl }
     }
@@ -71,7 +71,7 @@ class DiziKorea : MainAPI() {
     private fun Element.toPostSearchResult(): SearchResponse? {
         val title     = this.selectFirst("span")?.text()?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.poster-long-image img div.lazy")?.attr("data-src"))
+        val posterUrl = fixUrlNull(this.selectFirst("div.poster-long-image img.lazy")?.attr("data-src"))
 
         return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) { this.posterUrl = posterUrl }
     }
