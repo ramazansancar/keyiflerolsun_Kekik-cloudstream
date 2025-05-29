@@ -37,6 +37,9 @@ import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.network.CloudflareKiller
+import okhttp3.Interceptor
+import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -47,6 +50,28 @@ class HDFilmCehennemi : MainAPI() {
     override var lang                 = "tr"
     override val hasQuickSearch       = true
     override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
+
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPageDelay       = 150L  // ? 0.15 saniye
+    override var sequentialMainPageScrollDelay = 150L  // ? 0.15 saniye
+
+    // ! CloudFlare v2
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request  = chain.request()
+            val response = chain.proceed(request)
+            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+            if (doc.html().contains("Just a moment")) {
+                return cloudflareKiller.intercept(chain)
+            }
+
+            return response
+        }
+    }
 
     override val mainPage = mainPageOf(
         "${mainUrl}/load/page/sayfano/home/"                                       to "Yeni Eklenen Filmler",
@@ -75,7 +100,7 @@ class HDFilmCehennemi : MainAPI() {
             "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
             "Accept" to "*/*", "X-Requested-With" to "fetch"
         )
-        val doc = app.get(url, headers = headers, referer = mainUrl)
+        val doc = app.get(url, headers = headers, referer = mainUrl, interceptor = interceptor)
         val home: List<SearchResponse>?
         if (!doc.toString().contains("Sayfa Bulunamadı")) {
             val aa: HDFC = objectMapper.readValue(doc.toString())
@@ -120,7 +145,7 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = interceptor).document
 
         val title       = document.selectFirst("h1.section-title")?.text()?.substringBefore(" izle") ?: return null
         val poster      = fixUrlNull(document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src"))
@@ -186,7 +211,7 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
-        val script    = app.get(url, referer = "${mainUrl}/").document.select("script").find { it.data().contains("sources:") }?.data() ?: return
+        val script    = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
 		Log.d("HDCH", "script » $script")
         val videoData = getAndUnpack(script).substringAfter("file_link=\"").substringBefore("\";")
 		Log.d("HDCH", "videoData » $videoData")
@@ -228,7 +253,7 @@ override suspend fun loadLinks(
     callback: (ExtractorLink) -> Unit
 ): Boolean {
     Log.d("HDCH", "data » $data")
-    val document = app.get(data).document
+    val document = app.get(data, interceptor = interceptor).document
 
     document.select("div.alternative-links").map { element ->
         element to element.attr("data-lang").uppercase()
