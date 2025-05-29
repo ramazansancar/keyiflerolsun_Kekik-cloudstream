@@ -55,7 +55,7 @@ class DDizi : MainAPI() {
                         newTvSeriesSearchResponse(title, cleanedHref, TvType.TvSeries) {
                             this.posterUrl = posterUrl
                         }
-                    }?.take(34)
+                    }?.take(36)
         
                 listItems ?: emptyList()
             }
