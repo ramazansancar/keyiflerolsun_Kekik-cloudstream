@@ -257,14 +257,15 @@ override suspend fun loadLinks(
     }
 
     callback.invoke(
-        ExtractorLink(
+        newExtractorLink(
             source = name,
             name = "$name - $quality",
             url = fileUrl,
-            referer = ogVideo,
-            quality = getQualityFromName(quality),
-            headers = videoHeaders,
             type = if (isHls) ExtractorLinkType.M3U8 else INFER_TYPE
+            ) {
+            quality = getQualityFromName(quality)
+            headers = mapOf("Referer" to ogVideo)
+          }  
         )
     )
 
