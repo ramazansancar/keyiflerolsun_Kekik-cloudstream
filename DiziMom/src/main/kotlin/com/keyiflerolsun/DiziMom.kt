@@ -7,6 +7,10 @@ import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.network.CloudflareKiller
+import okhttp3.Interceptor
+import okhttp3.Response
+import org.jsoup.Jsoup
 
 class DiziMom : MainAPI() {
     override var mainUrl              = "https://www.dizimom.club"
@@ -16,6 +20,28 @@ class DiziMom : MainAPI() {
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.TvSeries)
 
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPageDelay       = 50L  // ? 0.05 saniye
+    override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
+
+    // ! CloudFlare v2
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request  = chain.request()
+            val response = chain.proceed(request)
+            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+            if (doc.html().contains("Just a moment")) {
+                return cloudflareKiller.intercept(chain)
+            }
+
+            return response
+        }
+    }
+    
     override val mainPage = mainPageOf(
         "${mainUrl}/tum-bolumler/page/"        to "Son Bölümler",
         "${mainUrl}/yerli-dizi-izle/page/"     to "Yerli Diziler",
@@ -28,7 +54,7 @@ class DiziMom : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("${request.data}${page}/").document
+        val document = app.get("${request.data}${page}/", interceptor = interceptor).document
         val home     = if (request.data.contains("/tum-bolumler/")) {
             document.select("div.episode-box").mapNotNull { it.sonBolumler() } 
         } else {
@@ -60,7 +86,7 @@ class DiziMom : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/?s=${query}").document
+        val document = app.get("${mainUrl}/?s=${query}", interceptor = interceptor).document
 
         return document.select("div.single-item").mapNotNull { it.diziler() }
     }
@@ -68,7 +94,7 @@ class DiziMom : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = interceptor).document
 
         val title       = document.selectFirst("div.title h1")?.text()?.substringBefore(" izle") ?: return null
         val poster      = fixUrlNull(document.selectFirst("div.category_image img")?.attr("src")) ?: return null
@@ -120,14 +146,14 @@ class DiziMom : MainAPI() {
             )
         )
 
-        val document = app.get(data, headers=ua).document
+        val document = app.get(data, headers=ua, interceptor = interceptor).document
 
         val iframes     = mutableListOf<String>()
         val mainIframe = document.selectFirst("div.video p iframe")?.attr("src") ?: return false
         iframes.add(mainIframe)
 
         document.select("div.sources a").forEach {
-            val subDocument = app.get(it.attr("href"), headers=ua).document
+            val subDocument = app.get(it.attr("href"), headers=ua, interceptor = interceptor).document
             val subIframe   = subDocument.selectFirst("div.video p iframe")?.attr("src") ?: return@forEach
 
             iframes.add(subIframe)
