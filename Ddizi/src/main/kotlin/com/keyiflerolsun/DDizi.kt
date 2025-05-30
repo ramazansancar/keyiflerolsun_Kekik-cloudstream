@@ -263,10 +263,9 @@ override suspend fun loadLinks(
             url = fileUrl,
             type = if (isHls) ExtractorLinkType.M3U8 else INFER_TYPE
             ) {
-            quality = getQualityFromName(quality)
+            this.quality = getQualityFromName(quality)
             headers = mapOf("Referer" to ogVideo)
-          }  
-        )
+          }
     )
 
     if (isHls) {
