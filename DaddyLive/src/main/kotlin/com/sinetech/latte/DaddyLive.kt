@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class DaddyLive : MainAPI() {
-    override var mainUrl              = "https://raw.githubusercontent.com/GitLatte/temporarylists/refs/heads/main/dl/dl-daddyliveall.m3u"
+    override var mainUrl              = "https://raw.githubusercontent.com/kerimmkirac/CanliTvListe/refs/heads/main/daddylive.m3u"
     private val defaultPosterUrl      = "https://raw.githubusercontent.com/GitLatte/m3ueditor/refs/heads/site/images/kanal-gorselleri/referans/isimsizkanal.png"
     override var name                 = "DaddyLive "
     override val hasMainPage          = true
