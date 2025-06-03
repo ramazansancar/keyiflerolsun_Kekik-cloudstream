@@ -37,7 +37,7 @@ open class RapidVid : ExtractorApi() {
             val bytes = extractedValue.split("\\x").filter { it.isNotEmpty() }.map { it.toInt(16).toByte() }.toByteArray()
             decoded   = String(bytes, Charsets.UTF_8)
         } else {
-            extractedValue  = Regex("""file":"\s*av\('(.*)'\)","label""").groupValues?.get(1)?.replace("\\\\x", "")
+            extractedValue  = Regex("""file":"\s*av\('(.*)'\)","label""").find(videoReq)?.groupValues?.get(1)?.replace("\\\\x", "")
 
             val bytes = extractedValue?.chunked(2)?.map { it.toInt(16).toByte() }?.toByteArray()
             decoded   = bytes?.toString(Charsets.UTF_8) ?: throw ErrorLoadingException("File not found")
