@@ -1,4 +1,4 @@
-package com.sinetech.latte
+package com.kerimmkirac
 
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
@@ -7,6 +7,6 @@ import android.content.Context
 @CloudstreamPlugin
 class VavooPlugin : Plugin() {
     override fun load(context: Context) {
-        registerMainAPI(Vavoo())
+        registerMainAPI(VavooTr())
     }
 }
