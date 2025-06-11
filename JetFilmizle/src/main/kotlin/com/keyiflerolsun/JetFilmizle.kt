@@ -27,8 +27,8 @@ class JetFilmizle : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val baseUrl = request.data
-        val url = if (page == 1) baseUrl else "$baseUrl/page/$page"
-        val document = app.get(url).document
+        val urlpage = if (page == 1) baseUrl else "$baseUrl/page/$page"
+        val document = app.get(urlpage).document
         val home     = document.select("article.movie").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(request.name, home)
