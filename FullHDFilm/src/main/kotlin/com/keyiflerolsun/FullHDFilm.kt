@@ -25,25 +25,25 @@ class FullHDFilm : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/tur/turkce-altyazili-film-izle/page"       to "Altyazılı Filmler",
-        "${mainUrl}/tur/netflix-filmleri-izle/page"		       to "Netflix",
-        "${mainUrl}/category/aile-filmleri-izle/page"	       to "Aile",
-        "${mainUrl}/category/aksiyon-filmleri-izle/page"       to "Aksiyon",
-        "${mainUrl}/category/animasyon-filmleri-izle/page"	   to "Animasyon",
-        "${mainUrl}/category/belgesel-filmleri-izle/page"	   to "Belgesel",
-        "${mainUrl}/category/bilim-kurgu-filmleri-izle/page"   to "Bilim-Kurgu",
-        "${mainUrl}/category/biyografi-filmleri-izle/page"	   to "Biyografi",
-        "${mainUrl}/category/dram-filmleri-izle/page"		   to "Dram",
-        "${mainUrl}/category/fantastik-filmler-izle/page"	   to "Fantastik",
-        "${mainUrl}/category/gerilim-filmleri-izle/page"	   to "Gerilim",
-        "${mainUrl}/category/gizem-filmleri-izle/page"		   to "Gizem",
-        "${mainUrl}/category/komedi-filmleri-izle/page"		   to "Komedi",
-        "${mainUrl}/category/korku-filmleri-izle/page"		   to "Korku",
-        "${mainUrl}/category/macera-filmleri-izle/page"		   to "Macera",
-        "${mainUrl}/category/romantik-filmler-izle/page"	   to "Romantik",
-        "${mainUrl}/category/savas-filmleri-izle/page"		   to "Savaş",
-        "${mainUrl}/category/suc-filmleri-izle/page"		   to "Suç",
-        "${mainUrl}/tur/yerli-film-izle/page"			       to "Yerli Film"
+        "${mainUrl}/tur/turkce-altyazili-film-izle"       to "Altyazılı Filmler",
+        "${mainUrl}/tur/netflix-filmleri-izle"		       to "Netflix",
+        "${mainUrl}/category/aile-filmleri-izle"	       to "Aile",
+        "${mainUrl}/category/aksiyon-filmleri-izle"       to "Aksiyon",
+        "${mainUrl}/category/animasyon-filmleri-izle"	   to "Animasyon",
+        "${mainUrl}/category/belgesel-filmleri-izle"	   to "Belgesel",
+        "${mainUrl}/category/bilim-kurgu-filmleri-izle"   to "Bilim-Kurgu",
+        "${mainUrl}/category/biyografi-filmleri-izle"	   to "Biyografi",
+        "${mainUrl}/category/dram-filmleri-izle"		   to "Dram",
+        "${mainUrl}/category/fantastik-filmler-izle"	   to "Fantastik",
+        "${mainUrl}/category/gerilim-filmleri-izle"	   to "Gerilim",
+        "${mainUrl}/category/gizem-filmleri-izle"		   to "Gizem",
+        "${mainUrl}/category/komedi-filmleri-izle"		   to "Komedi",
+        "${mainUrl}/category/korku-filmleri-izle"		   to "Korku",
+        "${mainUrl}/category/macera-filmleri-izle"		   to "Macera",
+        "${mainUrl}/category/romantik-filmler-izle"	   to "Romantik",
+        "${mainUrl}/category/savas-filmleri-izle"		   to "Savaş",
+        "${mainUrl}/category/suc-filmleri-izle"		   to "Suç",
+        "${mainUrl}/tur/yerli-film-izle"			       to "Yerli Film"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -52,7 +52,9 @@ class FullHDFilm : MainAPI() {
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                 "Referer" to "https://fullhdfilm.us/"
             )
-        val document = app.get("${request.data}/${page}/", headers=headers).document
+        val baseUrl = request.data
+        val urlpage = if (page == 1) baseUrl else "$baseUrl/page/$page"
+        val document = app.get(urlpage, headers=headers).document
         val home     = document.select("div.movie-poster").mapNotNull { it.toMainPageResult() }
 
         return newHomePageResponse(request.name, home)
