@@ -15,8 +15,32 @@ import com.lagradost.cloudstream3.utils.getQualityFromName
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Response
+import com.lagradost.cloudstream3.network.CloudflareKiller
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.APIHolder.unixTime
+
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPageDelay       = 50L  // ? 0.05 saniye
+    override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
+
+    // ! CloudFlare v2
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request  = chain.request()
+            val response = chain.proceed(request)
+            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+            if (doc.html().contains("Verifying")) {
+                return cloudflareKiller.intercept(chain)
+            }
+
+            return response
+        }
+    }
 
 class NetflixMirrorProvider : MainAPI() {
     override val supportedTypes = setOf(
@@ -41,7 +65,7 @@ class NetflixMirrorProvider : MainAPI() {
             "ott" to "nf",
             "hd" to "on"
         )
-        val document = app.get("$mainUrl/mobile/home", cookies = cookies).document
+        val document = app.get("$mainUrl/mobile/home", cookies = cookies, interceptor = interceptor).document
         val items = document.select(".tray-container, #top10").map {
             it.toHomePageList()
         }
@@ -74,7 +98,7 @@ class NetflixMirrorProvider : MainAPI() {
             "hd" to "on"
         )
         val url = "$mainUrl/mobile/search.php?s=$query&t=${APIHolder.unixTime}"
-        val data = app.get(url, referer = "$mainUrl/", cookies = cookies).parsed<SearchData>()
+        val data = app.get(url, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor).parsed<SearchData>()
 
         return data.searchResult.map {
             newAnimeSearchResponse(it.t, Id(it.id).toJson()) {
@@ -92,7 +116,7 @@ class NetflixMirrorProvider : MainAPI() {
             "hd" to "on"
         )
         val data = app.get(
-            "$mainUrl/mobile/post.php?id=$id&t=${APIHolder.unixTime}", headers, referer = "$mainUrl/", cookies = cookies
+            "$mainUrl/mobile/post.php?id=$id&t=${APIHolder.unixTime}", headers, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor
         ).parsed<PostData>()
 
         val episodes = arrayListOf<Episode>()
@@ -164,7 +188,7 @@ class NetflixMirrorProvider : MainAPI() {
                 "$mainUrl/mobile/episodes.php?s=$sid&series=$eid&t=${APIHolder.unixTime}&page=$pg",
                 headers,
                 referer = "$mainUrl/",
-                cookies = cookies
+                cookies = cookies, interceptor = interceptor
             ).parsed<EpisodesData>()
             data.episodes?.mapTo(episodes) {
                 newEpisode(LoadData(title, it.id)) {
@@ -196,7 +220,7 @@ class NetflixMirrorProvider : MainAPI() {
             "$mainUrl/mobile/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
             headers,
             referer = "$mainUrl/",
-            cookies = cookies
+            cookies = cookies, interceptor = interceptor
         ).parsed<PlayList>()
 
         playlist.forEach { item ->
