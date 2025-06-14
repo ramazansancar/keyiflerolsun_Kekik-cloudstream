@@ -45,7 +45,7 @@ class NetflixMirrorProvider : MainAPI() {
     )
     override var lang = "en"
 
-    override var mainUrl = "https://netfree2.cc"
+    override var mainUrl = "https://netfree2.cc/mobile"
     override var name = "NetflixMirror"
 
     override val hasMainPage = true
@@ -61,7 +61,7 @@ class NetflixMirrorProvider : MainAPI() {
             "ott" to "nf",
             "hd" to "on"
         )
-        val document = app.get("$mainUrl/mobile/home", cookies = cookies, interceptor = interceptor).document
+        val document = app.get("$mainUrl/home", cookies = cookies, interceptor = interceptor).document
         val items = document.select(".tray-container, #top10").map {
             it.toHomePageList()
         }
@@ -93,7 +93,7 @@ class NetflixMirrorProvider : MainAPI() {
             "t_hash_t" to cookie_value,
             "hd" to "on"
         )
-        val url = "$mainUrl/mobile/search.php?s=$query&t=${APIHolder.unixTime}"
+        val url = "$mainUrl/search.php?s=$query&t=${APIHolder.unixTime}"
         val data = app.get(url, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor).parsed<SearchData>()
 
         return data.searchResult.map {
@@ -112,7 +112,7 @@ class NetflixMirrorProvider : MainAPI() {
             "hd" to "on"
         )
         val data = app.get(
-            "$mainUrl/mobile/post.php?id=$id&t=${APIHolder.unixTime}", headers, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor
+            "$mainUrl/post.php?id=$id&t=${APIHolder.unixTime}", headers, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor
         ).parsed<PostData>()
 
         val episodes = arrayListOf<Episode>()
@@ -181,7 +181,7 @@ class NetflixMirrorProvider : MainAPI() {
         var pg = page
         while (true) {
             val data = app.get(
-                "$mainUrl/mobile/episodes.php?s=$sid&series=$eid&t=${APIHolder.unixTime}&page=$pg",
+                "$mainUrl/episodes.php?s=$sid&series=$eid&t=${APIHolder.unixTime}&page=$pg",
                 headers,
                 referer = "$mainUrl/",
                 cookies = cookies, interceptor = interceptor
@@ -213,7 +213,7 @@ class NetflixMirrorProvider : MainAPI() {
             "hd" to "on"
         )
         val playlist = app.get(
-            "$mainUrl/mobile/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
+            "$mainUrl/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
             headers,
             referer = "$mainUrl/",
             cookies = cookies, interceptor = interceptor
