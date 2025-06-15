@@ -30,7 +30,7 @@ import com.lagradost.cloudstream3.APIHolder.unixTime
             val response = chain.proceed(request)
             val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
 
-            if (doc.html().contains("Verifying")) {
+            if (doc.html().contains("human")) {
                 return cloudflareKiller.intercept(chain)
             }
 
