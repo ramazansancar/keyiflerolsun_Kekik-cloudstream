@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class FilmModu : MainAPI() {
-    override var mainUrl              = "https://www.filmmodu.io"
+    override var mainUrl              = "https://www.filmmodu.nl"
     override var name                 = "FilmModu"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -28,7 +28,6 @@ class FilmModu : MainAPI() {
         "${mainUrl}/hd-film-kategori/fantastik-filmler"     to "Fantastik",
         "${mainUrl}/hd-film-kategori/gerilim"               to "Gerilim",
         "${mainUrl}/hd-film-kategori/gizem-filmleri"        to "Gizem",
-        "${mainUrl}/hd-film-kategori/hd-hint-filmleri"      to "Hint Filmleri",
         "${mainUrl}/hd-film-kategori/kisa-film"             to "Kısa Film",
         "${mainUrl}/hd-film-kategori/hd-komedi-filmleri"    to "Komedi",
         "${mainUrl}/hd-film-kategori/komedi"                to "Komedi",
@@ -58,7 +57,7 @@ class FilmModu : MainAPI() {
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("picture img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("picture img")?.attr("data-src"))
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
     }
@@ -126,7 +125,7 @@ class FilmModu : MainAPI() {
                         source  = "${this.name} - $altName",
                         name    = "${this.name} - $altName",
                         url     = fixUrl(source.src),
-                        type    = INFER_TYPE
+                        type    = ExtractorLinkType.M3U8
                     ) {
                         this.referer = "${mainUrl}/"
                         this.quality = getQualityFromName(source.label)
