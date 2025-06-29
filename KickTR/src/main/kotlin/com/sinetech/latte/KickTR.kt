@@ -102,7 +102,7 @@ private data class AerokickSearchApiResponse(
 
 class KickTR : MainAPI() {
     override var mainUrl = "https://kick.com"
-    override var name = "Kick.com Canlı Yayınlar「🤳🏻」"
+    override var name = "Kick.com"
     override var lang = "tr"
     override val hasMainPage = true
     override val hasChromecastSupport = true
