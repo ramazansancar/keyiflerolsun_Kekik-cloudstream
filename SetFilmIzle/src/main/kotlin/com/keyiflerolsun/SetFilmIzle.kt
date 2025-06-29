@@ -3,18 +3,14 @@
 package com.keyiflerolsun
 
 import android.util.Log
+import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.loadExtractor
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import org.json.JSONObject
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
+import okhttp3.*
 
 class SetFilmIzle : MainAPI() {
     override var mainUrl              = "https://www.setfilmizle.my"
@@ -180,13 +176,15 @@ class SetFilmIzle : MainAPI() {
             "part_key"    to partKey
         )
 
+        Log.d("STF", "formData -> $formData")
+
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM).apply {
             formData.forEach { (key, value) -> addFormDataPart(key, value) }
         }.build()
 
         val headers = mapOf(
             "Referer"      to referer,
-            "Content-Type" to "MultipartBody.Builder().setType(MultipartBody.FORM)",
+            "Content-Type" to "multipart/form-data; boundary=---------------------------112453778312642376182726606734",
         )
 
         val request = Request.Builder().url("${mainUrl}/wp-admin/admin-ajax.php").post(requestBody).apply {
@@ -199,7 +197,8 @@ class SetFilmIzle : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("set", "data » $data")
+        Log.d("STF", "data » $data")
+        println("STF data » $data")
         val document = app.get(data).document
 
         document.select("nav.player a").map { element ->
@@ -210,17 +209,34 @@ class SetFilmIzle : MainAPI() {
             Triple(name, sourceId, partKey)
         }.forEach { (name, sourceId, partKey) ->
             if (sourceId.contains("event")) return@forEach
-            if (partKey == "" || sourceId == "") return@forEach
+            if (sourceId == "") return@forEach
+            var setKey= "SetPlay"
 
-            val nonce = document.select("script")
-                .mapNotNull { it.data() }
-                .firstNotNullOfOrNull { data ->
-                    Regex("""PLAYER_CONFIG\s*=\s*[^;]*?nonce\s*:\s*['"]([^'"]+)['"]""").find(data)?.groupValues?.get(1)
-                } ?: throw ErrorLoadingException("Nonce bulunamadı!")
+            val nonce        = document.selectFirst("div#playex")?.attr("data-nonce") ?: ""
+            Log.d("STF", "nonce -> $nonce")
+
             val multiPart    = sendMultipartRequest(nonce, sourceId, name, partKey, data)
             val sourceBody   = multiPart.body.string()
+            Log.d("STf", "sourceBody -> $sourceBody")
             val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
-            Log.d("set", "iframe » $sourceIframe")
+            Log.d("STF", "iframe » $sourceIframe")
+            println("STF iframe » $sourceIframe")
+
+            if (sourceIframe.contains("vctplay.site")) {
+                val vctId = sourceIframe.split("/").last()
+                val masterUrl = "https://vctplay.site/manifests/$vctId/master.txt"
+                callback.invoke(
+                    newExtractorLink(
+                        source = "FastPlay",
+                        name = "FastPlay",
+                        url = masterUrl,
+                        ExtractorLinkType.M3U8
+                    ) {
+                        referer = "https://vctplay.site/"
+                        quality = Qualities.Unknown.value
+                    }
+                )
+            }
 
             if (sourceIframe.contains("explay.store") || sourceIframe.contains("setplay.site")) {
                 loadExtractor("${sourceIframe}?partKey=${partKey}", "${mainUrl}/", subtitleCallback, callback)
