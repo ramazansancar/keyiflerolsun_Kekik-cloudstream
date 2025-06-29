@@ -11,7 +11,7 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class WFilmIzle : MainAPI() {
-    override var mainUrl = "https://www.wfilmizle.club/"
+    override var mainUrl = "https://www.wfilmizle.art"
     override var name = "WFilmİzle"
     override val hasMainPage = true
     override var lang = "tr"
@@ -54,7 +54,7 @@ class WFilmIzle : MainAPI() {
         Log.d("WFI", "Title: $title")
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: ""
         Log.d("WFI", "Href: $href")
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
         Log.d("WFI", "Poster: $posterUrl")
 
         return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
