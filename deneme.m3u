@@ -1,0 +1,124 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport1_250x150_2022.png" group-title="InatBox", beIN Sports 1 | A
+https://nanabit.cfd/static/cer/index.m3u8?md5=PiN8GYLWP_1h3mgzUqliNA&expires=1751241564
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport1_250x150_2022.png" group-title="InatBox", beIN Sports 1 | B
+https://nanabit.cfd/static/cer/index.m3u8?md5=PiN8GYLWP_1h3mgzUqliNA&expires=1751241564
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport1_250x150_2022.png" group-title="InatBox", beIN Sports 1 | C
+https://nanabit.cfd/static/cer/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport2_250x150_2022.png" group-title="InatBox", beIN Sports 2 | A
+https://nanabit.cfd/static/der/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport2_250x150_2022.png" group-title="InatBox", beIN Sports 2 | B
+https://nanabit.cfd/static/der/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport3_250x150_2022.png" group-title="InatBox", beIN Sports 3 | A
+https://nanabit.cfd/static/fer/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport3_250x150_2022.png" group-title="InatBox", beIN Sports 3 | B
+https://nanabit.cfd/static/fer/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport4_250x150_2022.png" group-title="InatBox", beIN Sports 4 | A
+https://nanabit.cfd/static/04/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/w2_Bein_Sport4_250x150_2022.png" group-title="InatBox", beIN Sports 4 | B
+https://nanabit.cfd/static/04/index.m3u8?md5=QUWivz_b8oTXq7_-9OlFpw&expires=1751241565
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/beIN_SPORTS5_250x150.png" group-title="InatBox", beIN Sports 5 | A
+https://nanabit.cfd/static/05/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/beIN_SPORTS5_250x150.png" group-title="InatBox", beIN Sports 5 | B
+https://nanabit.cfd/static/05/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/bein_sports_yeni_MAX_1_250x150_.png" group-title="InatBox", beIN Sports Max 1
+https://btctraders.help/static/mx01/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://mediacms01.digiturkplay.com/channel_logo/bein_sports_yeni_MAX_2_250x150_.png" group-title="InatBox", beIN Sports Max 2
+https://btcbuy.click/static/mx02/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/D/G-/13120/Thumbnail.png" group-title="InatBox", S Sport 1 | A
+#EXTVLCOPT:http-referrer=https://google.com
+https://marketleader.top/ssp/01.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/D/G-/13120/Thumbnail.png" group-title="InatBox", S Sport 1 | B
+https://nanabit.cfd/static/ssp01/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/t/VK/20856/Thumbnail.png" group-title="InatBox", S Sport 2 | A
+https://marketleader.top/ssp/02.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/t/VK/20856/Thumbnail.png" group-title="InatBox", S Sport 2 | B
+https://nanabit.cfd/static/ssp02/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://app.ssportplus.com/Images/Logo@2x.png" group-title="InatBox", S Sport Plus
+null
+#EXTINF:-1 tvg-logo="https://www.cable.co.uk/images/content/sky_sport_f1_logo_header_landscape_min.jpg" group-title="InatBox", Sky Sports F1
+https://blablaba.rest/static/skysprf1/index.m3u8?md5=MCSN_1oZS6gXCF4QdG9-_A&expires=1751241566
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/S/IP/11910/Thumbnail.png" group-title="InatBox", Sports TV | A
+https://sportstv.blutv.com/blutv_sportstv2/live.m3u8
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/L/Ra/11892/Thumbnail.png" group-title="InatBox", Eurosport 1 | A
+https://nanabit.cfd/static/eurosport1/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/h/Ws/11900/Thumbnail.png" group-title="InatBox", Eurosport 2 | A
+https://nanabit.cfd/static/eurosport2/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/p/el/11909/Thumbnail.png" group-title="InatBox", Spor Smart 1 | A
+https://nanabit.cfd/static/smrt01/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/p/el/11909/Thumbnail.png" group-title="InatBox", Spor Smart 1 | B
+https://nanabit.cfd/static/smrt01/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/a/Bl/14585/Thumbnail.png" group-title="InatBox", Spor Smart 2 | A
+https://nanabit.cfd/static/smrt02/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/a/Bl/14585/Thumbnail.png" group-title="InatBox", Spor Smart 2 | B
+https://nanabit.cfd/static/smrt02/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/6/7E/11911/Thumbnail.png" group-title="InatBox", Fight Box HD
+https://youtopicks.store/static/fightbox/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/o/DZ/11903/Thumbnail.png" group-title="InatBox", NBA TV | A
+https://novanudge.cfd/static/nba/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/r/qJ/13729/Thumbnail.png" group-title="InatBox", A SPOR | A
+https://securevideotoken.tmgrup.com.tr/webtv/secure?&url=https://trkvz-live.ercdn.net/asporhd/asporhd.m3u8&url2=https://trkvz-live.ercdn.net/asporhd/asporhd.m3u8
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/r/qJ/13729/Thumbnail.png" group-title="InatBox", A SPOR | B
+https://aleditor.top/static/aspor/index.m3u8?md5=DFJBJcdDUCxQEx33QMk-Rg&expires=1751241567
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/l/MK/11888/Thumbnail.png" group-title="InatBox", Trt Spor | A
+https://trt.daioncdn.net/trtspor/master.m3u8?app=web&platform=trtspor
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/l/MK/11888/Thumbnail.png" group-title="InatBox", Trt Spor | B
+https://tv-trtspor1.medya.trt.com.tr/master.m3u8
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/l/MK/11888/Thumbnail.png" group-title="InatBox", Trt Spor | C
+https://blablaba.rest/static/trtspor/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://cdn.karar.com/news/1478958.jpg" group-title="InatBox", Trt Spor Yıldız | A
+https://trt.daioncdn.net/trtspor-yildiz/master.m3u8?app=web&platform=trtspor
+#EXTINF:-1 tvg-logo="https://cdn.karar.com/news/1478958.jpg" group-title="InatBox", Trt Spor Yıldız | B
+https://btctraders.help/static/trtsporyildiz/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://www.htspor.com/images/manifest/social-share-logo.png" group-title="InatBox", HT Spor
+https://ciner.daioncdn.net/ht-spor/ht-spor.m3u8?app=web&ppid=620fbf756440122b9fc76f5797ca38e5
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor
+https://btcbuy.click/static/tabi/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor 1
+https://dealsrus.cyou/static/tabi_01/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor 2
+https://blablaba.rest/static/tabi_02/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor 3
+https://statusas.mom/static/tabi_03/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor 4
+https://statusas.mom/static/tabi_04/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor 5
+https://fluentmotion.cfd/static/tabi_05/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.ibb.co/KqrqmMP/channels4-profile-removebg-preview.png" group-title="InatBox", Tabii Spor 6
+https://youtopicks.store/static/tabi_06/index.m3u8?md5=qc_IljrfDXtRfTSN_DkFIQ&expires=1751241568
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 01
+https://str.boxbc.sbs/CDN/SSP/ex/01.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 02
+https://str.boxbc.sbs/CDN/SSP/ex/02.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 03
+https://str.boxbc.sbs/CDN/SSP/ex/03.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 04
+https://str.boxbc.sbs/CDN/SSP/ex/04.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 05
+https://str.boxbc.sbs/CDN/SSP/ex/05.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 06
+https://str.boxbc.sbs/CDN/SSP/ex/06.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 07
+https://str.boxbc.sbs/CDN/SSP/ex/07.php
+#EXTINF:-1 tvg-logo="https://i.hizliresim.com/pj1ewy2.jpeg" group-title="InatBox", EXXENSPOR 08
+https://str.boxbc.sbs/CDN/SSP/ex/08.php
+#EXTINF:-1 tvg-logo="https://tvprofil.com/img/kanali-logo/Tivibu_Spor_TR_logo.png?1643812371" group-title="InatBox", Tivibu Spor 1
+https://novanudge.cfd/static/tvb01/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://tvprofil.com/img/kanali-logo/Tivibu_Spor_TR_logo.png?1643812371" group-title="InatBox", Tivibu Spor 2
+https://premiercsf.sbs/static/tvb02/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://tvprofil.com/img/kanali-logo/Tivibu_Spor_TR_logo.png?1643812371" group-title="InatBox", Tivibu Spor 3
+https://aleditor.top/static/tvb03/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://tvprofil.com/img/kanali-logo/Tivibu_Spor_TR_logo.png?1643812371" group-title="InatBox", Tivibu Spor 4
+https://alswap.sbs/static/tvb04/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://imgrosetta.mynet.com.tr/file/2511387/2511387-700x400.jpg" group-title="InatBox", Gs TV
+https://owifavo5.rocketcdn.com/gstv/gstv.smil/chunklist.m3u8
+#EXTINF:-1 tvg-logo="https://media.fenerbahce.org/FB/media/FB/Images/Logo/logo.png?ext=.png" group-title="InatBox", Fb TV
+https://btctraders.help/static/fbtv/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/tr/2/29/TJKTV_Logo.jpg" group-title="InatBox", Tjk TV
+https://tjktv-live.tjk.org/tjktv.m3u8
+#EXTINF:-1 tvg-logo="https://img.dsmartgo.com.tr/content/P/4W/13572/Thumbnail.png" group-title="InatBox", Tay TV
+https://fluentmotion.cfd/static/taytv/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://iaftm.tmgrup.com.tr/73ad84/1200/627/0/0/1200/627?u=https://iftm.tmgrup.com.tr/2022/02/24/cbc-sport-nasil-izlenir-cbc-sport-uydu-ve-frekans-bilgileri-slavia-prag-fenerbahce-sifresiz-cbc-sport-izle-1645707326066.jpeg" group-title="InatBox", CBC Sport
+https://mybestdesigns.xyz/static/cbc/index.m3u8?md5=BeBYpLZ24mQYJFpkMsNYtw&expires=1751241569
+#EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/b/be/Turkmenistan_Sport.png/revision/latest?cb=20211225160814" group-title="InatBox", Türkmen Spor
+http://alpha.tv.online.tm/hls/ch004_720/index.m3u8
