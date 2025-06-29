@@ -8,5 +8,12 @@ import android.content.Context
 class RoketDiziPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(RoketDizi())
+        registerExtractorAPI(ContentXExtractor())
+        registerExtractorAPI(Hotlinger())
+        registerExtractorAPI(FourCX())
+        registerExtractorAPI(PlayRu())
+        registerExtractorAPI(FourPlayRu())
+        registerExtractorAPI(FourPichive())
+        registerExtractorAPI(Pichive())
     }
 }
