@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 
 data class MovieResponse(
-    @JsonProperty("results") val results: List<XMovie>,
+    @JsonProperty("results") val results: List<XMovie> = emptyList(),
 )
 
 data class TvResponse(
-    @JsonProperty("results") val results: List<XTvShow>,
+    @JsonProperty("results") val results: List<XTvShow> = emptyList(),
 )
 
 data class SearchMultiResponse(
-    @JsonProperty("results") val results: List<SearchResult>,
+    @JsonProperty("results") val results: List<SearchResult> = emptyList(),
 )
 
 
@@ -99,16 +99,16 @@ data class EpisodeInfo(
 
 
 data class MovieRecommendations(
-    @JsonProperty("results") val results: List<XMovie>
+    @JsonProperty("results") val results: List<XMovie> = emptyList()
 )
 
 data class TvRecommendations(
-    @JsonProperty("results") val results: List<XTvShow>
+    @JsonProperty("results") val results: List<XTvShow> = emptyList()
 )
 
 
 data class Credits(
-    @JsonProperty("cast") val cast: List<Cast>,
+    @JsonProperty("cast") val cast: List<Cast> = emptyList(),
 )
 
 data class Cast(
@@ -118,7 +118,7 @@ data class Cast(
 
 
 data class Genres(
-    @JsonProperty("genres") val genres: List<Genre>?
+    @JsonProperty("genres") val genres: List<Genre>? = null
 )
 
 data class Genre(
@@ -128,10 +128,10 @@ data class Genre(
 
 
 data class Stream(
-    @JsonProperty("available_qualities") val qualities: List<String>,
+    @JsonProperty("available_qualities") val qualities: List<String> = emptyList(),
     @JsonProperty("status") val status: String,
-    @JsonProperty("has_subtitles") val hasSubtitles: Boolean,
-    @JsonProperty("subtitles") val subtitles: List<PrimeSubs>
+    @JsonProperty("has_subtitles") val hasSubtitles: Boolean = false,
+    @JsonProperty("subtitles") val subtitles: List<PrimeSubs> = emptyList()
 )
 
 data class PrimeSubs(
@@ -142,7 +142,7 @@ data class PrimeSubs(
 
 data class Trailers(
     @JsonProperty("id") val id: Int,
-    @JsonProperty("results") val results: List<Trailer>
+    @JsonProperty("results") val results: List<Trailer> = emptyList()
 )
 
 data class Trailer(
