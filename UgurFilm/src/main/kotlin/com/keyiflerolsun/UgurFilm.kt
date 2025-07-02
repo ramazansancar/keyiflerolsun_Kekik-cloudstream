@@ -79,11 +79,11 @@ class UgurFilm : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
         Log.d("UGF", "data » $data")
-        val mainDocument = app.get(data).document
+        val mainDocument = app.get(data, referer=data).document
 
         mainDocument.select("li.parttab a").forEach {
             val subUrl  = fixUrlNull(it.attr("href")) ?: return false
-            val document = app.get(subUrl).document
+            val document = app.get(subUrl, referer=data).document
 
             val iframe   = fixUrlNull(document.selectFirst("div#vast iframe")?.attr("src")) ?: return@forEach
             Log.d("UGF", "iframe » $iframe")
