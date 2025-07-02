@@ -56,19 +56,15 @@ class XPrime : MainAPI() {
         val url = request.data.replace("SAYFA", page.toString())
         Log.d("XPR", "URL -> $url")
         
-        val response = if (request.name == "Movies") {
-            app.get(url).parsedSafe<MovieResponse>()
-        } else {
-            app.get(url).parsedSafe<TvResponse>()
-        }
-        
         val home = if (request.name == "Movies") {
+            val response = app.get(url).parsedSafe<MovieResponse>()
             response?.results?.map { it.toMovieSearchResponse() }
         } else {
-            (response as? TvResponse)?.results?.map { it.toTvSearchResponse() }
+            val response = app.get(url).parsedSafe<TvResponse>()
+            response?.results?.map { it.toTvSearchResponse() }
         }
 
-        return newHomePageResponse(request.name, home!!)
+        return newHomePageResponse(request.name, home ?: emptyList())
     }
 
     private fun XMovie.toMovieSearchResponse(): SearchResponse {

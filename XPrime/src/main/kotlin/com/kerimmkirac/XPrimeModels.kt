@@ -17,8 +17,8 @@ data class SearchMultiResponse(
 
 
 open class SearchResult(
-    @JsonProperty("id") val id: Int,
-    @JsonProperty("media_type") val mediaType: String? = null,
+    @JsonProperty("id") open val id: Int,
+    @JsonProperty("media_type") open val mediaType: String? = null,
 )
 
 
@@ -26,9 +26,9 @@ data class XMovie(
     @JsonProperty("backdrop_path") val backdropPath: String? = null,
     @JsonProperty("genre_ids") val genreIds: List<Int>? = null,
     @JsonProperty("genres") val genres: List<Genre>? = null,
-    @JsonProperty("id") val id: Int,
+    @JsonProperty("id") override val id: Int,
     @JsonProperty("original_title") val originalTitle: String? = null,
-    @JsonProperty("media_type") val mediaType: String? = null,
+    @JsonProperty("media_type") override val mediaType: String? = null,
     @JsonProperty("overview") val overview: String? = null,
     @JsonProperty("poster_path") val posterPath: String? = null,
     @JsonProperty("release_date") val releaseDate: String? = null,
@@ -45,10 +45,10 @@ data class XTvShow(
     @JsonProperty("backdrop_path") val backdropPath: String? = null,
     @JsonProperty("genre_ids") val genreIds: List<Int>? = null,
     @JsonProperty("genres") val genres: List<Genre>? = null,
-    @JsonProperty("id") val id: Int,
+    @JsonProperty("id") override val id: Int,
     @JsonProperty("original_name") val originalName: String? = null,
     @JsonProperty("name") val name: String? = null,
-    @JsonProperty("media_type") val mediaType: String? = null,
+    @JsonProperty("media_type") override val mediaType: String? = null,
     @JsonProperty("overview") val overview: String? = null,
     @JsonProperty("poster_path") val posterPath: String? = null,
     @JsonProperty("first_air_date") val firstAirDate: String? = null,
