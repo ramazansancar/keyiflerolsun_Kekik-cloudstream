@@ -1,4 +1,4 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
 
 package com.keyiflerolsun
 
@@ -32,6 +32,9 @@ import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.Jsoup
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import org.jsoup.nodes.Element
 import java.util.Calendar
 
@@ -45,6 +48,8 @@ class Dizilla : MainAPI() {
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.TvSeries)
 
+   
+    private val privateAESKey = "9bYMCNQiWsXIYFWYAu7EkdsSbmGBTyUI"
 
     override val mainPage = mainPageOf(
         "${mainUrl}/tum-bolumler" to "Altyazılı Bölümler",
@@ -251,12 +256,35 @@ class Dizilla : MainAPI() {
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         val secureData = objectMapper.readTree(script).get("props").get("pageProps").get("secureData")
-        val decodedData = Base64.decode(secureData.toString().replace("\"", ""), Base64.DEFAULT).toString(Charsets.UTF_8)
+        val decodedData = decryptDizillaResponse(secureData.toString().replace("\"", ""))
         val source = objectMapper.readTree(decodedData).get("RelatedResults")
             .get("getEpisodeSources").get("result").get(0).get("source_content").toString()
             .replace("\"", "").replace("\\", "")
         val iframe = fixUrlNull(Jsoup.parse(source).select("iframe").attr("src")) ?: return false
         loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
         return true
+    }
+
+   
+    private fun decryptDizillaResponse(response: String): String? {
+        try {
+            val algorithm = "AES/CBC/PKCS5Padding"
+            val keySpec = SecretKeySpec(privateAESKey.toByteArray(), "AES")
+
+            val iv = ByteArray(16)
+            val ivSpec = IvParameterSpec(iv)
+
+            val cipher1 = Cipher.getInstance(algorithm)
+            cipher1.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
+            val firstIterationData =
+                cipher1.doFinal(Base64.decode(response, Base64.DEFAULT))
+
+            val jsonString = String(firstIterationData)
+
+            return jsonString
+        } catch (e: Exception) {
+            Log.e("Dizilla", "Decryption failed: ${e.message}")
+            return null
+        }
     }
 }
