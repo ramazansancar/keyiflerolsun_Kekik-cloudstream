@@ -80,7 +80,7 @@ class Dizilla : MainAPI() {
     )
 
     override val mainPage = mainPageOf(
-        //"${mainUrl}/tum-bolumler" to "Altyazılı Bölümler",
+        "${mainUrl}/tum-bolumler" to "Yeni Eklenen Bölümler",
         "${mainUrl}/arsiv" to "Yeni Eklenen Diziler",
         "${mainUrl}/dizi-turu/aile" to "Aile",
         "${mainUrl}/dizi-turu/aksiyon" to "Aksiyon",
