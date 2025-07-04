@@ -15,28 +15,8 @@ import com.lagradost.cloudstream3.utils.getQualityFromName
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Response
-import com.lagradost.cloudstream3.network.CloudflareKiller
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.APIHolder.unixTime
-
-    // ! CloudFlare v2
-    private val cloudflareKiller by lazy { CloudflareKiller() }
-    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
-
-    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            val request  = chain.request()
-            val response = chain.proceed(request)
-            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
-
-            if (doc.html().contains("Just a moment")) {
-                return cloudflareKiller.intercept(chain)
-            }
-
-            return response
-        }
-    }
 
 class NetflixMirrorProvider : MainAPI() {
     override val supportedTypes = setOf(
@@ -45,7 +25,7 @@ class NetflixMirrorProvider : MainAPI() {
     )
     override var lang = "en"
 
-    override var mainUrl = "https://netfree2.cc/mobile"
+    override var mainUrl = "https://netfree2.cc"
     override var name = "NetflixMirror"
 
     override val hasMainPage = true
@@ -61,29 +41,32 @@ class NetflixMirrorProvider : MainAPI() {
             "ott" to "nf",
             "hd" to "on"
         )
-        val document = app.get("$mainUrl/home", cookies = cookies, interceptor = interceptor).document
-        val items = document.select(".tray-container, #top10").map {
+        val document = app.get(
+            "$mainUrl/tv/home",
+            cookies = cookies,
+            referer = "$mainUrl/tv/home",
+        ).document
+        val items = document.select(".lolomoRow").map {
             it.toHomePageList()
         }
         return newHomePageResponse(items, false)
     }
 
     private fun Element.toHomePageList(): HomePageList {
-        val name = select("h2, span").text()
-        val items = select("article, .top10-post").mapNotNull {
+        val name = select("h2 > span > div").text()
+        val items = select("img.lazy").mapNotNull {
             it.toSearchResult()
         }
         return HomePageList(name, items)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val id = selectFirst("a")?.attr("data-post") ?: attr("data-post") ?: return null
-        val posterUrl =
-            fixUrlNull(selectFirst(".card-img-container img, .top10-img img")?.attr("data-src"))
+        val id = attr("data-src").substringAfterLast("/").substringBefore(".")
+        val posterUrl = "https://img.nfmirrorcdn.top/poster/v/${id}.jpg"
 
         return newAnimeSearchResponse("", Id(id).toJson()) {
             this.posterUrl = posterUrl
-            posterHeaders = mapOf("Referer" to "$mainUrl/")
+            posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
         }
     }
 
@@ -91,15 +74,20 @@ class NetflixMirrorProvider : MainAPI() {
         cookie_value = if(cookie_value.isEmpty()) bypass(mainUrl) else cookie_value
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "hd" to "on"
+            "hd" to "on",
+            "ott" to "nf"
         )
         val url = "$mainUrl/search.php?s=$query&t=${APIHolder.unixTime}"
-        val data = app.get(url, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor).parsed<SearchData>()
+        val data = app.get(
+            url,
+            referer = "$mainUrl/tv/home",
+            cookies = cookies
+        ).parsed<SearchData>()
 
         return data.searchResult.map {
             newAnimeSearchResponse(it.t, Id(it.id).toJson()) {
                 posterUrl = "https://img.nfmirrorcdn.top/poster/v/${it.id}.jpg"
-                posterHeaders = mapOf("Referer" to "$mainUrl/")
+                posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
             }
         }
     }
@@ -109,10 +97,14 @@ class NetflixMirrorProvider : MainAPI() {
         val id = parseJson<Id>(url).id
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
+            "ott" to "nf",
             "hd" to "on"
         )
         val data = app.get(
-            "$mainUrl/post.php?id=$id&t=${APIHolder.unixTime}", headers, referer = "$mainUrl/", cookies = cookies, interceptor = interceptor
+            "$mainUrl/post.php?id=$id&t=${APIHolder.unixTime}",
+            headers,
+            referer = "$mainUrl/tv/home",
+            cookies = cookies
         ).parsed<PostData>()
 
         val episodes = arrayListOf<Episode>()
@@ -160,7 +152,7 @@ class NetflixMirrorProvider : MainAPI() {
         return newTvSeriesLoadResponse(title, url, type, episodes) {
             posterUrl = "https://img.nfmirrorcdn.top/poster/v/$id.jpg"
             backgroundPosterUrl ="https://img.nfmirrorcdn.top/poster/h/$id.jpg"
-            posterHeaders = mapOf("Referer" to "$mainUrl/")
+            posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
             plot = data.desc
             year = data.year.toIntOrNull()
             tags = genre
@@ -176,6 +168,7 @@ class NetflixMirrorProvider : MainAPI() {
         val episodes = arrayListOf<Episode>()
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
+            "ott" to "nf",
             "hd" to "on"
         )
         var pg = page
@@ -183,8 +176,8 @@ class NetflixMirrorProvider : MainAPI() {
             val data = app.get(
                 "$mainUrl/episodes.php?s=$sid&series=$eid&t=${APIHolder.unixTime}&page=$pg",
                 headers,
-                referer = "$mainUrl/",
-                cookies = cookies, interceptor = interceptor
+                referer = "$mainUrl/tv/home",
+                cookies = cookies
             ).parsed<EpisodesData>()
             data.episodes?.mapTo(episodes) {
                 newEpisode(LoadData(title, it.id)) {
@@ -210,13 +203,14 @@ class NetflixMirrorProvider : MainAPI() {
         val (title, id) = parseJson<LoadData>(data)
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
+            "ott" to "nf",
             "hd" to "on"
         )
         val playlist = app.get(
-            "$mainUrl/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
+            "$mainUrl/tv/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
             headers,
-            referer = "$mainUrl/",
-            cookies = cookies, interceptor = interceptor
+            referer = "$mainUrl/tv/home",
+            cookies = cookies
         ).parsed<PlayList>()
 
         playlist.forEach { item ->
@@ -228,7 +222,7 @@ class NetflixMirrorProvider : MainAPI() {
                         fixUrl(it.file),
                         type = ExtractorLinkType.M3U8
                     ) {
-                        this.referer = "$mainUrl/"
+                        this.referer = "$mainUrl/tv/home"
                         this.quality = getQualityFromName(it.file.substringAfter("q=", ""))
                     }
                 )

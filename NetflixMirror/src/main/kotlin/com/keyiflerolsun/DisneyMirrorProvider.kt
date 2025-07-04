@@ -4,8 +4,6 @@ import com.keyiflerolsun.entities.EpisodesData
 import com.keyiflerolsun.entities.PlayList
 import com.keyiflerolsun.entities.PostData
 import com.keyiflerolsun.entities.SearchData
-import com.keyiflerolsun.entities.MainPage
-import com.keyiflerolsun.entities.PostCategory
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
@@ -20,7 +18,7 @@ import okhttp3.Response
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.APIHolder.unixTime
 
-class PrimeVideoMirrorProvider : MainAPI() {
+class DisneyMirrorProvider : MainAPI() {
     override val supportedTypes = setOf(
         TvType.Movie,
         TvType.TvSeries,
@@ -28,49 +26,48 @@ class PrimeVideoMirrorProvider : MainAPI() {
     override var lang = "en"
 
     override var mainUrl = "https://netfree2.cc"
-    override var name = "PrimeVideoMirror"
+    override var name = "DisneyMirror"
 
     override val hasMainPage = true
     private var cookie_value = ""
     private val headers = mapOf(
         "X-Requested-With" to "XMLHttpRequest"
     )
+    private val newUrl = "https://a.netfree2.cc"
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse? {
         cookie_value = if(cookie_value.isEmpty()) bypass(mainUrl) else cookie_value
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "ott" to "pv",
+            "ott" to "dp",
             "hd" to "on"
         )
-        val data = app.get(
-            "$mainUrl/tv/pv/homepage.php",
+        val document = app.get(
+            "$newUrl/mobile/home",
             cookies = cookies,
             referer = "$mainUrl/tv/home",
-        ).parsed<MainPage>()
-
-        val items = data.post.map {
+        ).document
+        val items = document.select(".tray-container, #top10").map {
             it.toHomePageList()
         }
-
         return newHomePageResponse(items, false)
     }
 
-    private fun PostCategory.toHomePageList(): HomePageList {
-        val name = cate
-        val items = ids.split(",").mapNotNull {
-            toSearchResult(it)
+    private fun Element.toHomePageList(): HomePageList {
+        val name = select("h2, span").text()
+        val items = select("article, .top10-post").mapNotNull {
+            it.toSearchResult()
         }
-        return HomePageList(
-            name,
-            items,
-            isHorizontalImages = true
-        )
+        return HomePageList(name, items, isHorizontalImages = false)
     }
 
-    private fun toSearchResult(id: String): SearchResponse? {
+    private fun Element.toSearchResult(): SearchResponse? {
+        val id = selectFirst("a")?.attr("data-post") ?: attr("data-post") ?: return null
+        val posterUrl =
+            fixUrlNull(selectFirst(".card-img-container img, .top10-img img")?.attr("data-src"))
+
         return newAnimeSearchResponse("", Id(id).toJson()) {
-            this.posterUrl = "https://img.nfmirrorcdn.top/pv/900/$id.jpg"
+            this.posterUrl = posterUrl
             posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
         }
     }
@@ -79,30 +76,30 @@ class PrimeVideoMirrorProvider : MainAPI() {
         cookie_value = if(cookie_value.isEmpty()) bypass(mainUrl) else cookie_value
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "ott" to "pv",
-            "hd" to "on"
+            "hd" to "on",
+            "ott" to "dp"
         )
-        val url = "$mainUrl/pv/search.php?s=$query&t=${APIHolder.unixTime}"
+        val url = "$mainUrl/mobile/hs/search.php?s=$query&t=${APIHolder.unixTime}"
         val data = app.get(url, referer = "$mainUrl/tv/home", cookies = cookies).parsed<SearchData>()
 
         return data.searchResult.map {
             newAnimeSearchResponse(it.t, Id(it.id).toJson()) {
-                posterUrl = "https://img.nfmirrorcdn.top/pv/900/${it.id}.jpg"
+                posterUrl = "https://imgcdn.media/hs/v/1000/${it.id}.jpg"
                 posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
             }
         }
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val id = parseJson<Id>(url).id
         cookie_value = if(cookie_value.isEmpty()) bypass(mainUrl) else cookie_value
+        val id = parseJson<Id>(url).id
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "ott" to "pv",
-            "hd" to "on"
+            "hd" to "on",
+            "ott" to "dp"
         )
         val data = app.get(
-            "$mainUrl/pv/post.php?id=$id&t=${APIHolder.unixTime}",
+            "$mainUrl/mobile/hs/post.php?id=$id&t=${APIHolder.unixTime}",
             headers,
             referer = "$mainUrl/tv/home",
             cookies = cookies
@@ -131,10 +128,10 @@ class PrimeVideoMirrorProvider : MainAPI() {
         } else {
             data.episodes.filterNotNull().mapTo(episodes) {
                 newEpisode(LoadData(title, it.id)) {
-                    name = it.t
-                    episode = it.ep.replace("E", "").toIntOrNull()
-                    season = it.s.replace("S", "").toIntOrNull()
-                    this.posterUrl = "https://img.nfmirrorcdn.top/pvepimg/${it.id}.jpg"
+                    this.name = it.t
+                    this.episode = it.ep.replace("E", "").toIntOrNull()
+                    this.season = it.s.replace("S", "").toIntOrNull()
+                    this.posterUrl = "https://imgcdn.media/hsepimg/${it.id}.jpg"
                     this.runTime = it.time.replace("m", "").toIntOrNull()
                 }
             }
@@ -151,7 +148,8 @@ class PrimeVideoMirrorProvider : MainAPI() {
         val type = if (data.episodes.first() == null) TvType.Movie else TvType.TvSeries
 
         return newTvSeriesLoadResponse(title, url, type, episodes) {
-            posterUrl = "https://img.nfmirrorcdn.top/pv/900/$id.jpg"
+            posterUrl = "https://imgcdn.media/hs/v/1000/$id.jpg"
+            backgroundPosterUrl ="https://imgcdn.media/hs/h/1000/$id.jpg"
             posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
             plot = data.desc
             year = data.year.toIntOrNull()
@@ -168,13 +166,13 @@ class PrimeVideoMirrorProvider : MainAPI() {
         val episodes = arrayListOf<Episode>()
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "ott" to "pv",
-            "hd" to "on"
+            "hd" to "on",
+            "ott" to "dp"
         )
         var pg = page
         while (true) {
             val data = app.get(
-                "$mainUrl/pv/episodes.php?s=$sid&series=$eid&t=${APIHolder.unixTime}&page=$pg",
+                "$mainUrl/mobile/hs/episodes.php?s=$sid&series=$eid&t=${APIHolder.unixTime}&page=$pg",
                 headers,
                 referer = "$mainUrl/tv/home",
                 cookies = cookies
@@ -184,7 +182,7 @@ class PrimeVideoMirrorProvider : MainAPI() {
                     name = it.t
                     episode = it.ep.replace("E", "").toIntOrNull()
                     season = it.s.replace("S", "").toIntOrNull()
-                    this.posterUrl = "https://img.nfmirrorcdn.top/pvepimg/${it.id}.jpg"
+                    this.posterUrl = "https://imgcdn.media/hsepimg/${it.id}.jpg"
                     this.runTime = it.time.replace("m", "").toIntOrNull()
                 }
             }
@@ -203,11 +201,11 @@ class PrimeVideoMirrorProvider : MainAPI() {
         val (title, id) = parseJson<LoadData>(data)
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "ott" to "pv",
-            "hd" to "on"
+            "hd" to "on",
+            "ott" to "dp"
         )
         val playlist = app.get(
-            "$mainUrl/tv/pv/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
+            "$mainUrl/mobile/hs/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",
             headers,
             referer = "$mainUrl/tv/home",
             cookies = cookies
@@ -263,9 +261,5 @@ class PrimeVideoMirrorProvider : MainAPI() {
 
     data class LoadData(
         val title: String, val id: String
-    )
-
-    data class Cookie(
-        val cookie: String
     )
 }
