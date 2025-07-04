@@ -143,7 +143,7 @@ override suspend fun loadLinks(
 
         for (j in 0 until mp4Array.length()) {
             val mp4 = mp4Array.getJSONObject(j)
-            val videoUrl = mp4.getString("src")
+            val videoUrl = "https://api.animeuzayi.com" + mp4.getString("src")
             val quality = mp4.optInt("size", Qualities.Unknown.value)
 
             callback.invoke(

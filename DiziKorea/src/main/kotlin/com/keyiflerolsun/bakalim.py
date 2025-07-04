@@ -5,7 +5,7 @@ from cloudscraper import CloudScraper as Session
 # from httpx        import Client as Session
 from parsel       import Selector
 
-mainUrl = "https://dizikorea.vip"
+mainUrl = "https://dizikorea.pw"
 oturum  = Session()
 
 oturum.headers.update({
