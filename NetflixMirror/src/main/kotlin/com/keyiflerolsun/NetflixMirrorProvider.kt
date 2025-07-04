@@ -54,6 +54,9 @@ class NetflixMirrorProvider : MainAPI() {
 
     private fun Element.toHomePageList(): HomePageList {
         val name = select("h2 > span > div").text()
+        if (name.contains("Tamil") || name.contains("Hindi") || name.contains("Indian")) {
+             return HomePageList("", emptyList())
+        }
         val items = select("img.lazy").mapNotNull {
             it.toSearchResult()
         }
