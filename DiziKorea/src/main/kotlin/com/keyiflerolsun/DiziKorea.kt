@@ -173,7 +173,17 @@ class DiziKorea : MainAPI() {
         val iframe = fixUrlNull(rawHhs) ?: return@forEach
         Log.d("DZK", "iframe » $iframe")
 
-        loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
+        callback.invoke(
+                newExtractorLink(
+                    source = this.name,
+                    name = this.name,
+                    url = iframe,
+                    type = INFER_TYPE
+                ) {
+                    headers = mapOf("Referer" to "${mainUrl}/")
+                    quality = Qualities.Unknown.value
+                }
+            )
     }
 
     return true
