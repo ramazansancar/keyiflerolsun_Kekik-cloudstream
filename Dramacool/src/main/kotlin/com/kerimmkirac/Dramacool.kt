@@ -25,31 +25,24 @@ class Dramacool : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("${request.data}/page/$page").document
-        val home = document.select("ul.switch-block li").mapNotNull { it.toMainPageResult(request.data) } 
+        val home = document.select("ul.switch-block li").mapNotNull { it.toMainPageResult(request.data) }
         return newHomePageResponse(request.name, home)
     }
 
-    
     private fun Element.toMainPageResult(categoryUrl: String): SearchResponse? {
         val aTag = this.selectFirst("a") ?: return null
         val baseTitle = aTag.selectFirst("h3.title")?.text()?.trim() ?: return null
         val originalHref = fixUrlNull(aTag.attr("href")) ?: return null
         val posterUrl = fixUrlNull(aTag.selectFirst("img")?.attr("src"))
 
-        val epSpan = this.selectFirst("span.ep")?.text()?.trim() 
-        
+        val epSpan = this.selectFirst("span.ep")?.text()?.trim()
         val href = convertToSeriesUrl(originalHref)
 
-       
         val finalTitle = if (categoryUrl.contains("recently-added-drama") || categoryUrl.contains("recently-added-kshow")) {
             if (epSpan != null && epSpan.startsWith("EP")) {
-                "$baseTitle $epSpan" 
-            } else {
-                baseTitle
-            }
-        } else {
-            baseTitle 
-        }
+                "$baseTitle $epSpan"
+            } else baseTitle
+        } else baseTitle
 
         return newMovieSearchResponse(finalTitle, href, TvType.AsianDrama) {
             this.posterUrl = posterUrl
@@ -62,9 +55,8 @@ class Dramacool : MainAPI() {
                 val urlParts = originalUrl.split("/")
                 val episodePart = urlParts.find { it.contains("episode-") } ?: return originalUrl
                 val seriesName = episodePart.replace(Regex("""-episode-\d+.*$"""), "")
-                "$mainUrl/series/${seriesName}/"
+                "$mainUrl/series/$seriesName/"
             }
-            
             else -> originalUrl
         }
     }
@@ -96,24 +88,14 @@ class Dramacool : MainAPI() {
         val year = document.selectFirst("p:has(span:contains(Released:)) a")?.text()?.toIntOrNull()
         val tags = document.select("p:has(span:contains(Genre:)) a").map { it.text() }
         val trailer = document.selectFirst("div.trailer iframe")?.attr("src")
-    ?.let { src ->
-        Regex("""youtube\.com/embed/([^/?]+)""").find(src)?.groupValues?.get(1)
-    }?.let { id ->
-        "https://www.youtube.com/embed/$id"
-    }
-
+            ?.let { src -> Regex("""youtube\\.com/embed/([^/?]+)""").find(src)?.groupValues?.get(1) }
+            ?.let { id -> "https://www.youtube.com/embed/$id" }
 
         val episodes = document.select("ul.list-episode-item-2.all-episode li").mapNotNull { li ->
             val aTag = li.selectFirst("a") ?: return@mapNotNull null
             val epUrl = fixUrlNull(aTag.attr("href")) ?: return@mapNotNull null
-            
-            
-           
-            val epNumber = Regex("""episode-(\d+)(?:-\w+)?/?$""").find(epUrl) 
-                ?.groupValues?.get(1)
-                ?.toIntOrNull() ?: 0
-            
-            val epTitle = "Bölüm $epNumber" 
+            val epNumber = Regex("""episode-(\d+)(?:-\w+)?/?$""").find(epUrl)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            val epTitle = "Bölüm $epNumber"
 
             newEpisode(epUrl) {
                 this.name = epTitle
@@ -160,97 +142,50 @@ class Dramacool : MainAPI() {
         return true
     }
 
-   private suspend fun extractAsianLoadWithJsHandling(url: String, callback: (ExtractorLink) -> Unit) {
-    try {
-        Log.d("AsianLoad", "AsianLoad iframe URL'sine gidiliyor: $url")
-        val document = app.get(url).document
+    private suspend fun extractAsianLoadWithJsHandling(url: String, callback: (ExtractorLink) -> Unit) {
+        try {
+            Log.d("AsianLoad", "AsianLoad iframe URL'sine gidiliyor: $url")
+            val document = app.get(url).document
+            val script = document.selectFirst("div#player + script")?.html() ?: return
 
-        val script = document.selectFirst("div#player + script")?.html()
-
-        if (script == null) {
-            Log.w("AsianLoad", "Eval ile sıkıştırılmış JavaScript kodu bulunamadı: $url")
-            return
-        }
-
-        if (!script.startsWith("eval(function(p,a,c,k,e,d){")) {
-            Log.e("AsianLoad", "Bulunan scriptte eval yok aq: $url")
-            Log.e("AsianLoad", "Script içeriği: ${script.take(100)}")
-            return
-        }
-
-        Log.d("AsianLoad", "JavaScript kodu bulduk , deşifre ediliyor")
-        val unpacked = JsUnpacker(script).unpack()
-
-        if (unpacked != null) {
-            Log.d("AsianLoad", "JavaScript deşifre edildi")
-            Log.v("AsianLoad", "Deşifre edilmiş JS unpacked: $unpacked")
-
-            val allBase64Links = mutableListOf<String>()
-            val base64Regex = Regex("""window\.atob\("([^"]+)"\)""")
-            base64Regex.findAll(unpacked).forEach { match ->
-                val base64EncodedUrl = match.groupValues[1]
-                allBase64Links.add(base64EncodedUrl)
+            if (!script.startsWith("eval(function(p,a,c,k,e,d){")) {
+                Log.e("AsianLoad", "Eval içeren script bulunamadı: $url")
+                return
             }
 
-            var foundVideoLink = false
+            val unpacked = JsUnpacker(script).unpack() ?: return
 
-            for (base64EncodedUrl in allBase64Links) {
-                try {
-                    val decodedLink = String(Base64.decode(base64EncodedUrl, Base64.DEFAULT))
+            val allBase64Links = Regex("""window\\.atob\("([^"]+)"\)""").findAll(unpacked).mapNotNull {
+                it.groupValues.getOrNull(1)
+            }.toList()
 
-                    when {
-                        decodedLink.contains(".mp4") -> {
-                            Log.d("AsianLoad", "mp4 linki tespit edildi (decoded): $decodedLink")
-                            callback(
-                                newExtractorLink {
-                                    this.name = "AsianLoad (mp4)"
-                                    this.source = "AsianLoad"
-                                    this.url = decodedLink
-                                    this.referer = url
-                                    this.quality = Qualities.Unknown.value
-                                    this.isM3u8 = false
-                                }
-                            )
-                            foundVideoLink = true
+            for (encoded in allBase64Links) {
+                val decoded = String(Base64.decode(encoded, Base64.DEFAULT))
+                when {
+                    decoded.contains(".mp4") -> callback(
+                        newExtractorLink {
+                            name = "AsianLoad (mp4)"
+                            source = "AsianLoad"
+                            url = decoded
+                            referer = url
+                            quality = Qualities.Unknown.value
+                            isM3u8 = false
                         }
-
-                        decodedLink.contains(".m3u8") -> {
-                            Log.d("AsianLoad", "m3u8 linki tespit edildi (decoded): $decodedLink")
-                            callback(
-                                newExtractorLink {
-                                    this.name = "AsianLoad (m3u8)"
-                                    this.source = "AsianLoad"
-                                    this.url = decodedLink
-                                    this.referer = url
-                                    this.quality = Qualities.Unknown.value
-                                    this.isM3u8 = true
-                                }
-                            )
-                            foundVideoLink = true
+                    )
+                    decoded.contains(".m3u8") -> callback(
+                        newExtractorLink {
+                            name = "AsianLoad (m3u8)"
+                            source = "AsianLoad"
+                            url = decoded
+                            referer = url
+                            quality = Qualities.Unknown.value
+                            isM3u8 = true
                         }
-
-                        decodedLink.contains(".jpg") || decodedLink.contains(".png") -> {
-                            Log.d("AsianLoad", "Resim bulduk (decoded): $decodedLink")
-                        }
-
-                        else -> {
-                            Log.d("AsianLoad", "Diğer link: $decodedLink")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e("AsianLoad", "decode hatası: ${e.message}, encoded: $base64EncodedUrl")
+                    )
                 }
             }
-
-            if (!foundVideoLink) {
-                Log.w("AsianLoad", "Ne mp4 ne m3u8 var")
-            }
-
-        } else {
-            Log.e("AsianLoad", "deşifre edemedik a $url")
+        } catch (e: Exception) {
+            Log.e("AsianLoad", "Hata oluştu: ${e.message}", e)
         }
-    } catch (e: Exception) {
-        Log.e("AsianLoad", "AsianLoad extract edilirken beklenmeyen bir hata oluştu: ${e.message}", e)
     }
 }
-
