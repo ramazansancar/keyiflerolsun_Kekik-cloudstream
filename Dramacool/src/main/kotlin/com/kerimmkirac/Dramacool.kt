@@ -160,7 +160,7 @@ class Dramacool : MainAPI() {
         return true
     }
 
-    private suspend fun extractAsianLoadWithJsHandling(url: String, callback: (ExtractorLink) -> Unit) {
+   private suspend fun extractAsianLoadWithJsHandling(url: String, callback: (ExtractorLink) -> Unit) {
     try {
         Log.d("AsianLoad", "AsianLoad iframe URL'sine gidiliyor: $url")
         val document = app.get(url).document
@@ -203,12 +203,12 @@ class Dramacool : MainAPI() {
                             Log.d("AsianLoad", "mp4 linki tespit edildi (decoded): $decodedLink")
                             callback(
                                 newExtractorLink {
-                                    name = "AsianLoad (mp4)"
-                                    source = "AsianLoad"
-                                    url = decodedLink
-                                    referer = url
-                                    quality = Qualities.Unknown.value
-                                    isM3u8 = false
+                                    this.name = "AsianLoad (mp4)"
+                                    this.source = "AsianLoad"
+                                    this.url = decodedLink
+                                    this.referer = url
+                                    this.quality = Qualities.Unknown.value
+                                    this.isM3u8 = false
                                 }
                             )
                             foundVideoLink = true
@@ -218,12 +218,12 @@ class Dramacool : MainAPI() {
                             Log.d("AsianLoad", "m3u8 linki tespit edildi (decoded): $decodedLink")
                             callback(
                                 newExtractorLink {
-                                    name = "AsianLoad (m3u8)"
-                                    source = "AsianLoad"
-                                    url = decodedLink
-                                    referer = url
-                                    quality = Qualities.Unknown.value
-                                    isM3u8 = true
+                                    this.name = "AsianLoad (m3u8)"
+                                    this.source = "AsianLoad"
+                                    this.url = decodedLink
+                                    this.referer = url
+                                    this.quality = Qualities.Unknown.value
+                                    this.isM3u8 = true
                                 }
                             )
                             foundVideoLink = true
@@ -253,3 +253,4 @@ class Dramacool : MainAPI() {
         Log.e("AsianLoad", "AsianLoad extract edilirken beklenmeyen bir hata oluştu: ${e.message}", e)
     }
 }
+
