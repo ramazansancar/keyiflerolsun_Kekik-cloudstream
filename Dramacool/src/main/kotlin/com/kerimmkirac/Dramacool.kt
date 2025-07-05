@@ -161,90 +161,95 @@ class Dramacool : MainAPI() {
     }
 
     private suspend fun extractAsianLoadWithJsHandling(url: String, callback: (ExtractorLink) -> Unit) {
-        try {
-            Log.d("AsianLoad", "AsianLoad iframe URL'sine gidiliyor: $url")
-            val document = app.get(url).document
-            
-            val script = document.selectFirst("div#player + script")?.html()
+    try {
+        Log.d("AsianLoad", "AsianLoad iframe URL'sine gidiliyor: $url")
+        val document = app.get(url).document
 
-            if (script == null) {
-                Log.w("AsianLoad", "Eval ile sıkıştırılmış JavaScript kodu bulunamadı: $url")
-                return
+        val script = document.selectFirst("div#player + script")?.html()
+
+        if (script == null) {
+            Log.w("AsianLoad", "Eval ile sıkıştırılmış JavaScript kodu bulunamadı: $url")
+            return
+        }
+
+        if (!script.startsWith("eval(function(p,a,c,k,e,d){")) {
+            Log.e("AsianLoad", "Bulunan scriptte eval yok aq: $url")
+            Log.e("AsianLoad", "Script içeriği: ${script.take(100)}")
+            return
+        }
+
+        Log.d("AsianLoad", "JavaScript kodu bulduk , deşifre ediliyor")
+        val unpacked = JsUnpacker(script).unpack()
+
+        if (unpacked != null) {
+            Log.d("AsianLoad", "JavaScript deşifre edildi")
+            Log.v("AsianLoad", "Deşifre edilmiş JS unpacked: $unpacked")
+
+            val allBase64Links = mutableListOf<String>()
+            val base64Regex = Regex("""window\.atob\("([^"]+)"\)""")
+            base64Regex.findAll(unpacked).forEach { match ->
+                val base64EncodedUrl = match.groupValues[1]
+                allBase64Links.add(base64EncodedUrl)
             }
 
-            if (!script.startsWith("eval(function(p,a,c,k,e,d){")) {
-                 Log.e("AsianLoad", "Bulunan scriptte eval yok aq: $url")
-                 Log.e("AsianLoad", "Script içeriği: ${script.take(100)}")
-                 return
-            }
+            var foundVideoLink = false
 
-            Log.d("AsianLoad", "JavaScript kodu bulduk , deşifre ediliyor")
-            val unpacked = JsUnpacker(script).unpack()
+            for (base64EncodedUrl in allBase64Links) {
+                try {
+                    val decodedLink = String(Base64.decode(base64EncodedUrl, Base64.DEFAULT))
 
-            if (unpacked != null) {
-                Log.d("AsianLoad", "JavaScript deşifre edildi")
-                Log.v("AsianLoad", "Deşifre edilmiş JS unpacked: $unpacked")
-
-                val allBase64Links = mutableListOf<String>()
-
-                val base64Regex = Regex("""window\.atob\("([^"]+)"\)""")
-                base64Regex.findAll(unpacked).forEach { match ->
-                    val base64EncodedUrl = match.groupValues[1]
-                    allBase64Links.add(base64EncodedUrl)
-                }
-
-                var foundVideoLink = false
-
-                for (base64EncodedUrl in allBase64Links) {
-                    try {
-                        val decodedLink = String(Base64.decode(base64EncodedUrl, Base64.DEFAULT))
-                        
-                        if (decodedLink.contains(".mp4")) {
+                    when {
+                        decodedLink.contains(".mp4") -> {
                             Log.d("AsianLoad", "mp4 linki tespit edildi (decoded): $decodedLink")
                             callback(
-                                ExtractorLink(
-                                    name = "AsianLoad (mp4)",
-                                    source = "AsianLoad",
-                                    url = decodedLink,
-                                    referer = url,
-                                    quality = Qualities.Unknown.value,
+                                newExtractorLink {
+                                    name = "AsianLoad (mp4)"
+                                    source = "AsianLoad"
+                                    url = decodedLink
+                                    referer = url
+                                    quality = Qualities.Unknown.value
                                     isM3u8 = false
-                                )
+                                }
                             )
                             foundVideoLink = true
-                        } else if (decodedLink.contains(".m3u8")) {
-                            Log.d("AsianLoad", "m3u8 linki tespit edildi (decoded): $decodedLink")
-                            callback(
-                                ExtractorLink(
-                                    name = "AsianLoad (m3u8)",
-                                    source = "AsianLoad",
-                                    url = decodedLink,
-                                    referer = url,
-                                    quality = Qualities.Unknown.value,
-                                    isM3u8 = true
-                                )
-                            )
-                            foundVideoLink = true
-                        } else if (decodedLink.contains(".jpg") || decodedLink.contains(".png")) {
-                             Log.d("AsianLoad", "Resim bulduk (decoded): $decodedLink")
-                        } else {
-                            Log.d("AsianLoad", "Diğer link: $decodedLink")
                         }
 
-                    } catch (e: Exception) {
-                        Log.e("AsianLoad", "decode hatası: ${e.message}, encoded: $base64EncodedUrl")
+                        decodedLink.contains(".m3u8") -> {
+                            Log.d("AsianLoad", "m3u8 linki tespit edildi (decoded): $decodedLink")
+                            callback(
+                                newExtractorLink {
+                                    name = "AsianLoad (m3u8)"
+                                    source = "AsianLoad"
+                                    url = decodedLink
+                                    referer = url
+                                    quality = Qualities.Unknown.value
+                                    isM3u8 = true
+                                }
+                            )
+                            foundVideoLink = true
+                        }
+
+                        decodedLink.contains(".jpg") || decodedLink.contains(".png") -> {
+                            Log.d("AsianLoad", "Resim bulduk (decoded): $decodedLink")
+                        }
+
+                        else -> {
+                            Log.d("AsianLoad", "Diğer link: $decodedLink")
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e("AsianLoad", "decode hatası: ${e.message}, encoded: $base64EncodedUrl")
                 }
-
-                if (!foundVideoLink) {
-                    Log.w("AsianLoad", "Ne mp4 ne m3u8 var")
-                }
-
-            } else {
-                Log.e("AsianLoad", "deşifre edemedik a $url")
             }
-        } catch (e: Exception) {
-            Log.e("AsianLoad", "AsianLoad extract edilirken beklenmeyen bir hata oluştu: ${e.message}", e)
+
+            if (!foundVideoLink) {
+                Log.w("AsianLoad", "Ne mp4 ne m3u8 var")
+            }
+
+        } else {
+            Log.e("AsianLoad", "deşifre edemedik a $url")
         }
+    } catch (e: Exception) {
+        Log.e("AsianLoad", "AsianLoad extract edilirken beklenmeyen bir hata oluştu: ${e.message}", e)
     }
 }
