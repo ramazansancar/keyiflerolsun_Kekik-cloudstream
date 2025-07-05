@@ -210,9 +210,11 @@ override suspend fun loadLinks(
 
         Triple(name, sourceId, partKey)
     }.forEach { (name, sourceId, partKey) ->
-        if (sourceId.contains("event") || sourceId.isEmpty()) return@forEach
+        if (sourceId.contains("event")) return@forEach
+        if (sourceId == "") return@forEach
+        var setKey= "SetPlay"
 
-        val nonce = Regex("""data-nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
+        val nonce = Regex("""nonce: '(.*)'""").find(document.html())?.groupValues?.get(1) ?: ""
         val multiPart = sendMultipartRequest(nonce, sourceId, name, partKey ?: "", data)
         val sourceBody = multiPart.body.string()
         val sourceIframe = JSONObject(sourceBody).optJSONObject("data")?.optString("url") ?: return@forEach
