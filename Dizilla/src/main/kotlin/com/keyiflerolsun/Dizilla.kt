@@ -137,7 +137,7 @@ class Dizilla : MainAPI() {
 
         val title = "$name - $epName"
 
-        val epDoc = fixUrlNull(this.attr("href"))?.let { app.get(it).document }
+        val epDoc = fixUrlNull(this.attr("href"))?.let { Jsoup.parse(app.get(it).body.string()) }
 
         val href = fixUrlNull(epDoc?.selectFirst("div.poster a")?.attr("href")) ?: "return null"
 
