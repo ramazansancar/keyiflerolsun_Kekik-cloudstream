@@ -95,7 +95,8 @@ class Dizilla : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        var document = app.get(request.data, interceptor = interceptor, useStreaming = true).document
+	val response = app.get(request.data, interceptor = interceptor)
+        val document = Jsoup.parse(response.body.string())
         val home = if (request.data.contains("dizi-turu")) {
             document.select("span.watchlistitem-").mapNotNull { it.diziler() }
         } else if (request.data.contains("/arsiv")) {
@@ -137,7 +138,7 @@ class Dizilla : MainAPI() {
 
         val title = "$name - $epName"
 
-        val epDoc = fixUrlNull(this.attr("href"))?.let { app.get(it, useStreaming = true).document }
+        val epDoc = fixUrlNull(this.attr("href"))?.let { app.get(it).document }
 
         val href = fixUrlNull(epDoc?.selectFirst("div.poster a")?.attr("href")) ?: "return null"
 
