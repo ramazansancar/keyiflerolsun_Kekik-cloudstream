@@ -157,7 +157,8 @@ class JetFilmizle : MainAPI() {
                         ) {
                             this. quality = Qualities.Unknown.value
                         }
-                    ) else {
+                    )
+                    } else {
                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
         }
