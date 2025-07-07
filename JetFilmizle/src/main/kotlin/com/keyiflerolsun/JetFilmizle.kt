@@ -164,4 +164,7 @@ class JetFilmizle : MainAPI() {
 
         return true
     }
+	    private fun String.addMarks(str: String): String {
+        return this.replace(Regex("\"?$str\"?"), "\"$str\"")
+    }
 }
