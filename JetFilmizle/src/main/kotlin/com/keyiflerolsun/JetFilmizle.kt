@@ -126,6 +126,9 @@ class JetFilmizle : MainAPI() {
             }
         }
 
+        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
         for (iframe in iframes) {
             if (iframe.contains("d2rs")) {
                 Log.d("JTF", "jetv » $iframe")
