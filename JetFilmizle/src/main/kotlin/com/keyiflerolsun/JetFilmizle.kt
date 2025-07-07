@@ -127,7 +127,30 @@ class JetFilmizle : MainAPI() {
                 Log.d("JTF", "jetvIframe » $jetvIframe")
 
                 loadExtractor(jetvIframe, "${mainUrl}/", subtitleCallback, callback)
-            } else {
+            } else if (iframe.contains("jetv.xyz")) {
+                    Log.d("JTF", "jetv » $iframe")
+                    val jetvDoc    = app.get(iframe).document
+                    /*val jetvIframe = fixUrlNull(jetvDoc.selectFirst("iframe")?.attr("src")) ?: return@forEach
+                    Log.d("JTF", "jetvIframe » $jetvIframe")
+                    loadExtractor(jetvIframe, "${mainUrl}/", subtitleCallback, callback)*/
+                    val script =
+                        jetvDoc.select("script").find { it.data().contains("\"sources\": [") }
+                            ?.data()
+                            ?: ""
+                    val source = script.substringAfter("\"sources\": [").substringBefore("]")
+                        .addMarks("file").addMarks("type").addMarks("label").replace("\'", "\"")
+                    Log.d("JTF", "source -> $source")
+                    val son: Source = objectMapper.readValue(source)
+                    callback.invoke(
+                        newExtractorLink(
+                            source = "Jetv" + " - " + son.label,
+                            name = "Jetv" + " - " + son.label,
+                            url = son.file,
+                            ExtractorLinkType.M3U8
+                        ) {
+                            this. quality = Qualities.Unknown.value
+                        }
+                    ) else {
                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
         }
