@@ -476,7 +476,8 @@ class DiziAsya : MainAPI() {
         try {
             val headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
-                "Sec-Fetch-Dest" to "iframe"
+                "Sec-Fetch-Dest" to "iframe",
+                "Referer" to "https://vidmoly.to/"
             )
 
             val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
@@ -498,7 +499,7 @@ class DiziAsya : MainAPI() {
                         url = m3uLink,
                         type = ExtractorLinkType.M3U8
                     ) {
-                        headers = mapOf("Referer" to "https://vidmoly.to/")
+                        
                         quality = Qualities.Unknown.value
                     }
                 )
