@@ -497,7 +497,8 @@ class DiziAsya : MainAPI() {
                         source = "VidMoly",
                         name = "VidMoly [#${index + 1}]",
                         url = m3uLink,
-                        type = ExtractorLinkType.M3U8
+                        type = ExtractorLinkType.M3U8,
+                        headers = mapOf("Referer" to "https://vidmoly.to/")
                     ) {
                         
                         quality = Qualities.Unknown.value
