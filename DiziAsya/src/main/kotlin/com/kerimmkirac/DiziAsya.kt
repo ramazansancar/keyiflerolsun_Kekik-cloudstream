@@ -460,10 +460,11 @@ class DiziAsya : MainAPI() {
                         source = "DiziAsya",
                         name = "DiziAsya [$quality]",
                         url = realUrl,
-                        referer = baseUrl,
-                        quality = quality,
-                        isM3u8 = realUrl.contains(".m3u8")
-                    )
+                        type = if (realUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+                    ) {
+                        headers = mapOf("Referer" to baseUrl)
+                        this.quality = quality
+                    }
                 )
             }
         } catch (e: Exception) {
@@ -495,10 +496,11 @@ class DiziAsya : MainAPI() {
                         source = "VidMoly",
                         name = "VidMoly [#${index + 1}]",
                         url = m3uLink,
-                        referer = "https://vidmoly.to/",
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = true
-                    )
+                        type = ExtractorLinkType.M3U8
+                    ) {
+                        headers = mapOf("Referer" to "https://vidmoly.to/")
+                        quality = Qualities.Unknown.value
+                    }
                 )
             }
         } catch (e: Exception) {
@@ -562,10 +564,11 @@ class DiziAsya : MainAPI() {
                         source = "Klaus",
                         name = "Klaus",
                         url = realUrl,
-                        referer = baseUrl,
-                        quality = quality,
-                        isM3u8 = realUrl.contains(".m3u8")
-                    )
+                        type = if (realUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+                    ) {
+                        headers = mapOf("Referer" to baseUrl)
+                        this.quality = quality
+                    }
                 )
             }
         } catch (e: Exception) {
@@ -586,10 +589,11 @@ class DiziAsya : MainAPI() {
                         source = "LuluVdo",
                         name = "LuluVdo",
                         url = link,
-                        referer = url,
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = link.contains(".m3u8")
-                    )
+                        type = if (link.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+                    ) {
+                        headers = mapOf("Referer" to url)
+                        quality = Qualities.Unknown.value
+                    }
                 )
             } ?: Log.w("DiziAsya", " LuluVdo video URL not found")
         } catch (e: Exception) {
@@ -610,10 +614,11 @@ class DiziAsya : MainAPI() {
                         source = sourceName,
                         name = sourceName,
                         url = link,
-                        referer = url,
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = link.contains(".m3u8")
-                    )
+                        type = if (link.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+                    ) {
+                        headers = mapOf("Referer" to url)
+                        quality = Qualities.Unknown.value
+                    }
                 )
             } ?: Log.w("DiziAsya", " $sourceName video URL not found")
         } catch (e: Exception) {
