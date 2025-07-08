@@ -456,7 +456,7 @@ class DiziAsya : MainAPI() {
                 Log.d("DiziAsya", " $quality: $realUrl")
 
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = "DiziAsya",
                         name = "DiziAsya [$quality]",
                         url = realUrl,
@@ -491,7 +491,7 @@ class DiziAsya : MainAPI() {
                 Log.d("DiziAsya", " m3uLink[$index] → $m3uLink")
 
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = "VidMoly",
                         name = "VidMoly [#${index + 1}]",
                         url = m3uLink,
@@ -558,7 +558,7 @@ class DiziAsya : MainAPI() {
                 Log.d("DiziAsya", " $quality: $realUrl")
 
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = "Klaus",
                         name = "Klaus",
                         url = realUrl,
@@ -582,7 +582,7 @@ class DiziAsya : MainAPI() {
             videoUrl?.let { link ->
                 Log.d("DiziAsya", " LuluVdo link found: $link")
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = "LuluVdo",
                         name = "LuluVdo",
                         url = link,
@@ -606,7 +606,7 @@ class DiziAsya : MainAPI() {
             videoUrl?.let { link ->
                 Log.d("DiziAsya", " $sourceName link found: $link")
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = sourceName,
                         name = sourceName,
                         url = link,
