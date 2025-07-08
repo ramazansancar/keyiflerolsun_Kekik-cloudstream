@@ -500,8 +500,9 @@ class DiziAsya : MainAPI() {
                         type = ExtractorLinkType.M3U8,
                         
                     ) {
-                        
-                        quality = Qualities.Unknown.value
+                        this.referer = "https://vidmoly.to/"
+                        this.quality = Qualities.Unknown.value
+                       
                     }
                 )
             }
