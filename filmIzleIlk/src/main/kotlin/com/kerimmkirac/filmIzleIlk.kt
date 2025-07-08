@@ -276,39 +276,37 @@ class filmIzleIlk : MainAPI() {
             Log.d("Filmizleilk", "hls: ${jsonResponse.hls}")
             
             
-            jsonResponse.securedLink?.let { securedLink ->
-                Log.d("Filmizleilk", "newExtractorLink oluşturuluyor (securedLink): $securedLink")
-                callback.invoke(
-                    newExtractorLink(
-                        name = "Filmizleilk (Ana)",
-                        source = name,
-                        url = securedLink,
-                        
-                        type = ExtractorLinkType.M3U8,
-                    ){
-                       this.referer = "https://filmdefilm.xyz/",
-                       this.quality = Qualities.Unknown.value
-                    }
-                )
-            }
-            
-            
-            jsonResponse.videoSource?.let { videoSource ->
-                Log.d("Filmizleilk", "ExtractorLink oluşturuluyor (videoSource): $videoSource")
-                callback.invoke(
-                    newExtractorLink(
-                        name = "Filmizleilk (Yedek)",
-                        source = name,
-                        url = videoSource,
-                        
-                        type = ExtractorLinkType.M3U8,
-                    )
-                    {
-                       this.referer = "https://filmdefilm.xyz/",
-                       this.quality = Qualities.Unknown.value
-                    }
-                )
-            }
+           jsonResponse.securedLink?.let { securedLink ->
+    Log.d("Filmizleilk", "newExtractorLink oluşturuluyor (securedLink): $securedLink")
+    callback.invoke(
+        newExtractorLink(
+            name = "Filmizleilk (Ana)",
+            source = name,
+            url = securedLink,
+            type = ExtractorLinkType.M3U8
+        ) {
+            this.referer = "https://filmdefilm.xyz/"
+            this.quality = Qualities.Unknown.value
+        }
+    )
+}
+
+
+jsonResponse.videoSource?.let { videoSource ->
+    Log.d("Filmizleilk", "ExtractorLink oluşturuluyor (videoSource): $videoSource")
+    callback.invoke(
+        newExtractorLink(
+            name = "Filmizleilk (Yedek)",
+            source = name,
+            url = videoSource,
+            type = ExtractorLinkType.M3U8
+        ) {
+            this.referer = "https://filmdefilm.xyz/"
+            this.quality = Qualities.Unknown.value
+        }
+    )
+}
+
             
             
             if (jsonResponse.securedLink != null || jsonResponse.videoSource != null) {
