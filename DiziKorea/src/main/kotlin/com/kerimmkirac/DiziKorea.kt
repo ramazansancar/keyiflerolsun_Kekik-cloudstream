@@ -347,16 +347,21 @@ class DiziKorea : MainAPI() {
             matches.forEachIndexed { index, match ->
                 val m3uLink = match.groupValues[1]
                 Log.d("DZK", "Vidmoly m3uLink[$index] → $m3uLink")
-                
+
                 callback(
                     newExtractorLink(
                         source = "VidMoly",
                         name = "VidMoly",
                         url = m3uLink,
+                        
+                        
                         type = ExtractorLinkType.M3U8
                     ) {
-                        headers = mapOf("Referer" to "https://vidmoly.to/")
+                        this.referer = "https://vidmoly.to/"
                         this.quality = Qualities.Unknown.value
+                        this.headers = mapOf(
+                            "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
+                        )
                     }
                 )
             }
