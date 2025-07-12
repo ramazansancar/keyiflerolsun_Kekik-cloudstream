@@ -1,0 +1,328 @@
+[
+  {
+    "iconUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3vCp6N1K4bECoYRQD-cisJF2_6V_Hk01ZhDmoPR2JuM8O5qr4MqrPO1munM9cRlleBBSK6odYhLtDBWv4E3vhPhynlmS5hVVtJZShHoGA5REQ8_3v8SIlccTEqzVQu2UJyNYQdJNrKIfWy66RQeT0D-CcmFCbHPz5023H6p2v5fv4NVloZ5Rqo_yGrIY/s320/iNat-Box-App.png",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "JustRelaxable",
+      "keyiflerolsun"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "version": 15,
+    "internalName": "InatBox",
+    "description": "İnatBox cloudstream eklentisidir. Sevdiğiniz yayın platformlarını ve canlı maçları burada bulabilirsiniz.",
+    "url": "https://raw.githubusercontent.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/main/InatBox.cs3",
+    "name": "InatBox"
+  },
+  {
+    "iconUrl": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Frectv.org.tr%2Fwp-content%2Fuploads%2F2024%2F11%2Frectv-modified.webp&f=1&nofb=1&ipt=243a15ba76473d64233d0a6be6c338aa6a15f4ced36db7b11c9a4f924b036e9d",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "keyiflerolsun",
+      "yusiqo",
+      "JustRelaxable"
+    ],
+    "tvTypes": [
+      "Movie",
+      "Live",
+      "TvSeries"
+    ],
+    "version": 1,
+    "internalName": "RecTV",
+    "description": "RecTv APK, Türkiye’deki en popüler Çevrimiçi Medya Akış platformlarından biridir. Filmlerin, Canlı Sporların, Web Dizilerinin ve çok daha fazlasının keyfini ücretsiz çıkarın.",
+    "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/main/RecTV.cs3",
+    "name": "RecTV"
+  },
+  {
+    "iconUrl": "https://www.apkdelisi.net/wp-content/uploads/2022/03/golge-tv-reklamsiz-mod-apk-canli-tv-apkdelisi-0.jpg",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+    "status": 0,
+    "language": "tr",
+    "authors": [
+      "Makoto Tokioki"
+    ],
+    "tvTypes": [
+      "Live"
+    ],
+    "version": 14,
+    "internalName": "GolgeTV",
+    "description": "GolgeTV cloudstream eklentisidir. Sevdiğiniz yayın platformlarını ve canlı maçları burada bulabilirsiniz.",
+    "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/GolgeTV.cs3",
+    "name": "GolgeTV"
+  },
+  {
+    "iconUrl": "https://www.google.com/s2/favicons?domain=animecix.net&sz=%size%",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "keyiflerolsun",
+      "JustRelaxable"
+    ],
+    "tvTypes": [
+      "Anime"
+    ],
+    "version": 10,
+    "internalName": "AnimeciX",
+    "description": "AnimeciX, animeleri keşfedebileceğiniz ve animeler hakkında her şeyi öğrenebileceğiniz bir paylaşım platformudur.",
+    "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/AnimeciX.cs3",
+    "name": "AnimeciX"
+  },
+  {
+        "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 3,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "version": 16,
+        "internalName": "SineWix",
+        "description": "Sinewix | \u00dccretsiz Film - Dizi - Anime \u0130zleme Uygulamas\u0131.",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/SineWix.cs3",
+        "name": "SineWix"
+    },
+  {
+        "iconUrl": "https://png.pngtree.com/png-clipart/20220823/ourmid/pngtree-turkey-country-flag-pin-icon-png-image_6120061.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "fileSize": 13525,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Tv Series"
+        ],
+        "version": 13,
+        "internalName": "YerelDiziler",
+        "description": "Bu eklentide yerel dizileri g\u00fcncel \u015fekilde bulabilirsiniz",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/YerelDiziler.cs3",
+        "name": "YerelDiziler"
+    },
+  {
+        "iconUrl": "https://seeklogo.com/images/T/tabii-logo-60B8BC0D5D-seeklogo.com.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 9,
+        "internalName": "Tabii",
+        "description": "Tabii i\u00e7eriklerine bu eklenti sayesinde eri\u015febilirsiniz",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/Tabii.cs3",
+        "name": "Tabii"
+    },
+  {
+        "iconUrl": "https://cizgivedizi.com/Logo.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Cartoon, TvSeries"
+        ],
+        "version": 2,
+        "internalName": "CizgiVeDizi",
+        "description": "Pop\u00fcler \u00e7izgi film ve dizilerin T\u00fcrk\u00e7e g\u00fcncel kayna\u011f\u0131.",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/CizgiVeDizi.cs3",
+        "name": "CizgiVeDizi"
+    },
+  {
+        "iconUrl": "https://img.freepik.com/premium-vector/tv-television-logo-live-streaming-design_332533-53.jpg",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Live"
+        ],
+        "version": 4,
+        "internalName": "CanliTv",
+        "description": "Ulusal kanallar\u0131 bu eklentide izleyebilirsiniz.",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/CanliTv.cs3",
+        "name": "CanliTv"
+    },
+  {
+        "iconUrl": "https://webdramaturkey.org/public/static/logo.webp?v=1.0.19",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "AsianDrama",
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "version": 2,
+        "internalName": "WebDramaTurkey",
+        "description": "Asya i\u00e7eriklerinin tek adresi.",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/WebDramaTurkey.cs3",
+        "name": "WebDramaTurkey"
+    },
+  {
+        "iconUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/New_qBittorrent_Logo.svg/2048px-New_qBittorrent_Logo.svg.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Movie",
+            "Torrent"
+        ],
+        "version": 2,
+        "internalName": "TorrentFilm",
+        "description": "T\u00fcrk\u00e7e altyaz\u0131l\u0131 torrentleri buradan 4K kalitesinde izleyebilirsiniz.",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/TorrentFilm.cs3",
+        "name": "TorrentFilm"
+    },
+  {
+        "iconUrl": "https://www.google.com/s2/favicons?domain=dizilla.club&sz=%size%",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "keyiflerolsun",
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "TvSeries",
+            "Anime"
+        ],
+        "version": 7,
+        "internalName": "Dizilla",
+        "description": "Dizilla t\u00fcm yabanc\u0131 dizileri \u00fccretsiz olarak T\u00fcrk\u00e7e Dublaj ve altyaz\u0131l\u0131 se\u00e7enekleri ile 1080P kalite izleyebilece\u011finiz yeni nesil yabanc\u0131 dizi izleme siteniz.",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/Dizilla.cs3",
+        "name": "Dizilla"
+    },
+  {
+        "iconUrl": "https://png.pngtree.com/png-clipart/20220823/ourmid/pngtree-turkey-country-flag-pin-icon-png-image_6120061.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Tv Series"
+        ],
+        "version": 1,
+        "internalName": "YerelProgramlar",
+        "description": "Yerel programlar\u0131 g\u00fcncel \u015fekilde bulabilirsiniz",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/YerelProgramlar.cs3",
+        "name": "YerelProgramlar"
+    },
+  {
+        "iconUrl": "https://www.turksatkablo.com.tr/images/icerik/ssportplus.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Live"
+        ],
+        "version": 8,
+        "internalName": "SSportPlus",
+        "description": "SSport+ canlı yayınları ve arşiv içerikleri",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/SSportPlus.cs3",
+        "name": "SSportPlus"
+    },
+  {
+        "iconUrl": "https://www.google.com/s2/favicons?domain=asyawatch.com&sz=%size%",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "AsianDrama"
+        ],
+        "version": 1,
+        "internalName": "AsyaWatch",
+        "description": "AsyaWatch.com",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/AsyaWatch.cs3",
+        "name": "AsyaWatch"
+    },
+  {
+        "iconUrl": "https://asyaanimeleri.top/wp-content/uploads/2021/08/Asya-animeleri-12-e1629130525708.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "Anime"
+        ],
+        "version": 1,
+        "internalName": "AsyaAnimeleri",
+        "description": "AsyaAnimeleri.top",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/AsyaAnimeleri.cs3",
+        "name": "AsyaAnimeleri"
+    },
+  {
+        "iconUrl": "https://turkey.mom-rsf.org/uploads/tx_lfrogmom/media/241-101_import.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler",
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "Makoto Tokioki"
+        ],
+        "tvTypes": [
+            "TvSeries"
+        ],
+        "version": 1,
+        "internalName": "Kanal 7",
+        "description": "Hint, Pakistan ve T\u00fcrk dizilerinin adresi",
+        "url": "https://github.com/CennetCehennem/Cloudstream-Turkce-Eklentiler/raw/refs/heads/main/Kanal 7.cs3",
+        "name": "Kanal 7"
+    }
+]
