@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class AnimeciX : MainAPI() {
-    override var mainUrl              = "https://anm.cx"
+    override var mainUrl              = "https://animecix.tv"
     override var name                 = "AnimeciX"
     override val hasMainPage          = true
     override var lang                 = "tr"
