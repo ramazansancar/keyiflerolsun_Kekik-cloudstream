@@ -105,6 +105,7 @@ open class CloseLoad : ExtractorApi() {
             }
         }
     }
+}
     fun dcHello(base64Input: String): String {
         val decodedOnce = base64Decode(base64Input)
         val reversedString = decodedOnce.reversed()
