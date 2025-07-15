@@ -35,6 +35,19 @@ open class CloseLoad : ExtractorApi() {
         val rawScript = getAndUnpack(obfuscatedScript)
         val regex = Regex("var player=this\\}\\);var(.*?);myPlayer\\.src")
         val matchResult = regex.find(rawScript)
+        val base64Input = rawScript.substringAfter("dc_hello(\"").substringBefore("\");")
+        val lastUrl = dcHello(base64Input)
+        callback.invoke(
+            newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = lastUrl,
+                ExtractorLinkType.M3U8
+            ) {
+                this.referer = mainUrl
+                this.quality = Qualities.Unknown.value
+            }
+        )
 
         if (matchResult != null) {
             val extractedString = matchResult.groups[1]?.value
@@ -91,6 +104,11 @@ open class CloseLoad : ExtractorApi() {
                 Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
             }
         }
-        }
+    }
+    fun dcHello(base64Input: String): String {
+        val decodedOnce = base64Decode(base64Input)
+        val reversedString = decodedOnce.reversed()
+        val decodedTwice = base64Decode(reversedString)
+        return decodedTwice.split("|")[1]
     }
 }
