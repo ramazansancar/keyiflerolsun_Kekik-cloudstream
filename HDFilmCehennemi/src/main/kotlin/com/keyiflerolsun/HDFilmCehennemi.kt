@@ -33,7 +33,6 @@ import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.newExtractorLink
@@ -210,11 +209,20 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
+    private fun dcHello(base64Input: String): String {
+        val decodedOnce = base64Decode(base64Input)
+        val reversedString = decodedOnce.reversed()
+        val decodedTwice = base64Decode(reversedString)
+        return decodedTwice.split("|")[1]
+    }
+	
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
         val script    = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
 		Log.d("HDCH", "script » $script")
-        val videoData = getAndUnpack(script).substringAfter("file:\"").substringBefore("\";")
+        val videoData = getAndUnpack(script).substringAfter("file_link=\"").substringBefore("\";")
 		Log.d("HDCH", "videoData » $videoData")
+        val base64Input = videoData.substringAfter("dc_hello(\"").substringBefore("\");")
+        val lastUrl = dcHello(base64Input)
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 		Log.d("HDCH", "subData » $subData")
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.map {
@@ -237,8 +245,8 @@ class HDFilmCehennemi : MainAPI() {
             newExtractorLink(
                 source  = source,
                 name    = source,
-                url     = base64Decode(videoData),
-                type    = INFER_TYPE
+                url     = lastUrl,
+                type    = ExtractorLinkType.M3U8
 			) {
                 headers = mapOf("Referer" to "${mainUrl}/", "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0")
                 quality = Qualities.Unknown.value
