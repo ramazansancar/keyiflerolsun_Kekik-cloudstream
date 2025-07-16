@@ -24,6 +24,7 @@ class HDFilmCehennemi : MainAPI() {
         "${mainUrl}/yabancidiziizle-2"                    to "Yeni Eklenen Diziler",
         "${mainUrl}/category/tavsiye-filmler-izle2"       to "Tavsiye Filmler",
         "${mainUrl}/imdb-7-puan-uzeri-filmler"            to "IMDB 7+ Filmler",
+        "${mainUrl}/dil/turkce-dublajli-film-izleyin-3/"  to "Türkçe Dublaj Fimler",
         "${mainUrl}/en-cok-yorumlananlar-1"               to "En Çok Yorumlananlar",
         "${mainUrl}/en-cok-begenilen-filmleri-izle"       to "En Çok Beğenilenler",
         "${mainUrl}/tur/aile-filmleri-izleyin-6"          to "Aile Filmleri",
