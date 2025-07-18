@@ -160,7 +160,7 @@ class Dizilla : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val searchReq = app.post(
-            "${mainUrl}/api/bg/searchcontent?searchterm=$query",
+            "${mainUrl}/api/bg/searchContent?searchterm=$query",
             headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
                 "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
