@@ -1,7 +1,7 @@
-version = 8
+version = 9
 
 cloudstream {
-    authors     = listOf("nikyokki")
+    authors     = listOf("nikyokki", "ramazansancar")
     language    = "tr"
     description = "Film izle, Hdfilmsitesi ile Online 1080p ve 4K kalite Full HD Filmlere Türkçe Dublaj ve Altyazılı olarak Reklamsız Kesintisiz HD Film izle."
 
