@@ -2,6 +2,7 @@
 
 package com.kraptor
 
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -35,10 +36,17 @@ fun getVideoUrls(data: String): Map<String, String> {
 
     val mainResponse = client.newCall(mainRequest).execute()
     val mainHtml = mainResponse.body.string()
+//    Log.d("kraptor_anizmskici", "mainHtml = $mainHtml")
     val doc = Jsoup.parse(mainHtml)
-    val translatorLinks = doc.select("div#fansec.fansubSecimKutucugu a[translator]").map { it.attr("translator") }
+    val translatorLinks = doc.select("div.fansubSecimKutucugu a[translator]").map { it.attr("translator") }
+    val translatorName  = doc.select("div.fansubSecimKutucugu a[translator] div.title").map {it.text()}
+
     val allPlayerLinks = mutableMapOf<String, String>()
-    translatorLinks.forEach { translatorLink ->
+    doc.select("div.fansubSecimKutucugu a[translator]").forEach { elem ->
+        Log.d("kraptor_anizmskici", "elem = $elem")
+        // 2. Aynı elem üzerinden hem link’i hem de adı al
+        val translatorLink = elem.attr("translator")
+        val translatorName = elem.selectFirst("div.title")?.text().orEmpty()
         var jsonText: String
         var attempts = 0
         val maxAttempts = 3
@@ -53,6 +61,7 @@ fun getVideoUrls(data: String): Map<String, String> {
 
                 val jsonResponse = client.newCall(jsonRequest).execute()
                 jsonText = jsonResponse.body.string()
+                Log.d("kraptor_anizmskici", "jsonText = $jsonText")
                 
                 if (!jsonText.contains("Attention Required!")) {
                     val jsonData = JSONObject(jsonText)
@@ -62,7 +71,7 @@ fun getVideoUrls(data: String): Map<String, String> {
                         val name = element.select("span").text()
                         val videoUrl = element.attr("video").replace("/video/", "//player/")
                         if (!allPlayerLinks.containsKey(name)) {
-                            allPlayerLinks[name] = videoUrl
+                            allPlayerLinks["$name, $translatorName"] = videoUrl
                         }
                     }
                     break
@@ -102,6 +111,9 @@ fun getVideoUrls(data: String): Map<String, String> {
         } catch (_: Exception) {
         }
     }
+
+//    Log.d("kraptor_anizmskici", "realVideoUrls = $realVideoUrls")
+
 
     return realVideoUrls
 }

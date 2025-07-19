@@ -1,7 +1,7 @@
-version = 1
+version = 4
 
 cloudstream {
-    authors     = listOf("kerimmkirac")
+    authors     = listOf("kraptor")
     language    = "tr"
     description = "Ücretsiz bir şekilde çizgi dizi, dizi, anime ve daha fazlasını eski-yeni demeden izleyebilirsiniz."
 

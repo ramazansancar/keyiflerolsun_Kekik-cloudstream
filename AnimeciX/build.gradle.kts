@@ -1,7 +1,7 @@
-version = 1
+version = 5
 
 cloudstream {
-    authors     = listOf("kerimmkirac")
+    authors     = listOf("kraptor123")
     language    = "tr"
     description = "AnimeciX, animeleri keşfedebileceğiniz ve animeler hakkında her şeyi öğrenebileceğiniz bir paylaşım platformudur."
 

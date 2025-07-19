@@ -6,14 +6,40 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import okhttp3.Interceptor
+import okhttp3.Response
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import java.net.URLDecoder
 import java.net.URLEncoder
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.log
+
+private val cloudflareKiller by lazy { CloudflareKiller() }
+private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request  = chain.request()
+        val response = chain.proceed(request)
+        val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+        if (doc.html().contains("Just a moment") || doc.html().contains("verifying")) {
+            Log.d("Anizm", "!!cloudflare geldi!!")
+            return cloudflareKiller.intercept(chain)
+        }
+
+        return response
+    }
+}
 
 class Anizm : MainAPI() {
     override var mainUrl = "https://anizm.net"
@@ -22,73 +48,130 @@ class Anizm : MainAPI() {
     override var lang = "tr"
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.Anime)
-//    override var sequentialMainPage = true
-//    override var sequentialMainPageDelay = 50L
-//    override var sequentialMainPageScrollDelay = 50L
-
-    // Cloudflare Bypass
-
-
-    // JSON Data Class
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class AnimeSearchResult(
-        @JsonProperty("info_title") val infotitle: String,
-        @JsonProperty("info_slug") val infoslug: String,
-        @JsonProperty("info_poster") val infoposter: String?,
-        @JsonProperty("info_year") val infoyear: String?
-    )
 
     // Ana Sayfa
     override val mainPage = mainPageOf(
-        "${mainUrl}/harf?harf=a" to "a",
-        "${mainUrl}/harf?harf=b" to "b",
-        "${mainUrl}/harf?harf=c" to "c",
-        "${mainUrl}/harf?harf=d" to "d",
-        "${mainUrl}/harf?harf=e" to "e",
-        "${mainUrl}/harf?harf=f" to "f",
-        "${mainUrl}/harf?harf=g" to "g",
-        "${mainUrl}/harf?harf=h" to "h",
-        "${mainUrl}/harf?harf=i" to "i",
-        "${mainUrl}/harf?harf=j" to "j",
-        "${mainUrl}/harf?harf=k" to "k",
-        "${mainUrl}/harf?harf=l" to "l",
-        "${mainUrl}/harf?harf=m" to "m",
-        "${mainUrl}/harf?harf=n" to "n",
-        "${mainUrl}/harf?harf=o" to "o",
-        "${mainUrl}/harf?harf=p" to "p",
-        "${mainUrl}/harf?harf=q" to "q",
-        "${mainUrl}/harf?harf=r" to "r",
-        "${mainUrl}/harf?harf=s" to "s",
-        "${mainUrl}/harf?harf=t" to "t",
-        "${mainUrl}/harf?harf=u" to "u",
-        "${mainUrl}/harf?harf=v" to "v",
-        "${mainUrl}/harf?harf=w" to "w",
-        "${mainUrl}/harf?harf=x" to "x",
-        "${mainUrl}/harf?harf=y" to "y",
-        "${mainUrl}/harf?harf=z" to "z"
+        ""   to "Güncel Animeler",
+        "2"  to "Aksiyon",
+        "52" to "Arabalar",
+        "7"  to "Askeri",
+        "8"  to "Bilim-Kurgu",
+        "50" to "Bunama",
+        "9"  to "Büyü",
+        "49" to "Çocuklar",
+        "10" to "Dedektif",
+        "54" to "Dementia",
+        "11" to "Doğaüstü-Güçler",
+        "12" to "Dövüş",
+        "30" to "Dövüş Sanatları",
+        "4"  to "Dram",
+        "6"  to "Ecchi",
+        "56" to "Erkeklerin Aşkı",
+        "13" to "Fantastik",
+        "14" to "Gerilim",
+        "15" to "Gizem",
+        "16" to "Harem",
+        
+        "55" to "Hentai",
+        "18" to "Josei",
+        "57" to "Kızların Aşkı",
+        "3"  to "Komedi",
+        "20" to "Korku",
+//        "51" to "Live Action",
+        "1"  to "Macera",
+        "21" to "Mecha",
+        "22" to "Movie",
+        "23" to "Müzik",
+        "24" to "Ninja",
+        "25" to "OAD - ONA - OVA",
+        "26" to "Okul",
+        "27" to "Oyun",
+        "48" to "Parodi",
+        "53" to "Polisiye",
+//        "28" to "Politik",
+        "29" to "Psikolojik",
+        "5"  to "Romantizm",
+        "47" to "Samuray",
+        "46" to "Savaş",
+        "31" to "Seinen",
+        "45" to "Şeytanlar",
+        "32" to "Shoujo",
+        "33" to "Shoujo-Ai",
+        "34" to "Shounen",
+        "35" to "Shounen-Ai",
+        "37" to "Spor",
+        "38" to "Süper-Güç",
+        "39" to "Tarihi",
+//        "40" to "Tuhaf",
+        "41" to "Uzay",
+        "42" to "Vampir",
+        "43" to "Yaoi",
+        "36" to "Yaşamdan Kesitler",
+        "44" to "Yuri",
     )
 
-    // Ana Sayfa Yükleme
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val refH = mapOf(
-            "Referer" to mainUrl,
-            "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15 (Applebot/0.1; +http://www.apple.com/go/applebot)",
-            "Sec-Fetch-Site" to "same-origin",
-            "Host" to "anizm.net"
-            )
-        val document = if (page == 1) {
-            app.get(request.data, headers = refH).document
-        } else {
-            app.get("${request.data}&sayfa=$page", headers = refH).document
+    // Sabit saklanan cookie ve CSRF token
+
+    private var sessionCookies: Map<String, String>? = null
+    private var csrfToken: String? = null
+    private val initMutex = Mutex()
+
+    private suspend fun initSession() {
+        if (sessionCookies != null && csrfToken != null) return
+        initMutex.withLock {
+            if (sessionCookies != null && csrfToken != null) return@withLock
+            Log.d("Anizm", "🔄 Oturum başlatılıyor: cookie ve CSRF alınıyor")
+            val resp = app.get(mainUrl, interceptor = interceptor, timeout = 120)
+            sessionCookies = resp.cookies.mapValues { (_, v) -> URLDecoder.decode(v, "UTF-8") }
+            csrfToken = resp.document.selectFirst("meta[name=csrf-token]")?.attr("content")
+            Log.d("Anizm", "✅ Cookie sayısı: ${sessionCookies?.size}, CSRF: $csrfToken")
         }
-        val home = document.select("a.pfull").mapNotNull { it.toMainPageResult() }
-        return newHomePageResponse(request.name, home)
+    }
+
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        initSession()
+        val document = if (request.name.contains("Güncel Animeler")){
+            app.post(
+                "$mainUrl/tavsiyeRobotuResult",
+                headers = mapOf(
+                    "User-Agent" to USER_AGENT,
+                    "Referer" to mainUrl,
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "X-CSRF-TOKEN" to (csrfToken ?: "")
+                ),
+                data = mapOf(
+                    "yillar[]" to "2025",
+                    "yillar[]" to "2024",
+                    "yillar[]" to "2023"
+                ),
+                cookies = sessionCookies!!,
+                interceptor = interceptor,
+                timeout = 120
+            ).document
+        }
+        else {
+            app.post(
+                "$mainUrl/tavsiyeRobotuResult",
+                headers = mapOf(
+                    "User-Agent" to USER_AGENT,
+                    "Referer" to mainUrl,
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "X-CSRF-TOKEN" to (csrfToken ?: "")
+                ),
+                data = mapOf("kategoriler[]" to request.data),
+                cookies = sessionCookies!!,
+                interceptor = interceptor,
+                timeout = 120
+            ).document
+        }
+        val home = document.select("div.aramaSonucItem").mapNotNull { it.toMainPageResult() }
+        return newHomePageResponse(request.name, home, hasNext = false)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
-        val title = this.selectFirst("div.anizm_textUpper.anizm_textBold.truncateText")?.text() ?: return null
-        val href = fixUrlNull(this.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val title = this.selectFirst("a.titleLink")?.text() ?: return null
+        val href = fixUrlNull(this.selectFirst("a.imgWrapperLink")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
         return newAnimeSearchResponse(title, href, TvType.Anime) {
             this.posterUrl = posterUrl
         }
@@ -97,14 +180,7 @@ class Anizm : MainAPI() {
     // Arama Fonksiyonu (Düzeltilmiş)
     override suspend fun search(query: String): List<SearchResponse> {
         return try {
-            // 1. CSRF Token Al
-            val csrfToken = app.get(mainUrl)
-                .document
-                .selectFirst("meta[name='csrf-token']")
-                ?.attr("content")
-                ?: throw Exception("CSRF Token alınamadı")
-
-            // 2. Sorguyu Encode Et
+            initSession()
             val encodedQuery = withContext(Dispatchers.IO) {
                 URLEncoder.encode(query, "UTF-8")
             }
@@ -115,11 +191,11 @@ class Anizm : MainAPI() {
                 headers = mapOf(
                     "Referer" to mainUrl,
                     "X-Requested-With" to "XMLHttpRequest",
-                    "X-CSRF-TOKEN" to csrfToken,
+                    "X-CSRF-TOKEN" to (csrfToken ?: ""),
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
                 ),
                 params = mapOf("q" to encodedQuery),
-                timeout = 5 // Timeout'u 60 saniye yap
+                timeout = 30 // Timeout'u 60 saniye yap
             )
 
             val responseBody = response.body.string()
@@ -218,22 +294,36 @@ class Anizm : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val videoLinks = getVideoUrls(data)
+        Log.d("kraptor_Anizm","videoLinks = $videoLinks")
         videoLinks.forEach { (name, url) ->
-            when {
-                url.contains("anizmplayer.com") -> {
-                    AincradExtractor().getUrl(url, mainUrl).forEach(callback)
-                    return true
-                }
-                else -> {
+            if (name.contains("Aincrad")) {
+            val requestData = "$url|$name"
+            Log.d("kraptor_Anizm","request = $requestData")
                     loadExtractor(
-                        url = url,
+                        url = requestData,
                         referer = mainUrl,
                         subtitleCallback = subtitleCallback,
                         callback = callback
                     )
+                } else {
+                val requestData = url
+                Log.d("kraptor_Anizm","request = $requestData")
+                loadExtractor(
+                    url = requestData,
+                    referer = mainUrl,
+                    subtitleCallback = subtitleCallback,
+                    callback = callback
+                )
                 }
-            }
         }
         return true
     }
 }
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class AnimeSearchResult(
+    @JsonProperty("info_title") val infotitle: String,
+    @JsonProperty("info_slug") val infoslug: String,
+    @JsonProperty("info_poster") val infoposter: String?,
+    @JsonProperty("info_year") val infoyear: String?
+)
