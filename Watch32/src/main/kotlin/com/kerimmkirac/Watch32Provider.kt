@@ -146,11 +146,14 @@ class Watch32Provider : MainAPI() {
 
                 var numEpi = 0
                 episodes += web.select(".nav-item").map {
-                    Episode(
-                        "$mainUrl/ajax/episode/servers/${it.select("a").attr("data-id")}",
-                        it.text().split(":")[1], numSeason + 1, ++numEpi, posterUrl = coverImage
-                    )
-                }.toMutableList()
+    newEpisode("$mainUrl/ajax/episode/servers/${it.select("a").attr("data-id")}") {
+        name = it.text().split(":")[1].trim()
+        this.season = numSeason + 1
+        episode = ++numEpi
+        this.posterUrl = coverImage
+    }
+}.toMutableList()
+
             }
         }
 
