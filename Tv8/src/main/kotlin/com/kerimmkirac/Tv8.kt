@@ -347,13 +347,13 @@ class Tv8 : MainAPI() {
                 null
             }
 
-            val episode = Episode(
-                data = videoUrl,
-                name = episodeTitle,
-                episode = episodeNumber,
-                posterUrl = posterUrl,
-                date = dateTimestamp
-            )
+            val episode = newEpisode(videoUrl) {
+    name = episodeTitle
+    episode = episodeNumber
+    this.posterUrl = posterUrl
+    date = dateTimestamp
+}
+
 
             Log.d("TV8", "Episode oluşturuldu: ${episode.name}")
 
