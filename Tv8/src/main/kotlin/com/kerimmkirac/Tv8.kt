@@ -239,13 +239,13 @@ class Tv8 : MainAPI() {
 
 
             val finalEpisodes = allEpisodes.mapIndexed { index, episode ->
-                Episode(
-                    data = episode.data,
-                    name = episode.name,
-                    episode = index + 1,
-                    posterUrl = episode.posterUrl,
-                    date = episode.date
-                )
+                newEpisode(episode.data) {
+    name = episode.name
+    this.episode = index + 1
+    this.posterUrl = episode.posterUrl
+    date = episode.date
+}
+
             }
 
             Log.d("TV8", "Episode numaraları güncellendi")
@@ -262,14 +262,14 @@ class Tv8 : MainAPI() {
             if (allEpisodes.isNotEmpty()) {
                 allEpisodes.sortBy { it.date }
                 val finalEpisodes = allEpisodes.mapIndexed { index, episode ->
-                    Episode(
-                        data = episode.data,
-                        name = episode.name,
-                        episode = index + 1,
-                        posterUrl = episode.posterUrl,
-                        date = episode.date
-                    )
-                }
+    newEpisode(episode.data) {
+        name = episode.name
+        this.episode = index + 1
+        this.posterUrl = episode.posterUrl
+        date = episode.date
+    }
+}
+
                 Log.d("TV8", "Hata rağmen ${finalEpisodes.size} episode döndürülüyor")
                 return finalEpisodes
             }
