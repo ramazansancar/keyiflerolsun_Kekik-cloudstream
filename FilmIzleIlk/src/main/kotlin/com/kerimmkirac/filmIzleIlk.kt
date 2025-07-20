@@ -111,47 +111,49 @@ class filmIzleIlk : MainAPI() {
 
         val isSeries = "/dizi/" in url
 
-        return if (isSeries) {
-            val episodes = mutableListOf<Episode>()
+return if (isSeries) {
+    val episodes = mutableListOf<Episode>()
+    
+    val seasonWrappers = doc.select("div.s-wrap")
+    
+    seasonWrappers.forEach { seasonWrapper ->
+        val seasonId = seasonWrapper.attr("id") 
+        val seasonNumber = seasonId.replace("s-", "").toIntOrNull() ?: 1
+        
+        val episodeElements = seasonWrapper.select("div.ep-box")
+        
+        episodeElements.forEach { ep ->
+            val link = fixUrlNull(ep.selectFirst("a")?.attr("href")) ?: return@forEach
+            val episodeTitle = ep.selectFirst(".episodetitle")?.text()?.trim() ?: return@forEach
+            val serieTitle = ep.selectFirst(".serietitle")?.text()?.trim() ?: title
+            val thumbnail = fixUrlNull(ep.selectFirst("img")?.attr("src"))
             
+            val episodeRegex = Regex("""(\d+)\.\s*Sezon.*?(\d+)\.\s*Bölüm""")
+            val match = episodeRegex.find(episodeTitle)
             
-            val seasonWrappers = doc.select("div.s-wrap")
+            val season = match?.groupValues?.getOrNull(1)?.toIntOrNull() ?: seasonNumber
+            val episodeNum = match?.groupValues?.getOrNull(2)?.toIntOrNull() ?: 1
             
-            seasonWrappers.forEach { seasonWrapper ->
-                val seasonId = seasonWrapper.attr("id") 
-                val seasonNumber = seasonId.replace("s-", "").toIntOrNull() ?: 1
-                
-                
-                val episodeElements = seasonWrapper.select("div.ep-box")
-                
-                episodeElements.forEach { ep ->
-                    val link = fixUrlNull(ep.selectFirst("a")?.attr("href")) ?: return@forEach
-                    val episodeTitle = ep.selectFirst(".episodetitle")?.text()?.trim() ?: return@forEach
-                    val serieTitle = ep.selectFirst(".serietitle")?.text()?.trim() ?: title
-                    val thumbnail = fixUrlNull(ep.selectFirst("img")?.attr("src"))
-                    
-                    
-                    val episodeRegex = Regex("""(\d+)\.\s*Sezon.*?(\d+)\.\s*Bölüm""")
-                    val match = episodeRegex.find(episodeTitle)
-                    
-                    val season = match?.groupValues?.getOrNull(1)?.toIntOrNull() ?: seasonNumber
-                    val episodeNum = match?.groupValues?.getOrNull(2)?.toIntOrNull() ?: 1
-                    
-                   
-                    val epName = "$season. Sezon $episodeNum. Bölüm"
-                    
-                    episodes.add(
-                        Episode(
-                            data = link,
-                            name = epName,
-                            season = season,
-                            episode = episodeNum
-                        ).apply {
-                            this.posterUrl = thumbnail
-                        }
-                    )
+            val epName = "$season. Sezon $episodeNum. Bölüm"
+            
+            episodes.add(
+                newEpisode(link) {
+                    name = epName
+                    this.season = season
+                    episode = episodeNum
+                    this.posterUrl = thumbnail
                 }
-            }
+            )
+        }
+    }
+    
+    
+    episodes
+} else {
+   
+    null
+}
+
 
             
             if (episodes.isEmpty()) {
