@@ -424,16 +424,15 @@ val showStatus = if (!isMovie) {
                             val epData = "tmdb://tv/$mediaId/season/$seasonNumber/episode/$epNumber"
 
                             episodes.add(
-                                Episode(
-                                    data = epData,
-                                    name = epTitle,
-                                    season = seasonNumber,
-                                    episode = epNumber,
-                                    posterUrl = epPoster,
-                                    description = epDesc
-                                )
-                            )
-                        }
+                                newEpisode(epData) {
+    name = epTitle
+    this.season = seasonNumber
+    episode = epNumber
+    this.posterUrl = epPoster
+    this.description = epDesc
+}
+
+                            )                    }
                     } catch (e: Exception) {
                         
                         continue
@@ -639,12 +638,18 @@ val showStatus = if (!isMovie) {
     ): Boolean {
         Log.d("Xprime", "loadLinks() called with data: $data")
 
-        val isMovie = data.startsWith("tmdb://movie/")
-        val isTvEpisode = data.startsWith("tmdb://tv/") && data.contains("/season/") && data.contains("/episode/")
+        var cleanData = data
+        if (data.contains("$mainUrl/tmdb://")) {
+            cleanData = data.replace("$mainUrl/", "")
+            Log.w("Xprime", "incorrect url fix in loadLinks: $data to $cleanData")
+        }
+
+        val isMovie = cleanData.startsWith("tmdb://movie/")
+        val isTvEpisode = cleanData.startsWith("tmdb://tv/") && cleanData.contains("/season/") && cleanData.contains("/episode/")
 
         if (isMovie) {
             
-            val movieId = data.removePrefix("tmdb://movie/")
+            val movieId = cleanData.removePrefix("tmdb://movie/")
             Log.d("Xprime", "Processing movie with ID: $movieId")
             
             
@@ -696,9 +701,9 @@ val showStatus = if (!isMovie) {
             }
         } else if (isTvEpisode) {
             
-            val parts = data.removePrefix("tmdb://tv/").split("/")
+            val parts = cleanData.removePrefix("tmdb://tv/").split("/")
             if (parts.size < 5) {
-                Log.e("Xprime", "Invalid TV episode data format: $data")
+                Log.e("Xprime", "Invalid TV episode data format: $cleanData")
                 return false
             }
 
@@ -754,7 +759,7 @@ val showStatus = if (!isMovie) {
                 return false
             }
         } else {
-            Log.e("Xprime", "Unknown data format for loadLinks: $data")
+            Log.e("Xprime", "Unknown data format for loadLinks: $cleanData")
             return false
         }
     }}
