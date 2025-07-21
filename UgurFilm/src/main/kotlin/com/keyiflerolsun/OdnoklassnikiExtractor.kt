@@ -44,10 +44,11 @@ open class Odnoklassniki : ExtractorApi() {
                     source  = this.name,
                     name    = this.name,
                     url     = videoUrl,
-			) {
-                headers = mapOf("Referer" to "userAgent")
-                this.quality = getQualityFromName(quality)
-            }
+                    type    = INFER_TYPE
+                ) {
+                    headers = mapOf("Referer" to "userAgent")
+                    this.quality = getQualityFromName(quality)
+                }
             )
         }
     }
