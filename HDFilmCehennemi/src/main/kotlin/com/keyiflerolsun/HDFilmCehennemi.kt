@@ -214,9 +214,20 @@ class HDFilmCehennemi : MainAPI() {
         val decodedOnce = base64Decode(base64Input)
         val reversedString = decodedOnce.reversed()
         val decodedTwice = base64Decode(reversedString)
-        return decodedTwice.split("|")[1]
-    }
-	
+
+        val hdchLink    = if (decodedTwice.contains("+")) {
+        decodedTwice.substringAfterLast("+")
+            } else if (decodedTwice.contains(" ")) {
+        decodedTwice.substringAfterLast(" ")
+            } else if (decodedTwice.contains("|")){
+        decodedTwice.substringAfterLast("|")
+            } else {
+        decodedTwice
+            }
+        Log.d("HDCH", "decodedTwice $decodedTwice")
+             return hdchLink
+        }
+
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
         val script    = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
 		Log.d("HDCH", "script » $script")
