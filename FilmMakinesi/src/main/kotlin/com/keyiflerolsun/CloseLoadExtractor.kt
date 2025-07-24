@@ -110,12 +110,12 @@ open class CloseLoad : ExtractorApi() {
         val decodedOnce = base64Decode(base64Input)
         val reversedString = decodedOnce.reversed()
         val decodedTwice = base64Decode(reversedString)
-        val flmmLink = if (secondDecoded.contains("+")){
-        secondDecoded.substringAfterLast("+")
-            } else if (secondDecoded.contains("|")) {
-        secondDecoded.split("|")[1]
+        val flmmLink = if (decodedTwice.contains("+")){
+        decodedTwice.substringAfterLast("+")
+            } else if (decodedTwice.contains("|")) {
+        decodedTwice.split("|")[1]
             } else {
-        secondDecoded
+        decodedTwice
         }
         return flmmLink
     }
