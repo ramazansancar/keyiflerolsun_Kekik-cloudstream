@@ -36,7 +36,7 @@ open class CloseLoad : ExtractorApi() {
         val regex = Regex("var player=this\\}\\);var(.*?);myPlayer\\.src")
         val matchResult = regex.find(rawScript)
         val base64Input = rawScript.substringAfter("dc_hello(\"").substringBefore("\");")
-        val lastUrl = dcHello(base64Input).removePrefix("-")
+        val lastUrl = dcHello(base64Input).substringAfter("https").let { "https$it" }
         callback.invoke(
             newExtractorLink(
                 source = this.name,
