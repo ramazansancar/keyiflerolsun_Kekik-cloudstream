@@ -68,16 +68,24 @@ class FilmMakinesi : MainAPI() {
         val title     = this.selectFirst("div.title")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("div.item-relative a.item")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail-outer img.thumbnail")?.attr("src")) ?: fixUrlNull(this.selectFirst("img.thumbnail")?.attr("src"))
+        val puan      = this.selectFirst("div.rating")?.text()?.trim()
 
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+        return newMovieSearchResponse(title, href, TvType.Movie) {
+            this.posterUrl = posterUrl
+            this.score     = Score.from10(puan)
+        }
     }
 
     private fun Element.toRecommendResult(): SearchResponse? {
         val title     = this.select("div.title").last()?.text() ?: return null
         val href      = fixUrlNull(this.select("div.item-relative a.item").last()?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("div.thumbnail-outer img.thumbnail")?.attr("src"))
+        val puan      = this.selectFirst("div.rating")?.text()?.trim()
 
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+        return newMovieSearchResponse(title, href, TvType.Movie) {
+            this.posterUrl = posterUrl
+            this.score     = Score.from10(puan)
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -94,7 +102,7 @@ class FilmMakinesi : MainAPI() {
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description     = document.select("div.info-description p").last()?.text()?.trim()
         val tags            = document.select("div.type a").map { it.text() }
-        val rating          = document.selectFirst("div.info b")?.text()?.trim()?.toRatingInt()
+        val imdbScore          = document.selectFirst("div.info b")?.text()?.trim()
         val year            = document.selectFirst("span.date a")?.text()?.trim()?.toIntOrNull()
 
         val durationText = document.selectFirst("div.time")?.text()?.trim() ?: ""
@@ -116,7 +124,7 @@ class FilmMakinesi : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
+            this.score = Score.from10(imdbScore)
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
@@ -138,7 +146,7 @@ class FilmMakinesi : MainAPI() {
         val match = regex.find(scriptUnpack)
         val b64 = match?.groupValues[1].toString()
         Log.d("kraptor_$name", "b64 = $b64")
-        val m3u8Url = decodeDcHello(b64)
+        val m3u8Url = dcHello(b64)
         Log.d("kraptor_$name", "m3u8Url = $m3u8Url")
 
         callback.invoke(newExtractorLink(
@@ -156,22 +164,19 @@ class FilmMakinesi : MainAPI() {
     }
 }
 
-fun decodeDcHello(input: String): String {
-    // 1. atob(_0x37934e)
-    val firstDecoded = String(Base64.decode(input, Base64.DEFAULT))
-    Log.d("kraptor_FilmMakinesi", "firstDecoded = $firstDecoded")
-    // reverse ve tekrar atob işlemi
+fun dcHello(encoded: String): String {
+    // İlk Base64 çöz
+    val firstDecoded = base64Decode(encoded)
+    Log.d("kraptor_filmmakinesi", "firstDecoded $firstDecoded")
+    // Ters çevir
     val reversed = firstDecoded.reversed()
-    Log.d("kraptor_FilmMakinesi", "reversed = $reversed")
-    val secondDecoded = String(Base64.decode(reversed, Base64.DEFAULT))
-    Log.d("kraptor_FilmMakinesi", "secondDecoded = $secondDecoded")
-    // ikinci decode sonucu "xxx|URL" formatında geliyor, URL ikinci parçadadır
-    val linkimiz = if (secondDecoded.contains("+")){
-        secondDecoded.substringAfterLast("+")
-    } else if (secondDecoded.contains("|")) {
-        secondDecoded.split("|")[1]
-    } else {
-        secondDecoded
-    }
-    return linkimiz
+    Log.d("kraptor_filmmakinesi", "reversed $reversed")
+    // İkinci Base64 çöz
+    val secondDecoded = base64Decode(reversed)
+
+    val gercekLink    = secondDecoded.substringAfter("http")
+    val sonLink       = "http$gercekLink"
+    Log.d("kraptor_filmmakinesi", "sonLink $sonLink")
+    return sonLink.trim()
+
 }
