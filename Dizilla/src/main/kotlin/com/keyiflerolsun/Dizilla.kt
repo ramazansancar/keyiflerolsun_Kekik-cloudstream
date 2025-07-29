@@ -127,7 +127,7 @@ class Dizilla : MainAPI() {
                     this.posterUrl = poster
                 }
             }
-            home
+            return newHomePageResponse(request.name, home)
         } else {
             document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
         }
