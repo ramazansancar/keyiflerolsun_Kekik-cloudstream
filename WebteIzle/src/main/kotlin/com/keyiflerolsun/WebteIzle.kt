@@ -206,7 +206,7 @@ if (iframe == null) {
         val vidId = matchResult.groupValues[2]
 
         iframe = when (platform) {
-            "vidmoly" -> "https://vidmoly.to/embed-${vidId}.html"
+            "vidmoly" -> "https://vidmoly.net/embed-${vidId}.html"
             else -> null
         }
     } else {
