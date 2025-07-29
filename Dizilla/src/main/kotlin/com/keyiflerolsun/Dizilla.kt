@@ -99,15 +99,36 @@ class Dizilla : MainAPI() {
         val home = if (request.data.contains("dizi-turu")) {
             document.select("span.watchlistitem-").mapNotNull { it.diziler() }
         } else if (request.data.contains("/arsiv")) {
-            val yil = Calendar.getInstance().get(Calendar.YEAR)
-            val sayfa = "?page=sayi&tab=1&sort=date_desc&filterType=2&imdbMin=5&imdbMax=10&yearMin=1900&yearMax=$yil"
-            val replace = sayfa.replace("sayi", page.toString())
-            document = app.get("${request.data}${replace}").document
-            document.select("a.w-full").mapNotNull { it.yeniEklenenler() }
+            val response = app.get("${request.data}?page=$page", interceptor = interceptor)
+            val document = response.document
+    
+            val script = document.selectFirst("script#__NEXT_DATA__")?.data()
+            val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    
+            val secureData = objectMapper.readTree(script)
+                .get("props")?.get("pageProps")?.get("secureData")?.asText()
+                ?: return newHomePageResponse(request.name, emptyList())
+    
+            val decodedData = decryptDizillaResponse(secureData)
+                ?: return newHomePageResponse(request.name, emptyList())
+    
+            val json = objectMapper.readTree(decodedData)
+            val diziList = json.get("RelatedResults").get("getDiscoverArchive").get("result")
+    
+            diziList.mapNotNull {
+                val title = it.get("title")?.asText() ?: return@mapNotNull null
+                val slug = it.get("slug")?.asText() ?: return@mapNotNull null
+                val poster = fixUrlNull(it.get("poster")?.asText())
+    
+                newTvSeriesSearchResponse(title, fixUrl("/$slug"), TvType.TvSeries) {
+                    this.posterUrl = poster
+                }
+            }
         } else {
             document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
         }
-
+    
         return newHomePageResponse(request.name, home)
     }
 
@@ -289,7 +310,6 @@ class Dizilla : MainAPI() {
 
             val jsonString = String(firstIterationData)
 
-            //https://www.youtube.com/watch?v=FSXuM2v0YLY
             return jsonString
         } catch (e: Exception) {
             Log.e("Dizilla", "Decryption failed: ${e.message}")
