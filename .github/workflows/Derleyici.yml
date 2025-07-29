@@ -53,7 +53,7 @@
 
        - name: '@KekikAkademi ifadesini değiştir'
          run: |
-           sed -i 's/@KekikAkademi/@feroxxcs3/g' $GITHUB_WORKSPACE/builds/repo.json
+           sed -i 's/@KekikAkademi/@CalpDev/g' $GITHUB_WORKSPACE/builds/repo.json
  
        - name: Derlemeleri Yükle
          run: |
