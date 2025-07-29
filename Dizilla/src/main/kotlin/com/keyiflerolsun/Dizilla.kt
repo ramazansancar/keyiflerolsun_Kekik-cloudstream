@@ -114,9 +114,11 @@ class Dizilla : MainAPI() {
                 ?: return newHomePageResponse(request.name, emptyList())
     
             val json = objectMapper.readTree(decodedData)
-            val diziList = json.get("RelatedResults").get("getDiscoverArchive").get("result")
+            val relatedResults = json.get("RelatedResults") ?: return newHomePageResponse(request.name, emptyList())
+            val discoverArchive = relatedResults.get("getDiscoverArchive") ?: return newHomePageResponse(request.name, emptyList())
+            val resultArray = discoverArchive.get("result") ?: return newHomePageResponse(request.name, emptyList())
     
-            diziList.mapNotNull {
+            val home = resultArray.mapNotNull {
                 val title = it.get("title")?.asText() ?: return@mapNotNull null
                 val slug = it.get("slug")?.asText() ?: return@mapNotNull null
                 val poster = fixUrlNull(it.get("poster")?.asText())
@@ -125,6 +127,7 @@ class Dizilla : MainAPI() {
                     this.posterUrl = poster
                 }
             }
+            home
         } else {
             document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
         }
