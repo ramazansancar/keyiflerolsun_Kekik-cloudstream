@@ -1,4 +1,4 @@
-version = 9
+version = 11
 
 cloudstream {
     authors     = listOf("kerimmkirac")
