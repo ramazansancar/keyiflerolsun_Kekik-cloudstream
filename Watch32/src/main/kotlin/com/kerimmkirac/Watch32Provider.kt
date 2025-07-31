@@ -42,8 +42,8 @@ class Watch32Provider : MainAPI() {
 
     override val mainPage = mainPageOf(
         "tv-show" to "Popular TV Shows",
-        "/filter?type=tv&quality=all&release_year=all&genre=all&country=135" to "Kdrama"
-        "/filter?type=tv&quality=all&release_year=all&genre=all&country=173" to "Jdrama"
+        "/filter?type=tv&quality=all&release_year=all&genre=all&country=135" to "Kdrama",
+        "/filter?type=tv&quality=all&release_year=all&genre=all&country=173" to "Jdrama",
         "genre/animation" to "Animations",
         
     )
