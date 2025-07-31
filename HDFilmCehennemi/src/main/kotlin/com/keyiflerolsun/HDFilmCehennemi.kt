@@ -371,7 +371,7 @@ class HDFilmCehennemi : MainAPI() {
                     Regex("""dc_[a-zA-Z0-9_]+\(\[(.*?)\]\)""", RegexOption.DOT_MATCHES_ALL)
                 }
                 val match = dcRegex.find(unpackedJs)
-                Log.d("kraptor_$name", "match $match")
+//                Log.d("kraptor_$name", "match $match")
 
                 val realUrl = if (dchelloVar.contains("var")) {
                     val parts      = match?.groupValues[1].toString()
@@ -448,35 +448,42 @@ class HDFilmCehennemi : MainAPI() {
 }
 
 fun dcDecode(valueParts: List<String>): String {
-    // Parçaları birleştir
-    var result = valueParts.joinToString("")
+    // 1) join
+    val joined = valueParts.joinToString(separator = "")
 
-    // 1. Ters çevir
-    result = result.reversed()
+    // 2) Base64 → bytes
+    val decodedBytes = Base64.decode(joined, Base64.DEFAULT)
 
-    // 2. ROT13 decode
-    result = result.map { c ->
-        when {
-            c.isLetter() -> {
+    // 3) bytes → “binary” string (Latin-1), matching JS atob()
+    var result = String(decodedBytes, Charsets.ISO_8859_1)
+
+    // 4) ROT13 exactly as in JS
+    result = buildString {
+        for (c in result) {
+            if (c in 'A'..'Z' || c in 'a'..'z') {
                 val base = if (c <= 'Z') 'A' else 'a'
-                ((c.code - base.code - 13 + 26) % 26 + base.code).toChar()
+                val shifted = (c - base + 13) % 26 + base.code
+                append(shifted.toChar())
+            } else {
+                append(c)
             }
-            else -> c
         }
-    }.joinToString("")
-
-    // 3. Base64 decode
-    result = base64Decode(result)
-
-    // 4. Karakter karıştırmasını geri al
-    var unmix = ""
-    for (i in result.indices) {
-        var charCode = result[i].code
-        charCode = (charCode - (399756995 % (i + 5)) + 126) % 126
-        unmix += charCode.toChar()
     }
 
-    return unmix.trim()
+    // 5) reverse
+    result = result.reversed()
+
+    // 6) un-mix
+    val unmix = StringBuilder(result.length)
+    for (i in result.indices) {
+        val raw = result[i].code
+        val delta = 399_756_995 % (i + 5)
+        // match JS: (charCode - delta + 256) % 256
+        val out = (raw - delta + 256) % 256
+        unmix.append(out.toChar())
+    }
+
+    return unmix.toString()
 }
 
 fun dcHello(encoded: String): String {

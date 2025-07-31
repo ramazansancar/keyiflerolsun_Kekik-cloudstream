@@ -25,8 +25,8 @@ class HotStarMirrorProvider : MainAPI() {
     )
     override var lang = "en"
 
-    override var mainUrl = "https://netfree2.cc"
-    override var name = "Disney+"
+    override var mainUrl = "https://net2025.cc"
+    override var name = "HotStar"
 
     override val hasMainPage = true
     private var cookie_value = ""
@@ -38,8 +38,7 @@ class HotStarMirrorProvider : MainAPI() {
         cookie_value = if(cookie_value.isEmpty()) bypass(mainUrl) else cookie_value
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
-            "ott" to "dp",
-            "studio" to "disney",
+            "ott" to "hs",
             "hd" to "on"
         )
         val document = app.get(
@@ -77,7 +76,7 @@ class HotStarMirrorProvider : MainAPI() {
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
             "hd" to "on",
-            "ott" to "dp"
+            "ott" to "hs"
         )
         val url = "$mainUrl/mobile/hs/search.php?s=$query&t=${APIHolder.unixTime}"
         val data = app.get(url, referer = "$mainUrl/tv/home", cookies = cookies).parsed<SearchData>()
@@ -96,7 +95,7 @@ class HotStarMirrorProvider : MainAPI() {
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
             "hd" to "on",
-            "ott" to "dp"
+            "ott" to "hs"
         )
         val data = app.get(
             "$mainUrl/mobile/hs/post.php?id=$id&t=${APIHolder.unixTime}",
@@ -167,7 +166,7 @@ class HotStarMirrorProvider : MainAPI() {
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
             "hd" to "on",
-            "ott" to "dp"
+            "ott" to "hs"
         )
         var pg = page
         while (true) {
@@ -202,7 +201,7 @@ class HotStarMirrorProvider : MainAPI() {
         val cookies = mapOf(
             "t_hash_t" to cookie_value,
             "hd" to "on",
-            "ott" to "dp"
+            "ott" to "hs"
         )
         val playlist = app.get(
             "$mainUrl/mobile/hs/playlist.php?id=$id&t=$title&tm=${APIHolder.unixTime}",

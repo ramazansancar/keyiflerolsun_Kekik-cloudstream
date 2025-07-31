@@ -12,6 +12,7 @@ open class CNCVersePlugin: Plugin() {
         registerMainAPI(NetflixMirrorProvider())
         registerMainAPI(PrimeVideoMirrorProvider())
         registerMainAPI(HotStarMirrorProvider())
+        registerMainAPI(DisneyPlusProvider())
     }
 
 }

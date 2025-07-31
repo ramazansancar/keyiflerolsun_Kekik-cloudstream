@@ -5,6 +5,7 @@ package com.keyiflerolsun
 
 import android.util.Base64
 import android.util.Log
+import org.jsoup.nodes.Element
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -53,9 +54,9 @@ class Dizilla : MainAPI() {
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.TvSeries)
 
-
-
     override val mainPage = mainPageOf(
+        "${mainUrl}/tum-bolumler" to "Yeni Eklenen Bölümler",
+        "" to "Yeni Diziler",
         "15" to   "Yerli Diziler",
         "15" to   "Aile",
         "9"  to   "Aksiyon",
@@ -77,7 +78,14 @@ class Dizilla : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        // Decode Base64 response
+        
+        if (request.data.contains("tum-bolumler")) {
+            val document = app.get(request.data, interceptor = interceptor).document
+            val home = document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
+            return newHomePageResponse(request.name, home)
+        }
+
+        
         val raw = if (request.name.contains("Anime")) {
             app.post(
                 "${mainUrl}/api/bg/findSeries?releaseYearStart=1900&releaseYearEnd=2024&imdbPointMin=5&imdbPointMax=10&categoryIdsComma=17&countryIdsComma=12&orderType=date_desc&languageId=-1&currentPage=$page&currentPageCount=24&queryStr=&categorySlugsComma=&countryCodesComma=",
@@ -104,7 +112,22 @@ class Dizilla : MainAPI() {
                 ),
                 interceptor = interceptor
             ).document.text()
-    }else if (request.name.contains("Kore Dizileri")) {
+        }
+        else if (request.name.contains("Yeni Diziler")) {
+            app.post(
+                "${mainUrl}/api/bg/findSeries?releaseYearStart=1900&releaseYearEnd=2026&imdbPointMin=5&imdbPointMax=10&categoryIdsComma=&countryIdsComma=&orderType=date_desc&languageId=-1&currentPage=$page&currentPageCount=24&queryStr=&categorySlugsComma=&countryCodesComma=",
+                referer = "${mainUrl}/",
+                headers = mapOf(
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                    "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                    "Alt-Used" to "dizilla.club",
+                    "Connection" to "keep-alive",
+                    "Host" to "dizilla.club",
+                ),
+                interceptor = interceptor
+            ).document.text()
+        }
+         else if (request.name.contains("Kore Dizileri")) {
             app.post(
                 "${mainUrl}/api/bg/findSeries?releaseYearStart=1900&releaseYearEnd=2024&imdbPointMin=5&imdbPointMax=10&categoryIdsComma=&countryIdsComma=21&orderType=date_desc&languageId=-1&currentPage=$page&currentPageCount=24&queryStr=&categorySlugsComma=&countryCodesComma=",
                 referer = "${mainUrl}/",
@@ -140,6 +163,7 @@ class Dizilla : MainAPI() {
         // Parse JSON tree and pick result array
         val mapper = jsonMapper()
         val rootNode = mapper.readTree(decoded)
+        Log.d("kraptor_$name","rootNode = $rootNode")
         val itemsNode = if (rootNode.isArray) {
             rootNode
         } else {
@@ -157,6 +181,7 @@ class Dizilla : MainAPI() {
         // Map to SearchResponse
         val home = items.map { item ->
             val slug = item.infoslug ?: error("Missing slug for ${item.infotitle}")
+            val puan = item.infopuan.toString()
             val type = when {
                 slug.startsWith("dizi/") -> TvType.TvSeries
                 slug.startsWith("film/") -> TvType.Movie
@@ -179,6 +204,7 @@ class Dizilla : MainAPI() {
                             ?.replace(Regex("(images\\.)[\\w\\.]+\\/?"), "$1macellan.online/")
                     )
                     posterHeaders = mapOf("referer" to "${mainUrl}/")
+                    this.score    = Score.from10(puan)
                 }
 
                 TvType.Movie -> newMovieSearchResponse(item.infotitle, href, type) {
@@ -202,6 +228,26 @@ class Dizilla : MainAPI() {
 
         return newHomePageResponse(request.name, home)
     }
+
+   
+    private suspend fun Element.sonBolumler(): SearchResponse {
+        val name = this.selectFirst("h2")?.text() ?: ""
+        val epName = this.selectFirst("div.opacity-80")!!.text().replace(". Sezon ", "x")
+            .replace(". Bölüm", "")
+
+        val title = "$name - $epName"
+
+        val epDoc = fixUrlNull(this.attr("href"))?.let { Jsoup.parse(app.get(it, interceptor = interceptor).body.string()) }
+
+        val href = fixUrlNull(epDoc?.selectFirst("div.poster a")?.attr("href")) ?: "return null"
+
+        val posterUrl = fixUrlNull(epDoc?.selectFirst("div.poster img")?.attr("src"))
+
+        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+            this.posterUrl = posterUrl
+        }
+    }
+
 
     override suspend fun search(query: String): List<SearchResponse> {
         return try {
@@ -227,6 +273,7 @@ class Dizilla : MainAPI() {
             val searchResult: SearchResult = objectMapper.readValue(responseBody)
             val decodedSearch = decryptDizillaResponse(searchResult.response.toString()).toString()
             val contentJson: SearchData = objectMapper.readValue(decodedSearch)
+            Log.d("kraptor_$name","contentjson = $contentJson")
             if (contentJson.state != true) {
                 throw ErrorLoadingException("Invalid Json response")
             }
@@ -234,6 +281,7 @@ class Dizilla : MainAPI() {
             contentJson.result?.forEach {
                 val name = it.title.toString()
                 val link = fixUrl(it.slug.toString())
+                val puan = it.puan.toString()
                 val posterLink = it.poster?.replace("images-macellan-online.cdn.ampproject.org/i/s/", "")
                     ?.replace("file.dizilla.club", "file.macellan.online")
                     ?.replace("images.dizilla.club", "images.macellan.online")
@@ -244,6 +292,7 @@ class Dizilla : MainAPI() {
                     ?.replace(Regex("(images\\.)[\\w\\.]+\\/?"), "$1macellan.online/").toString()
                 results.add(newTvSeriesSearchResponse(name, link, TvType.TvSeries) {
                     this.posterUrl = posterLink
+                    this.score     = Score.from10(puan)
                 })
             }
             results
@@ -292,7 +341,7 @@ class Dizilla : MainAPI() {
                 ?.selectFirst("span.text-white.text-sm")
                 ?.ownText()
                 ?.trim()
-            val rating = ratingText.toRatingInt()
+            val rating = ratingText
 
             val actorsElements = document.select("div.global-box h5")
             val actors = actorsElements.map { Actor(it.ownText()) }
@@ -332,7 +381,7 @@ class Dizilla : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = Score.from10(rating)
                 addActors(actors)
             }
         } catch (e: CancellationException) {
@@ -412,7 +461,8 @@ data class dizillaJson(
     @JsonProperty("original_title")  val infotitle:   String,
     @JsonProperty("description")     val infodesc:   String,
     @JsonProperty("poster_url")      val infoposter: String?,
-    @JsonProperty("used_slug")       val infoslug:   String?
+    @JsonProperty("used_slug")       val infoslug:   String?,
+    @JsonProperty("imdb_point")      val infopuan:   String?
 )
 
 private val privateAESKey = "9bYMCNQiWsXIYFWYAu7EkdsSbmGBTyUI"

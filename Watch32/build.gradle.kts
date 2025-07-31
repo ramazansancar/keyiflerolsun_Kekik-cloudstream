@@ -7,11 +7,12 @@ android {
     }
 }
 
+
 cloudstream {
-    language = "en"
     // All of these properties are optional, you can safely remove them
 
-    description = "Netflix, PrimeVideo, Disney+"
+    description = "Watch32 is a Free Movies streaming site with over 10000 movies and TV-Series."
+    language = "en"
     authors = listOf("kerimmkirac")
 
     /**
@@ -21,11 +22,11 @@ cloudstream {
      * 2: Slow
      * 3: Beta only
      * */
-    status = 1 // will be 3 if unspecified
-    tvTypes = listOf(
-        "Movie",
-        "TvSeries"
-    )
+    status = 1
 
-    iconUrl = "https://net2025.cc/mobile/img/nf2/icon_x192.png"
+    tvTypes = listOf("Movie","TvSeries")
+
+
+    // random cc logo i found
+    iconUrl = "https://editorialge.com/wp-content/uploads/2023/07/Watch32..jpg"
 }
