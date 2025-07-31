@@ -1,8 +1,10 @@
-// ! Bu araç @Kraptor123 tarafından | @kekikanime için yazılmıştır.
+
 version = 1
+
 
 cloudstream {
     authors     = listOf("kerimmkirac")
+
     language    = "tr"
     description = "Asya'nın En Ünlü Dizilerini en yüksek çözünürlükte HD ve kesintisiz izleyin, kaliteli Asya film ve dizilerinin keyfini sürün."
 

@@ -1,7 +1,10 @@
+
 version = 1
+
 
 cloudstream {
     authors     = listOf("kerimmkirac")
+
     language    = "tr"
     description = "Asya Fanatikleri, asya dizilerini izleme imkanı sunar. Kore dizileri izle, asyafanatikleri kore dizileri, tayvan dizileri izle, çin dizileri izle, anime izle."
 
@@ -13,6 +16,6 @@ cloudstream {
      * 3: Beta only
     **/
     status  = 1 // will be 3 if unspecified
-    tvTypes = listOf("TvSeries")
+    tvTypes = listOf("AsianDrama")
     iconUrl = "https://asyafanatiklerim.com/wp-content/uploads/2018/08/md_5aaeb1de75bea.png"
 }
