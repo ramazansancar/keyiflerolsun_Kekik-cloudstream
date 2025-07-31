@@ -81,7 +81,8 @@ subprojects {
         // but you dont need to include any of them if you dont need them
         // https://github.com/recloudstream/cloudstream/blob/master/app/build.gradle
         implementation(kotlin("stdlib"))                                              // Kotlin'in temel kütüphanesi
-        implementation("com.github.Blatzar:NiceHttp:0.4.11")                          // HTTP kütüphanesi
+        implementation("com.github.Blatzar:NiceHttp:0.4.11") // HTTP kütüphanesi
+        implementation("androidx.annotation:annotation:1.7.1")
         implementation("org.jsoup:jsoup:1.18.3")                                      // HTML ayrıştırıcı
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")   // Kotlin için Jackson JSON kütüphanesi
         implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")          // JSON-nesne dönüştürme kütüphanesi
