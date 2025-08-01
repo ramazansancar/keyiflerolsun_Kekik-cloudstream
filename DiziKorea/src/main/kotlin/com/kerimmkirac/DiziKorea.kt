@@ -311,64 +311,59 @@ class DiziKorea : MainAPI() {
 
             
             if (iframe.contains("vidmoly.to")) {
-                Log.d("DZK", "Vidmoly linki tespit edildi, özel extractor kullanılıyor")
-                extractVidmolyDirectly(iframe, callback)
-            } else {
-                
-                loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
-            }
+    Log.d("DZK", "Vidmoly linki tespit edildi, özel extractor kullanılıyor")
+    extractVidmolyDirectly(iframe, callback)
+} else {
+    loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
+}
+return true
+
+private suspend fun extractVidmolyDirectly(url: String, callback: (ExtractorLink) -> Unit) {
+    try {
+        // vidmoly.to'yu vidmoly.net'e dönüştür
+        val processedUrl = url.replace("vidmoly.to", "vidmoly.net")
+        
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
+            "Sec-Fetch-Dest" to "iframe",
+            "Referer" to "https://vidmoly.net/"
+        )
+        
+        Log.d("DZK", "Vidmoly URL'si işleniyor: $url → $processedUrl")
+        val iSource = app.get(processedUrl, headers = headers, referer = "$mainUrl/").text
+        Log.d("DZK", "Vidmoly iframe içeriği alındı, m3u8 aranıyor...")
+        
+        val matches = Regex("""file\s*:\s*"([^"]+\.m3u8[^"]*)"""").findAll(iSource).toList()
+        
+        if (matches.isEmpty()) {
+            Log.w("DZK", "Vidmoly'de m3u8 link bulunamadı")
+            return
         }
-
-        return true
-    }
-
-    
-    private suspend fun extractVidmolyDirectly(url: String, callback: (ExtractorLink) -> Unit) {
-        try {
-            val headers = mapOf(
-                "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
-                "Sec-Fetch-Dest" to "iframe",
-                "Referer" to "https://vidmoly.net/"
+        
+        Log.d("DZK", "Vidmoly'de ${matches.size} adet m3u8 bulundu")
+        
+        matches.forEachIndexed { index, match ->
+            val m3uLink = match.groupValues[1]
+            Log.d("DZK", "Vidmoly m3uLink[$index] → $m3uLink")
+            callback(
+                newExtractorLink(
+                    source = "VidMoly",
+                    name = "VidMoly",
+                    url = m3uLink,
+                    type = ExtractorLinkType.M3U8
+                ) {
+                    this.referer = "https://vidmoly.net/"
+                    this.quality = Qualities.Unknown.value
+                    this.headers = mapOf(
+                        "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
+                    )
+                }
             )
-            
-            Log.d("DZK", "Vidmoly URL'si işleniyor: $url")
-            val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
-            Log.d("DZK", "Vidmoly iframe içeriği alındı, m3u8 aranıyor...")
-            
-            val matches = Regex("""file\s*:\s*"([^"]+\.m3u8[^"]*)"""").findAll(iSource).toList()
-            
-            if (matches.isEmpty()) {
-                Log.w("DZK", "Vidmoly'de m3u8 link bulunamadı")
-                return
-            }
-            
-            Log.d("DZK", "Vidmoly'de ${matches.size} adet m3u8 bulundu")
-            
-            matches.forEachIndexed { index, match ->
-                val m3uLink = match.groupValues[1]
-                Log.d("DZK", "Vidmoly m3uLink[$index] → $m3uLink")
-
-                callback(
-                    newExtractorLink(
-                        source = "VidMoly",
-                        name = "VidMoly",
-                        url = m3uLink,
-                        
-                        
-                        type = ExtractorLinkType.M3U8
-                    ) {
-                        this.referer = "https://vidmoly.net/"
-                        this.quality = Qualities.Unknown.value
-                        this.headers = mapOf(
-                            "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
-                        )
-                    }
-                )
-            }
-        } catch (e: Exception) {
-            Log.e("DZK", "Vidmoly extractor hatası: ${e.message}")
         }
+    } catch (e: Exception) {
+        Log.e("DZK", "Vidmoly extractor hatası: ${e.message}")
     }
+}
 
     
     data class EpisodeLoadResponse(
