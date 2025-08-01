@@ -1,7 +1,5 @@
 
 package com.kerimmkirac
-
-
 class Hotlinger : ContentX() {
     override var name    = "Hotlinger"
     override var mainUrl = "https://hotlinger.com"

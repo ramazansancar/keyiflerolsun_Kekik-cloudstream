@@ -1,7 +1,5 @@
 
 package com.kerimmkirac
-
-
 import android.util.Base64
 import android.util.Log
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -20,7 +18,7 @@ open class ContentX : ExtractorApi() {
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
-        Log.d("kerimmkirac_$name", "url » $url")
+        Log.d("kerim", "url » $url")
 
         val iSource = app.get(url, referer = extRef).text
         val iExtract = Regex("""window\.openPlayer\('([^']+)'""").find(iSource)!!.groups[1]?.value ?: throw ErrorLoadingException("iExtract is null")
@@ -59,7 +57,7 @@ open class ContentX : ExtractorApi() {
             )
         }
 
-        Log.d("kerimmkirac_$name", "subtitle » $subUrls -- subtitle diger $subtitleCallback")
+        Log.d("Kekik_$name", "subtitle » $subUrls -- subtitle diger $subtitleCallback")
 
         val vidSource  = app.get("${mainUrl}/source2.php?v=${iExtract}", referer=extRef).text
         val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value ?: throw ErrorLoadingException("vidExtract is null")
@@ -117,9 +115,9 @@ open class RapidVid : ExtractorApi() {
         val extRef = referer ?: ""
         val videoReq = app.get(url, referer = extRef).text
 
-//        Log.d("kerimmkirac_${this.name}", "url » $url")
+//        Log.d("kerim", "url » $url")
 
-//        Log.d("kerimmkirac_${this.name}", "videoReq » $videoReq")
+//        Log.d("kerim", "videoReq » $videoReq")
 
         // 1) Altyazıları çekelim
         val subUrls = mutableSetOf<String>()
@@ -218,7 +216,7 @@ open class Sobreatsesuyp : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef = url
 
-        Log.d("kerimmkirac_${this.name}", "Sobreat url = $url")
+        Log.d("kerim", "Sobreat url = $url")
 
         val videoReq = app.get(url, referer = extRef).text
 
@@ -233,7 +231,7 @@ open class Sobreatsesuyp : ExtractorApi() {
                 file  = mapItem["file"]  as? String
             )
         }
-        Log.d("kerimmkirac_${this.name}", "postJson » $postJson")
+        Log.d("kerim", "postJson » $postJson")
 
         for (item in postJson) {
             if (item.file == null || item.title == null) continue
@@ -283,7 +281,7 @@ open class TRsTX : ExtractorApi() {
                 file  = mapItem["file"]  as? String
             )
         }
-        Log.d("kerimmkirac_${this.name}", "postJson » $postJson")
+        Log.d("Kekik_${this.name}", "postJson » $postJson")
 
         val vidLinks = mutableSetOf<String>()
         val vidMap   = mutableListOf<Map<String, String>>()
@@ -304,7 +302,7 @@ open class TRsTX : ExtractorApi() {
 
 
         for (mapEntry in vidMap) {
-            Log.d("kerimmkirac_${this.name}", "mapEntry » $mapEntry")
+            Log.d("Kekik_${this.name}", "mapEntry » $mapEntry")
             val title    = mapEntry["title"] ?: continue
             val m3uLink = mapEntry["videoData"] ?: continue
 
@@ -341,7 +339,7 @@ open class TurboImgz : ExtractorApi() {
         val videoReq = app.get(url.substringAfter("||"), referer=extRef).text
 
         val videoLink = Regex("""file: "(.*)",""").find(videoReq)?.groupValues?.get(1) ?: throw ErrorLoadingException("File not found")
-        Log.d("kerimmkirac_${this.name}", "videoLink » $videoLink")
+        Log.d("Kekik_${this.name}", "videoLink » $videoLink")
 
         callback.invoke(
             newExtractorLink(
@@ -389,7 +387,7 @@ open class TurkeyPlayer : ExtractorApi() {
                 subtitleCallback.invoke(SubtitleFile(lang, fixM3u.toString()))
             }
 
-            Log.d("kerimmkirac_unutulmaz", "normalized m3u » $fixM3u")
+            Log.d("kerim_unutulmaz", "normalized m3u » $fixM3u")
 
 
             val dil = Regex("""title\":\"([^\"]*)\"""").find(videoReq)
@@ -436,24 +434,24 @@ open class VidMoxy : ExtractorApi() {
     }
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        Log.d("kerimmkirac_unutulmaz", "url = $url")
+        Log.d("kerim_unutulmaz", "url = $url")
         val extRef   = referer ?: ""
         val videoReq = app.get(url, referer=extRef).text
-//        Log.d("kerimmkirac_unutulmaz", "videoReq = $videoReq")
+//        Log.d("kerim_unutulmaz", "videoReq = $videoReq")
         val regex = Regex("""file\s*:\s*EE\.dd\("([^"]+)"""")
         val match = regex.find(videoReq)
         val encoded =  match?.groupValues?.get(1).toString()
-        Log.d("kerimmkirac_unutulmaz", "encoded = $encoded")
+        Log.d("kerim_unutulmaz", "encoded = $encoded")
         val decoded = decodeEE(encoded)
-        Log.d("kerimmkirac_unutulmaz", "decoded = $decoded")
+        Log.d("kerim_unutulmaz", "decoded = $decoded")
         val altyRegex = Regex(pattern = """"file": "([^"]*)"""", options = setOf(RegexOption.IGNORE_CASE))
         altyRegex.findAll(videoReq).map { match ->
             val url = fixUrl(match.groupValues[1])
-            Log.d("kerimmkirac_unutulmaz", "url = $url")
+            Log.d("kerim_unutulmaz", "url = $url")
             val subLang = url
                 .substringAfterLast("/")
                 .substringBefore("_")
-            Log.d("kerimmkirac_unutulmaz", "subLang = $subLang")
+            Log.d("kerim_unutulmaz", "subLang = $subLang")
             val keywords = listOf("tur", "tr", "türkçe", "turkce")
             val language = if (keywords.any { subLang.contains(it, ignoreCase = true) }) {
                 "Turkish"

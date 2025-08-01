@@ -1,7 +1,6 @@
+// Aes anahtari icin MakotoTokioki'ye teşekkürler.
 
 package com.kerimmkirac
-
-
 import android.util.Base64
 import android.util.Log
 import org.jsoup.nodes.Element
@@ -55,14 +54,25 @@ class Dizilla : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/tum-bolumler" to "Yeni Eklenen Bölümler",
-        "31" to   "Kore Dizileri",
         "" to "Yeni Diziler",
-        
+        "15" to   "Yerli Diziler",
+        "15" to   "Aile",
+        "9"  to   "Aksiyon",
+        "17" to   "Anime",
+        "17" to   "Animasyon",
+        "5"  to   "Bilim Kurgu",
+        "2"  to   "Dram",
+        "12" to   "Fantastik",
         "18" to   "Gerilim",
         "3"  to   "Gizem",
         "4"  to   "Komedi",
         "8"  to   "Korku",
-        
+        "31" to   "Kore Dizileri",
+        "24" to   "Macera",
+        "7"  to   "Romantik",
+        "26" to   "Savaş",
+        "1"  to   "Suç",
+        "11" to   "Western",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -146,12 +156,12 @@ class Dizilla : MainAPI() {
         val decoded = JSONObject(raw)
             .getString("response")
             .let { decryptDizillaResponse(it) }
-//        Log.d("dizillayeni", "decoded = $decoded")
+    Log.d("dizillayeni", "decoded = $decoded")
 
         // Parse JSON tree and pick result array
         val mapper = jsonMapper()
         val rootNode = mapper.readTree(decoded)
-        Log.d("kerimmkirac_$name","rootNode = $rootNode")
+        Log.d("kerim","rootNode = $rootNode")
         val itemsNode = if (rootNode.isArray) {
             rootNode
         } else {
@@ -286,7 +296,7 @@ class Dizilla : MainAPI() {
             val searchResult: SearchResult = objectMapper.readValue(responseBody)
             val decodedSearch = decryptDizillaResponse(searchResult.response.toString()).toString()
             val contentJson: SearchData = objectMapper.readValue(decodedSearch)
-            Log.d("kerimmkirac_$name","contentjson = $contentJson")
+            Log.d("kerim","contentjson = $contentJson")
             if (contentJson.state != true) {
                 throw ErrorLoadingException("Invalid Json response")
             }
@@ -310,7 +320,7 @@ class Dizilla : MainAPI() {
             }
             results
         } catch (e: Exception) {
-//            Log.e("kerimmkirac_Dizilla", "Search error: ${e.message}")
+           Log.e("kerim", "Search error: ${e.message}")
             emptyList()
         }
     }
@@ -375,7 +385,7 @@ class Dizilla : MainAPI() {
                 val sezonDoc = org.jsoup.Jsoup.parse(sezonBody)
 //                val split = sezonHref.split("-")
                 val season = sezonHref.substringBefore("-sezon").substringAfterLast("-").toIntOrNull()
-//                Log.d("kerimmkirac_$name", "season = $season")
+              Log.d("kerim", "season = $season")
                 val episodesContainer = sezonDoc.select("div.episodes")
                 for (bolum in episodesContainer.select("div.cursor-pointer")) {
                     val linkElements = bolum.select("a")
@@ -384,9 +394,9 @@ class Dizilla : MainAPI() {
                     }
                     val epName = linkElements.last()?.ownText() ?: continue
                     val epHref = fixUrlNull(linkElements.last()?.attr("href")) ?: continue
-//                    Log.d("kerimmkirac_$name", "epHref = $epHref")
+              Log.d("kerim", "epHref = $epHref")
                     val epEpisode = bolum.selectFirst("a")?.ownText()?.trim()?.toIntOrNull()
-//                    Log.d("kerimmkirac_$name", "epEpisode = $epEpisode")
+                 Log.d("kerim", "epEpisode = $epEpisode")
                     val newEpisode = newEpisode(epHref) {
                         this.name = epName
                         this.season = season
@@ -424,7 +434,7 @@ class Dizilla : MainAPI() {
 
             val scriptElement = document.selectFirst("script#__NEXT_DATA__")
             if (scriptElement == null) {
-                Log.e("kerimmkirac_Dizilla", "__NEXT_DATA__ script bulunamadı")
+                Log.e("kerim", "__NEXT_DATA__ script bulunamadı")
                 return false
             }
             val script = scriptElement.data()
@@ -438,25 +448,25 @@ class Dizilla : MainAPI() {
             }
 
             val secureDataString = secureDataNode.toString().replace("\"", "")
-//            Log.d("kerimmkirac_$name", "secureDataString = $secureDataString")
+        Log.d("kerim", "secureDataString = $secureDataString")
 
             val decodedData = try {
                 decryptDizillaResponse(secureDataString)
             } catch (e: Exception) {
                 return false
             }
-//            Log.d("kerimmkirac_$name", "decodedData = $decodedData")
+      Log.d("kerim", "decodedData = $decodedData")
 
             val decodedJson = objectMapper.readTree(decodedData)
             val sourceNode = decodedJson.get("RelatedResults")?.get("getEpisodeSources")?.get("result")?.get(0)?.get("source_content")
             if (sourceNode == null) {
-//                Log.e("kerimmkirac_Dizilla", "source_content bulunamadı")
+                Log.e("kerim", "source_content bulunamadı")
                 return false
             }
             val source = sourceNode.toString().replace("\"", "").replace("\\", "")
             val iframe = fixUrlNull(Jsoup.parse(source).select("iframe").attr("src"))
             if (iframe == null) {
-//                Log.e("kerimmkirac_Dizilla", "Iframe URL bulunamadı")
+        Log.e("kerim", "Iframe URL bulunamadı")
                 return false
             }
             val iframeKont = if (iframe.contains("sn.dplayer74.site")){
@@ -505,7 +515,7 @@ private fun decryptDizillaResponse(response: String): String? {
         //https://www.youtube.com/watch?v=FSXuM2v0YLY
         return jsonString
     } catch (e: Exception) {
-//        Log.e("kerimmkirac_Dizilla", "Decryption failed: ${e.message}")
+//        Log.e("kerim", "Decryption failed: ${e.message}")
         return null
     }
 }
