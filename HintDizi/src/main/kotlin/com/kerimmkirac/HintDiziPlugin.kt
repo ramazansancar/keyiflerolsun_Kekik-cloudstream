@@ -11,5 +11,6 @@ class HintDiziPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(HintDizi())
         registerExtractorAPI(VidMolyExtractor())
+        registerExtractorAPI(VidMolyTo())
     }
 }
