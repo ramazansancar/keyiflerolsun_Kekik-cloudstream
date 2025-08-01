@@ -28,6 +28,8 @@ class `4KFilmIzlemePlugin`: Plugin() {
         registerExtractorAPI(SNDplayer())
         registerExtractorAPI(ORGDplayer())
         registerExtractorAPI(GoogleDriveExtractor())
+        registerExtractorAPI(VidMolyExtractor())
+        registerExtractorAPI(VidMolyTo())
 
     }
 }
