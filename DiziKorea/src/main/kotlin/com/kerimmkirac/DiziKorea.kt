@@ -103,8 +103,12 @@ class DiziKorea : MainAPI() {
         val title     = this.selectFirst("h2")?.text()?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("div.poster-long-image img.lazy")?.attr("data-src"))
+        val rating      = this.selectFirst("span.rating.flex.items-center")?.text()?.trim()
 
-        return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) { this.posterUrl = posterUrl }
+        return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) {
+            this.posterUrl = posterUrl
+            this.score     = Score.from10(rating)
+        }
     }
 
     private fun Element.toEpisodeSearchResult(): SearchResponse? {
@@ -112,6 +116,7 @@ class DiziKorea : MainAPI() {
         val originalHref = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img.lazy")?.attr("data-src"))
         val episodeInfo = this.selectFirst("p.truncate")?.text()?.trim()
+        val rating      = this.selectFirst("span.rating.flex.items-center")?.text()?.trim()
         
         
         val diziHref = convertEpisodeUrlToSeriesUrl(originalHref)
@@ -120,7 +125,8 @@ class DiziKorea : MainAPI() {
         val fullTitle = if (episodeInfo != null) "$title - $episodeInfo" else title
 
         return newTvSeriesSearchResponse(fullTitle, diziHref, TvType.AsianDrama) { 
-            this.posterUrl = posterUrl 
+            this.posterUrl = posterUrl
+            this.score     = Score.from10(rating)
         }
     }
 
@@ -185,16 +191,24 @@ class DiziKorea : MainAPI() {
         val title = this.selectFirst("span.block.truncate")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img.lazy")?.attr("data-src"))
+        val rating      = this.selectFirst("span.rating.flex.items-center")?.text()?.trim()
 
-        return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) { this.posterUrl = posterUrl }
+        return newTvSeriesSearchResponse(title, href, TvType.AsianDrama) {
+            this.posterUrl = posterUrl
+            this.score     = Score.from10(rating)
+        }
     }
 
     private fun Element.toMovieSearchResult(): SearchResponse? {
         val title = this.selectFirst("span.block a")?.text()?.trim() ?: return null
         val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img.lazy")?.attr("data-src"))
+        val rating      = this.selectFirst("span.rating.flex.items-center")?.text()?.trim()
 
-        return newMovieSearchResponse(title, href, TvType.AsianDrama) { this.posterUrl = posterUrl }
+        return newMovieSearchResponse(title, href, TvType.AsianDrama) {
+            this.posterUrl = posterUrl
+            this.score     = Score.from10(rating)
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -244,7 +258,7 @@ class DiziKorea : MainAPI() {
         val year        = document.selectFirst("h1 span")?.text()?.substringAfter("(")?.substringBefore(")")?.toIntOrNull()
         val description = document.selectFirst("div.series-profile-summary p")?.text()?.trim()
         val tags        = document.select("div.series-profile-type a").mapNotNull { it.text().trim() }
-        val rating      = document.selectFirst("span.color-imdb")?.text()?.trim()?.toRatingInt()
+        val rating      = document.selectFirst("span.color-imdb")?.text()?.trim()
         val duration    = document.selectXpath("//span[text()='Süre']//following-sibling::p").text().trim().split(" ").first().toIntOrNull()
         val trailerId     = document.selectFirst("div.series-profile-trailer")?.attr("data-yt")
         val trailerUrl = trailerId?.takeIf { it.isNotEmpty() }?.let { "https://www.youtube.com/watch?v=$it" }
@@ -274,7 +288,7 @@ class DiziKorea : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.rating    = rating
+                this.score = Score.from10(rating)
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailerUrl)
@@ -285,7 +299,7 @@ class DiziKorea : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.rating    = rating
+                this.score = Score.from10(rating)
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailerUrl)
@@ -311,59 +325,64 @@ class DiziKorea : MainAPI() {
 
             
             if (iframe.contains("vidmoly.to")) {
-    Log.d("DZK", "Vidmoly linki tespit edildi, özel extractor kullanılıyor")
-    extractVidmolyDirectly(iframe, callback)
-} else {
-    loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
-}
-return true
+                Log.d("DZK", "Vidmoly linki tespit edildi, özel extractor kullanılıyor")
+                extractVidmolyDirectly(iframe, callback)
+            } else {
+                
+                loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
+            }
+        }
 
-private suspend fun extractVidmolyDirectly(url: String, callback: (ExtractorLink) -> Unit) {
-    try {
-        // vidmoly.to'yu vidmoly.net'e dönüştür
-        val processedUrl = url.replace("vidmoly.to", "vidmoly.net")
-        
-        val headers = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
-            "Sec-Fetch-Dest" to "iframe",
-            "Referer" to "https://vidmoly.net/"
-        )
-        
-        Log.d("DZK", "Vidmoly URL'si işleniyor: $url → $processedUrl")
-        val iSource = app.get(processedUrl, headers = headers, referer = "$mainUrl/").text
-        Log.d("DZK", "Vidmoly iframe içeriği alındı, m3u8 aranıyor...")
-        
-        val matches = Regex("""file\s*:\s*"([^"]+\.m3u8[^"]*)"""").findAll(iSource).toList()
-        
-        if (matches.isEmpty()) {
-            Log.w("DZK", "Vidmoly'de m3u8 link bulunamadı")
-            return
-        }
-        
-        Log.d("DZK", "Vidmoly'de ${matches.size} adet m3u8 bulundu")
-        
-        matches.forEachIndexed { index, match ->
-            val m3uLink = match.groupValues[1]
-            Log.d("DZK", "Vidmoly m3uLink[$index] → $m3uLink")
-            callback(
-                newExtractorLink(
-                    source = "VidMoly",
-                    name = "VidMoly",
-                    url = m3uLink,
-                    type = ExtractorLinkType.M3U8
-                ) {
-                    this.referer = "https://vidmoly.net/"
-                    this.quality = Qualities.Unknown.value
-                    this.headers = mapOf(
-                        "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
-                    )
-                }
-            )
-        }
-    } catch (e: Exception) {
-        Log.e("DZK", "Vidmoly extractor hatası: ${e.message}")
+        return true
     }
 
+    
+    private suspend fun extractVidmolyDirectly(url: String, callback: (ExtractorLink) -> Unit) {
+        try {
+            val headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
+                "Sec-Fetch-Dest" to "iframe",
+                "Referer" to "https://vidmoly.to/"
+            )
+            
+            Log.d("DZK", "Vidmoly URL'si işleniyor: $url")
+            val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
+            Log.d("DZK", "Vidmoly iframe içeriği alındı, m3u8 aranıyor...")
+            
+            val matches = Regex("""file\s*:\s*"([^"]+\.m3u8[^"]*)"""").findAll(iSource).toList()
+            
+            if (matches.isEmpty()) {
+                Log.w("DZK", "Vidmoly'de m3u8 link bulunamadı")
+                return
+            }
+            
+            Log.d("DZK", "Vidmoly'de ${matches.size} adet m3u8 bulundu")
+            
+            matches.forEachIndexed { index, match ->
+                val m3uLink = match.groupValues[1]
+                Log.d("DZK", "Vidmoly m3uLink[$index] → $m3uLink")
+
+                callback(
+                    newExtractorLink(
+                        source = "VidMoly",
+                        name = "VidMoly",
+                        url = m3uLink,
+                        
+                        
+                        type = ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = "https://vidmoly.to/"
+                        this.quality = Qualities.Unknown.value
+                        this.headers = mapOf(
+                            "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
+                        )
+                    }
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("DZK", "Vidmoly extractor hatası: ${e.message}")
+        }
+    }
 
     
     data class EpisodeLoadResponse(
