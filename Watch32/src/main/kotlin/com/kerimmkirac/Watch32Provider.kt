@@ -42,22 +42,26 @@ class Watch32Provider : MainAPI() {
 
     override val mainPage = mainPageOf(
         "tv-show" to "Popular TV Shows",
-        "/filter?type=tv&quality=all&release_year=all&genre=all&country=135" to "Kdrama",
-        "/filter?type=tv&quality=all&release_year=all&genre=all&country=173" to "Jdrama",
+        "filter?type=tv&quality=all&release_year=all&genre=all&country=135" to "Kdrama",
+        "filter?type=tv&quality=all&release_year=all&genre=all&country=173" to "Jdrama",
         "genre/animation" to "Animations",
         
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest
-    ): HomePageResponse {
-        val doc = app.get("$mainUrl/${request.data}?page=$page", cacheTime = 60, timeout = 20).document
-        val home = doc.select(".film_list-wrap .flw-item").mapNotNull { toResult(it) }
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+    val isFilterPage = request.data.startsWith("filter?")
+    val pageParam = if (isFilterPage) "&page=$page" else "?page=$page"
+    val url = "$mainUrl/${request.data}$pageParam"
 
-        return newHomePageResponse(
-            HomePageList(request.name, home, isHorizontalImages = false),
-            hasNext = true
-        )
-    }
+    val doc = app.get(url, cacheTime = 60, timeout = 20).document
+    val home = doc.select(".film_list-wrap .flw-item").mapNotNull { toResult(it) }
+
+    return newHomePageResponse(
+        HomePageList(request.name, home, isHorizontalImages = false),
+        hasNext = true
+    )
+}
+
 
 
     private fun toResult(post: Element): SearchResponse {
