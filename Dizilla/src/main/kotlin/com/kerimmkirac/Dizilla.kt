@@ -55,25 +55,14 @@ class Dizilla : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/tum-bolumler" to "Yeni Eklenen Bölümler",
+        "31" to   "Kore Dizileri",
         "" to "Yeni Diziler",
-        "15" to   "Yerli Diziler",
-        "15" to   "Aile",
-        "9"  to   "Aksiyon",
-        "17" to   "Anime",
-        "17" to   "Animasyon",
-        "5"  to   "Bilim Kurgu",
-        "2"  to   "Dram",
-        "12" to   "Fantastik",
+        
         "18" to   "Gerilim",
         "3"  to   "Gizem",
         "4"  to   "Komedi",
         "8"  to   "Korku",
-        "31" to   "Kore Dizileri",
-        "24" to   "Macera",
-        "7"  to   "Romantik",
-        "26" to   "Savaş",
-        "1"  to   "Suç",
-        "11" to   "Western",
+        
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -229,23 +218,48 @@ class Dizilla : MainAPI() {
     }
 
    
-    private suspend fun Element.sonBolumler(): SearchResponse {
-        val name = this.selectFirst("h2")?.text() ?: ""
-        val epName = this.selectFirst("div.opacity-80")!!.text().replace(". Sezon ", "x")
-            .replace(". Bölüm", "")
+    private suspend fun Element.sonBolumler(): SearchResponse? {
+    val name = this.selectFirst("h2")?.text() ?: ""
+    val epName = this.selectFirst("div.opacity-80")!!.text().replace(". Sezon ", "x")
+        .replace(". Bölüm", "")
 
-        val title = "$name - $epName"
+    val title = "$name - $epName"
 
-        val epDoc = fixUrlNull(this.attr("href"))?.let { Jsoup.parse(app.get(it, interceptor = interceptor).body.string()) }
-
-        val href = fixUrlNull(epDoc?.selectFirst("div.poster a")?.attr("href")) ?: "return null"
-
-        val posterUrl = fixUrlNull(epDoc?.selectFirst("div.poster img")?.attr("src"))
-
-        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-            this.posterUrl = posterUrl
-        }
+    val epDoc = fixUrlNull(this.attr("href"))?.let { 
+        Jsoup.parse(app.get(it, interceptor = interceptor).body.string()) 
     }
+
+    
+    val href = epDoc?.selectFirst("div.poster a")?.attr("href")?.let { fixUrlNull(it) }
+    
+    
+    val finalHref = href ?: run {
+        
+        epDoc?.selectFirst("a[href*='/dizi/']")?.attr("href")?.let { fixUrlNull(it) }
+        
+        ?: epDoc?.selectFirst("link[rel='canonical']")?.attr("href")?.let { 
+            val canonicalUrl = it
+            
+            val diziSlug = canonicalUrl.substringAfterLast("/").substringBefore("-")
+            fixUrlNull("${mainUrl}/dizi/${diziSlug}")
+        }
+        
+        ?: epDoc?.selectFirst("nav a[href*='/dizi/']")?.attr("href")?.let { fixUrlNull(it) }
+    }
+    
+    
+    if (finalHref == null) {
+        
+        return null
+    }
+
+    
+    val posterUrl = fixUrlNull(this.selectFirst("div.image img")?.attr("src"))
+
+    return newTvSeriesSearchResponse(title, finalHref, TvType.TvSeries) {
+        this.posterUrl = posterUrl
+    }
+}
 
 
     override suspend fun search(query: String): List<SearchResponse> {
