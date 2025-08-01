@@ -363,7 +363,7 @@ private suspend fun extractVidmolyDirectly(url: String, callback: (ExtractorLink
     } catch (e: Exception) {
         Log.e("DZK", "Vidmoly extractor hatası: ${e.message}")
     }
-}
+
 
     
     data class EpisodeLoadResponse(
