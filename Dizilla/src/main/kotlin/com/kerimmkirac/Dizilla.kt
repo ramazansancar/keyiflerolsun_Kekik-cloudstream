@@ -1,4 +1,3 @@
-// Aes anahtari icin MakotoTokioki'ye teşekkürler.
 
 package com.kerimmkirac
 import android.util.Base64
@@ -54,25 +53,12 @@ class Dizilla : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/tum-bolumler" to "Yeni Eklenen Bölümler",
+        "31" to   "Kore Dizileri",
         "" to "Yeni Diziler",
-        "15" to   "Yerli Diziler",
-        "15" to   "Aile",
-        "9"  to   "Aksiyon",
-        "17" to   "Anime",
-        "17" to   "Animasyon",
-        "5"  to   "Bilim Kurgu",
-        "2"  to   "Dram",
-        "12" to   "Fantastik",
         "18" to   "Gerilim",
         "3"  to   "Gizem",
         "4"  to   "Komedi",
         "8"  to   "Korku",
-        "31" to   "Kore Dizileri",
-        "24" to   "Macera",
-        "7"  to   "Romantik",
-        "26" to   "Savaş",
-        "1"  to   "Suç",
-        "11" to   "Western",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
