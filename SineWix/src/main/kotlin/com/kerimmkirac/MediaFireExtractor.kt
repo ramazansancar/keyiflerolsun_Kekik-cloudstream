@@ -1,4 +1,4 @@
-package com.kraptor
+package com.kerimmkirac
 
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.SubtitleFile
@@ -22,7 +22,7 @@ open class MediaFireExtractor : ExtractorApi() {
         val videoReq = app.get(url).document
         val videolink = videoReq.selectFirst("a.input.popsok")?.attr("data-scrambled-url").toString()
         val video     = base64Decode(videolink)
-        Log.d("kraptor_$name","video = $video")
+        Log.d("kerim","video = $video")
         callback.invoke(
             newExtractorLink(
             "MediaFire",
