@@ -18,7 +18,7 @@ open class VidMolyExtractor : ExtractorApi() {
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
             "Sec-Fetch-Dest" to "iframe",
-            "Referer" to "https://vidmoly.to/"
+            "Referer" to "https://vidmoly.net/"
         )
         Log.d("kerimmkirac_$name", "Vidmoly URL'si işleniyor: $url")
         val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
@@ -39,7 +39,7 @@ open class VidMolyExtractor : ExtractorApi() {
                     url = m3uLink,
                     type = ExtractorLinkType.M3U8
                 ) {
-                    this.referer = "https://vidmoly.to/"
+                    this.referer = "https://vidmoly.net/"
                     this.quality = Qualities.Unknown.value
                     this.headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
