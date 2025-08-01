@@ -324,9 +324,10 @@ class DiziKorea : MainAPI() {
             Log.d("DZK", "iframe » $iframe")
 
             
-            if (iframe.contains("vidmoly.to")) {
+            val url = if (iframe.contains("vidmoly.to")) {
                 Log.d("DZK", "Vidmoly linki tespit edildi, özel extractor kullanılıyor")
-                extractVidmolyDirectly(iframe, callback)
+                url.replace("vidmoly.to","vidmoly.net")
+                extractVidmolyDirectly(url, callback)
             } else {
                 
                 loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
