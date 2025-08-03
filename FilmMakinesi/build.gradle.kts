@@ -1,4 +1,4 @@
-version = 1
+version = 2
 
 cloudstream {
     authors     = listOf("kerimmkirac")
@@ -16,3 +16,4 @@ cloudstream {
     tvTypes = listOf("Movie")
     iconUrl = "https://www.google.com/s2/favicons?domain=filmmakinesi.film&sz=%size%"
 }
+
