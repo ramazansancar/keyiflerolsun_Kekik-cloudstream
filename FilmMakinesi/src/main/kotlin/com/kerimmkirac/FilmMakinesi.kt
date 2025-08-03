@@ -13,6 +13,7 @@ import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
+import java.nio.charset.StandardCharsets
 
 
 class FilmMakinesi : MainAPI() {
@@ -43,16 +44,7 @@ class FilmMakinesi : MainAPI() {
         "${mainUrl}/film-izle/fantastik-filmler-izle/"       to "Fantastik",
         "${mainUrl}/film-izle/polisiye-filmleri-izle/"       to "Polisiye Suç",
         "${mainUrl}/film-izle/korku-filmleri-izle-hd/"       to "Korku",
-        // "${mainUrl}/film-izle/savas/page/"                        to "Tarihi ve Savaş",
-        // "${mainUrl}/film-izle/gerilim-filmleri-izle/page/"        to "Gerilim Heyecan",
-        // "${mainUrl}/film-izle/gizemli/page/"                      to "Gizem",
-        // "${mainUrl}/film-izle/aile-filmleri/page/"                to "Aile",
-        // "${mainUrl}/film-izle/animasyon-filmler/page/"            to "Animasyon",
-        // "${mainUrl}/film-izle/western/page/"                      to "Western",
-        // "${mainUrl}/film-izle/biyografi/page/"                    to "Biyografik",
-        // "${mainUrl}/film-izle/dram/page/"                         to "Dram",
-        // "${mainUrl}/film-izle/muzik/page/"                        to "Müzik",
-        // "${mainUrl}/film-izle/spor/page/"                         to "Spor"
+        
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -89,7 +81,7 @@ class FilmMakinesi : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("${mainUrl}/arama/?s=${query}").document
-        Log.d("kraptor_$name", "arama = $document")
+        Log.d("kerim", "arama = $document")
         return document.select("div.item-relative").mapNotNull { it.toSearchResult() }
     }
 
@@ -133,11 +125,11 @@ class FilmMakinesi : MainAPI() {
 
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("kraptor_$name", "data » $data")
+        Log.d("kerim", "data » $data")
         val document      = app.get(data).document
-//        Log.d("kraptor_$name", "document = $document")
+//        Log.d("kerim", "document = $document")
         val iframe = document.selectFirst("iframe")?.attr("data-src") ?: ""
-        Log.d("kraptor_$name", "iframe = $iframe")
+        Log.d("kerim", "iframe = $iframe")
         val iframeGet = app.get(iframe, referer = "${mainUrl}/").document
         val scriptAl  = iframeGet.select("script[type=text/javascript]")[1].data().trim()
         val scriptUnpack = getAndUnpack(scriptAl)
@@ -152,21 +144,21 @@ class FilmMakinesi : MainAPI() {
             Regex("""dc_[a-zA-Z0-9_]+\(\[(.*?)\]\)""", RegexOption.DOT_MATCHES_ALL)
         }
         val match = dcRegex.find(scriptUnpack)
-//        Log.d("kraptor_$name", "match $match")
+//        Log.d("kerim", "match $match")
 
         val realUrl = if (dchelloVar.contains("var")) {
             val parts      = match?.groupValues[1].toString()
-            Log.d("kraptor_$name", "parts $parts")
+            Log.d("kerim", "parts $parts")
             val decodedUrl = dcHello(parts)
-            Log.d("kraptor_$name", "decodedUrl $decodedUrl")
+            Log.d("kerim", "decodedUrl $decodedUrl")
             decodedUrl
         } else{
             val parts = match!!.groupValues[1]
                 .split(",")
                 .map { it.trim().removeSurrounding("\"") }
-            Log.d("kraptor_$name", "dc parts: $parts")
+            Log.d("kerim", "dc parts: $parts")
             val decodedUrl = dcDecode(parts)
-            Log.d("kraptor_$name", "decoded URL: $decodedUrl")
+            Log.d("kerim", "decoded URL: $decodedUrl")
             decodedUrl
         }
 
@@ -186,49 +178,66 @@ class FilmMakinesi : MainAPI() {
 }
 
 fun dcDecode(valueParts: List<String>): String {
-    // 1) Join array elements
-    var result = valueParts.joinToString(separator = "")
+    try {
+        // 1) Join array elements (matches: let value = value_parts.join(''))
+        var result = valueParts.joinToString(separator = "")
 
-    // 2) Reverse the string
-    result = result.reversed()
+        // 2) ROT13 transformation (matches the replace function in JS)
+        result = result.map { c ->
+            when {
+                c in 'a'..'z' -> {
+                    val shifted = c.code + 13
+                    if (shifted <= 'z'.code) shifted.toChar() else (shifted - 26).toChar()
+                }
+                c in 'A'..'Z' -> {
+                    val shifted = c.code + 13
+                    if (shifted <= 'Z'.code) shifted.toChar() else (shifted - 26).toChar()
+                }
+                else -> c
+            }
+        }.joinToString("")
 
-    // 3) Base64 decode twice (matching JS atob() calls)
-    result = try {
-        val firstDecode = Base64.decode(result, Base64.DEFAULT)
-        val firstString = String(firstDecode, Charsets.ISO_8859_1)
+        // 3) Reverse the string (matches: split('').reverse().join(''))
+        result = result.reversed()
 
-        val secondDecode = Base64.decode(firstString, Base64.DEFAULT)
-        String(secondDecode, Charsets.ISO_8859_1)
+        // 4) Base64 decode (matches: atob(result))
+        result = try {
+            val decoded = Base64.decode(result, Base64.DEFAULT)
+            String(decoded, StandardCharsets.ISO_8859_1)
+        } catch (e: Exception) {
+            return "" // Handle decode errors
+        }
+
+        // 5) Un-mix: Apply character transformation
+        val unmix = StringBuilder(result.length)
+        for (i in result.indices) {
+            val charCode = result[i].code
+            val delta = 399756995 % (i + 5)
+            // Match JS logic: (charCode - delta + 256) % 256
+            val transformedCode = (charCode - delta + 256) % 256
+            unmix.append(transformedCode.toChar())
+        }
+
+        return unmix.toString()
+
     } catch (e: Exception) {
-        return "" // Handle decode errors
+        return "" // Handle any other errors
     }
-
-    // 4) Un-mix: Apply character transformation
-    val unmix = StringBuilder(result.length)
-    for (i in result.indices) {
-        val charCode = result[i].code
-        val delta = 399_756_995 % (i + 5)
-        // Match JS logic: (charCode - delta + 256) % 256
-        val transformedCode = (charCode - delta + 256) % 256
-        unmix.append(transformedCode.toChar())
-    }
-
-    return unmix.toString()
 }
 
 fun dcHello(encoded: String): String {
     // İlk Base64 çöz
     val firstDecoded = base64Decode(encoded)
-    Log.d("kraptor_hdfilmcehennemi", "firstDecoded $firstDecoded")
+    Log.d("kerim", "firstDecoded $firstDecoded")
     // Ters çevir
     val reversed = firstDecoded.reversed()
-    Log.d("kraptor_hdfilmcehennemi", "reversed $reversed")
+    Log.d("kerim", "reversed $reversed")
     // İkinci Base64 çöz
     val secondDecoded = base64Decode(reversed)
 
     val gercekLink    = secondDecoded.substringAfter("http")
     val sonLink       = "http$gercekLink"
-    Log.d("kraptor_hdfilmcehennemi", "sonLink $sonLink")
+    Log.d("kerim", "sonLink $sonLink")
     return sonLink.trim()
 
 }
