@@ -16,6 +16,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import java.nio.charset.StandardCharsets
 
 class HDFilmCehennemi : MainAPI() {
     override var mainUrl              = "https://www.hdfilmcehennemi.nl"
@@ -96,7 +97,7 @@ class HDFilmCehennemi : MainAPI() {
 
         // Yanıt başarılı değilse boş liste döndür
         if (response.text.contains("Sayfa Bulunamadı")) {
-            Log.d("HDCH", "Sayfa bulunamadı: $url")
+            Log.d("kerim", "Sayfa bulunamadı: $url")
             return newHomePageResponse(request.name, emptyList())
         }
 
@@ -105,14 +106,14 @@ class HDFilmCehennemi : MainAPI() {
             val hdfc: HDFC = objectMapper.readValue(response.text)
             val document = Jsoup.parse(hdfc.html)
 
-            Log.d("HDCH", "Kategori ${request.name} için ${document.select("a").size} sonuç bulundu")
+            Log.d("kerim", "Kategori ${request.name} için ${document.select("a").size} sonuç bulundu")
 
             // Film/dizi kartlarını SearchResponse listesine dönüştür
             val results = document.select("a").mapNotNull { it.toSearchResult() }
 
             return newHomePageResponse(request.name, results)
         } catch (e: Exception) {
-            Log.e("HDCH", "JSON parse hatası (${request.name}): ${e.message}")
+            Log.e("kerim", "JSON parse hatası (${request.name}): ${e.message}")
             return newHomePageResponse(request.name, emptyList())
         }
     }
@@ -132,8 +133,8 @@ class HDFilmCehennemi : MainAPI() {
                 || it?.contains("1080p Film izle", ignoreCase = true) == true
             } ?: return null
 
-        val href      = fixUrlNull(this.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val href      = kerimUrlNull(this.attr("href")) ?: return null
+        val posterUrl = kerimUrlNull(this.selectFirst("img")?.attr("data-src"))
         val puan      = this.selectFirst("span.imdb")?.text()?.trim()
 
         return newMovieSearchResponse(title, href, TvType.Movie) {
@@ -156,9 +157,9 @@ class HDFilmCehennemi : MainAPI() {
             val document = Jsoup.parse(resultHtml)
 
             val title     = document.selectFirst("h4.title")?.text() ?: return@forEach
-            val href      = fixUrlNull(document.selectFirst("a")?.attr("href")) ?: return@forEach
-            val posterUrl = fixUrlNull(document.selectFirst("img")?.attr("src")) ?:
-            fixUrlNull(document.selectFirst("img")?.attr("data-src"))
+            val href      = kerimUrlNull(document.selectFirst("a")?.attr("href")) ?: return@forEach
+            val posterUrl = kerimUrlNull(document.selectFirst("img")?.attr("src")) ?:
+            kerimUrlNull(document.selectFirst("img")?.attr("data-src"))
             val puan      = document.selectFirst("span.imdb")?.text()?.trim()
 
             searchResults.add(
@@ -178,7 +179,7 @@ class HDFilmCehennemi : MainAPI() {
 
 
         val title       = document.selectFirst("h1.section-title")?.text()?.substringBefore(" izle") ?: return null
-        val poster      = fixUrlNull(document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src"))
+        val poster      = kerimUrlNull(document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src"))
         val tags        = document.select("div.post-info-genres a").map { it.text() }
         val year        = document.selectFirst("div.post-info-year-country a")?.text()?.trim()?.toIntOrNull()
         val tvType      = if (document.select("div.seasons").isEmpty()) TvType.Movie else TvType.TvSeries
@@ -190,9 +191,9 @@ class HDFilmCehennemi : MainAPI() {
 
         val recommendations = document.select("div.section-slider-container div.slider-slide").mapNotNull {
             val recName      = it.selectFirst("a")?.attr("title") ?: return@mapNotNull null
-            val recHref      = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
-            val recPosterUrl = fixUrlNull(it.selectFirst("img")?.attr("data-src")) ?:
-            fixUrlNull(it.selectFirst("img")?.attr("src"))
+            val recHref      = kerimUrlNull(it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
+            val recPosterUrl = kerimUrlNull(it.selectFirst("img")?.attr("data-src")) ?:
+            kerimUrlNull(it.selectFirst("img")?.attr("src"))
             val puan      = it.selectFirst("span.imdb")?.text()?.trim()
 
             newTvSeriesSearchResponse(recName, recHref, TvType.TvSeries) {
@@ -206,7 +207,7 @@ class HDFilmCehennemi : MainAPI() {
                 ?.substringAfter("trailer/")?.let { "https://www.youtube.com/embed/$it" }
             val episodes = document.select("div.seasons-tab-content a").mapNotNull {
                 val epName    = it.selectFirst("h4")?.text()?.trim() ?: return@mapNotNull null
-                val epHref    = fixUrlNull(it.attr("href")) ?: return@mapNotNull null
+                val epHref    = kerimUrlNull(it.attr("href")) ?: return@mapNotNull null
                 val epEpisode = Regex("""(\d+)\. ?Bölüm""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
                 val epSeason  = Regex("""(\d+)\. ?Sezon""").find(epName)?.groupValues?.get(1)?.toIntOrNull() ?: 1
 
@@ -253,12 +254,12 @@ class HDFilmCehennemi : MainAPI() {
         val script    = app.get(url, referer = "${mainUrl}/").document.select("script")
             .find { it.data().contains("sources:") }?.data() ?: return
 
-        Log.d("fix","urlne $url")
+        Log.d("kerim","urlne $url")
 
         val videoData = getAndUnpack(script).substringAfter("file_link=\"").substringBefore("\";")
 //        val subData   = script.substringAfter("tracks: [").substringBefore("]")
 
-//        Log.d("fix","subdata $subData")
+//        Log.d("kerim","subdata $subData")
 
         callback.invoke(
             newExtractorLink(
@@ -281,13 +282,13 @@ class HDFilmCehennemi : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        Log.d("kraptor_$name","data = $data")
+        Log.d("kerim","data = $data")
         val document = app.get(data).document
-        val iframealak = fixUrlNull(
+        val iframealak = kerimUrlNull(
             document.selectFirst(".close")?.attr("data-src")
                 ?: document.selectFirst(".rapidrame")?.attr("data-src")
         ).toString()
-        Log.d("kraptor_$name","iframealak = $iframealak")
+        Log.d("kerim","iframealak = $iframealak")
 
         // Process hdfilmcehennemi.mobi subtitles
         if (iframealak.contains("hdfilmcehennemi.mobi")) {
@@ -312,14 +313,14 @@ class HDFilmCehennemi : MainAPI() {
                 }
         } else if (iframealak.contains("rplayer")) {
             val iframeDoc = app.get(iframealak, referer = "$data/").document
-//            Log.d("kraptor_$name","iframeDoc = $iframeDoc")
+//            Log.d("kerim","iframeDoc = $iframeDoc")
             val regex = Regex("\"file\":\"((?:[^\"]|\"\")*)\"", options = setOf(RegexOption.IGNORE_CASE))
             val matches = regex.findAll(iframeDoc.toString())
 
             for (match in matches) {
                 val fileUrlEscaped = match.groupValues[1]
                 val fileUrl = fileUrlEscaped.replace("\\/", "/")
-                val tamUrl = fixUrlNull(fileUrl).toString()
+                val tamUrl = kerimUrlNull(fileUrl).toString()
                 val sonUrl = "${tamUrl}/"
                 val langCode = when {
                     fileUrl.contains("Turkish", ignoreCase = true) -> "Turkish"
@@ -331,7 +332,7 @@ class HDFilmCehennemi : MainAPI() {
         }
 
 
-        Log.d("kraptor_$name", "iframegeldi mi $iframealak")
+        Log.d("kerim", "iframegeldi mi $iframealak")
 
         document.select("div.alternative-links").map { element ->
             element to element.attr("data-lang").uppercase()
@@ -351,47 +352,47 @@ class HDFilmCehennemi : MainAPI() {
 
                 var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
 
-                Log.d("kraptor_$name", "iframe mi $iframe")
+                Log.d("kerim", "iframe mi $iframe")
 
                 val iframeGet = app.get(iframe, referer = "${mainUrl}/").text
 
                 val evalRegex = Regex("""eval\((.*?\\.*?\\.*?\\.*?\{\}\)\))""", RegexOption.DOT_MATCHES_ALL)
                 val packedCode = evalRegex.find(iframeGet)?.value
                 val unpackedJs = JsUnpacker(packedCode).unpack().toString()
-                Log.d("kraptor_$name", "unpackedJs $unpackedJs")
+                Log.d("kerim", "unpackedJs $unpackedJs")
                 val dchelloVar = if (unpackedJs.contains("dc_hello")) {
                     "var"
                 } else {
                     "yok"
                 }
-                Log.d("kraptor_$name", "dchelloVar $dchelloVar")
+                Log.d("kerim", "dchelloVar $dchelloVar")
                 val dcRegex = if (dchelloVar.contains("var")) {
                     Regex(pattern = "dc_hello\\(\"([^\"]*)\"\\)", options = setOf(RegexOption.IGNORE_CASE))
                 } else {
                     Regex("""dc_[a-zA-Z0-9_]+\(\[(.*?)\]\)""", RegexOption.DOT_MATCHES_ALL)
                 }
                 val match = dcRegex.find(unpackedJs)
-//                Log.d("kraptor_$name", "match $match")
+//                Log.d("kerim", "match $match")
 
                 val realUrl = if (dchelloVar.contains("var")) {
                     val parts      = match?.groupValues[1].toString()
-                    Log.d("kraptor_$name", "parts $parts")
+                    Log.d("kerim", "parts $parts")
                     val decodedUrl = dcHello(parts)
-                    Log.d("kraptor_$name", "decodedUrl $decodedUrl")
+                    Log.d("kerim", "decodedUrl $decodedUrl")
                     decodedUrl
                 } else{
                     val parts = match!!.groupValues[1]
                         .split(",")
                         .map { it.trim().removeSurrounding("\"") }
-                    Log.d("kraptor_$name", "parts $parts")
+                    Log.d("kerim", "parts $parts")
 
-                    Log.d("kraptor_$name", "dc parts: $parts")
+                    Log.d("kerim", "dc parts: $parts")
                     val decodedUrl = dcDecode(parts)
-                    Log.d("kraptor_$name", "decoded URL: $decodedUrl")
+                    Log.d("kerim", "decoded URL: $decodedUrl")
                     decodedUrl
                 }
 
-                Log.d("kraptor_$name", "realUrl $realUrl")
+                Log.d("kerim", "realUrl $realUrl")
 
 
 
@@ -413,7 +414,7 @@ class HDFilmCehennemi : MainAPI() {
                     "${mainUrl}/"
                 }
 
-                Log.d("kraptor_$name", "$source » $videoID » $iframe")
+                Log.d("kerim", "$source » $videoID » $iframe")
                 callback.invoke(newExtractorLink(
                     source = videoIsim,
                     name = videoIsim,
@@ -448,49 +449,66 @@ class HDFilmCehennemi : MainAPI() {
 }
 
 fun dcDecode(valueParts: List<String>): String {
-    // 1) Join array elements
-    var result = valueParts.joinToString(separator = "")
+    try {
+        // 1) Join array elements (matches: let value = value_parts.join(''))
+        var result = valueParts.joinToString(separator = "")
 
-    // 2) Reverse the string
-    result = result.reversed()
+        // 2) ROT13 transformation (matches the replace function in JS)
+        result = result.map { c ->
+            when {
+                c in 'a'..'z' -> {
+                    val shifted = c.code + 13
+                    if (shifted <= 'z'.code) shifted.toChar() else (shifted - 26).toChar()
+                }
+                c in 'A'..'Z' -> {
+                    val shifted = c.code + 13
+                    if (shifted <= 'Z'.code) shifted.toChar() else (shifted - 26).toChar()
+                }
+                else -> c
+            }
+        }.joinToString("")
 
-    // 3) Base64 decode twice (matching JS atob() calls)
-    result = try {
-        val firstDecode = Base64.decode(result, Base64.DEFAULT)
-        val firstString = String(firstDecode, Charsets.ISO_8859_1)
+        // 3) Reverse the string (matches: split('').reverse().join(''))
+        result = result.reversed()
 
-        val secondDecode = Base64.decode(firstString, Base64.DEFAULT)
-        String(secondDecode, Charsets.ISO_8859_1)
+        // 4) Base64 decode (matches: atob(result))
+        result = try {
+            val decoded = Base64.decode(result, Base64.DEFAULT)
+            String(decoded, StandardCharsets.ISO_8859_1)
+        } catch (e: Exception) {
+            return "" // Handle decode errors
+        }
+
+        // 5) Un-mix: Apply character transformation
+        val unmix = StringBuilder(result.length)
+        for (i in result.indices) {
+            val charCode = result[i].code
+            val delta = 399756995 % (i + 5)
+            // Match JS logic: (charCode - delta + 256) % 256
+            val transformedCode = (charCode - delta + 256) % 256
+            unmix.append(transformedCode.toChar())
+        }
+
+        return unmix.toString()
+
     } catch (e: Exception) {
-        return "" // Handle decode errors
+        return "" // Handle any other errors
     }
-
-    // 4) Un-mix: Apply character transformation
-    val unmix = StringBuilder(result.length)
-    for (i in result.indices) {
-        val charCode = result[i].code
-        val delta = 399_756_995 % (i + 5)
-        // Match JS logic: (charCode - delta + 256) % 256
-        val transformedCode = (charCode - delta + 256) % 256
-        unmix.append(transformedCode.toChar())
-    }
-
-    return unmix.toString()
 }
 
 fun dcHello(encoded: String): String {
     // İlk Base64 çöz
     val firstDecoded = base64Decode(encoded)
-    Log.d("kraptor_hdfilmcehennemi", "firstDecoded $firstDecoded")
+    Log.d("kerim", "firstDecoded $firstDecoded")
     // Ters çevir
     val reversed = firstDecoded.reversed()
-    Log.d("kraptor_hdfilmcehennemi", "reversed $reversed")
+    Log.d("kerim", "reversed $reversed")
     // İkinci Base64 çöz
     val secondDecoded = base64Decode(reversed)
 
     val gercekLink    = secondDecoded.substringAfter("http")
     val sonLink       = "http$gercekLink"
-    Log.d("kraptor_hdfilmcehennemi", "sonLink $sonLink")
+    Log.d("kerim", "sonLink $sonLink")
     return sonLink.trim()
 
 }
