@@ -56,28 +56,7 @@ jobs:
 
       
 
-      - name: Sinewix Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "SineWix")' plugins.json > /dev/null; then
-            jq '. += [{
-              "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX",
-              "apiVersion": 1,
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "fileSize": '"$(stat -c%s SineWix.cs3)"',
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["TV"],
-              "version": 1,
-              "internalName": "Sinewix",
-              "description": "Sinewix diziler için hızlı ve stabil bir çözümdür.",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/SineWix.cs3",
-              "name": "Sinewix"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "Sinewix zaten plugins.json'da mevcut, eklenmedi."
-          fi
+      
       
       
       
@@ -106,49 +85,7 @@ jobs:
             echo "YerelDiziler zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-      - name: AsyaAnimeleri Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "AsyaAnimeleri")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["Anime"],
-              "version": 1,
-              "internalName": "AsyaAnimeleri",
-              "description": "AsyaAnimeleri için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/AsyaAnimeleri.cs3",
-              "name": "AsyaAnimeleri",
-              "iconUrl": "https://asyaanimeleri.top/wp-content/uploads/2021/08/Asya-animeleri-12-e1629130525708.png"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "AsyaAnimeleri zaten plugins.json'da mevcut, eklenmedi."
-          fi
-
-      - name: AsyaFilmIzlesene Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "AsyaFilmIzlesene")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["Movie"],
-              "version": 1,
-              "internalName": "AsyaFilmIzlesene",
-              "description": "AsyaFilmIzlesene için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/AsyaFilmIzlesene.cs3",
-              "name": "AsyaFilmIzlesene",
-              "iconUrl": "https://asyafilmizlesene.org/wp-content/uploads/2022/09/rsm.png"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "AsyaFilmIzlesene zaten plugins.json'da mevcut, eklenmedi."
-          fi
+      
 
       - name: Kanal7 Eklentisini plugins.json'a Elle Ekle
         run: |
@@ -236,54 +173,6 @@ jobs:
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "InatBox zaten plugins.json'da mevcut, eklenmedi."
-          fi
-
-      
-
-
-      - name: WebDramaTurkey Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "WebDramaTurkey")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["AsianDrama","Movie","TvSeries","Anime"],
-              "version": 1,
-              "internalName": "WebDramaTurkey",
-              "description": "WebDramaTurkey için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/WebDramaTurkey.cs3",
-              "name": "WebDramaTurkey",
-              "iconUrl": "https://webdramaturkey.org/public/static/logo.webp?v=1.0.19"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "WebDramaTurkey zaten plugins.json'da mevcut, eklenmedi."
-          fi
-     
-
-      - name: AnimeciX Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "AnimeciX")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["Anime"],
-              "version": 1,
-              "internalName": "AnimeciX",
-              "description": "AnimeciX için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/AnimeciX.cs3",
-              "name": "AnimeciX",
-              "iconUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://anm.cx&size=%size%"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "AnimeciX zaten plugins.json'da mevcut, eklenmedi."
           fi
 
       - name: Derlemeleri Yükle
