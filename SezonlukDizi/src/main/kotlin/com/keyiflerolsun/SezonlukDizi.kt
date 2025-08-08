@@ -233,7 +233,32 @@ private fun Element.toNewEpisodeSearchResult(): SearchResponse? {
                 data    = mapOf("id" to "${veri.id}")
             ).document
 
-            val iframe = fixUrlNull(veriResponse.selectFirst("iframe")?.attr("src")) ?: return@forEach
+            val iframe = when {
+    veri.baslik.contains("Dzen", ignoreCase = true) -> {
+        val jsScript = veriResponse.selectFirst("script")?.data() ?: return@forEach
+        val vid = Regex("""var\s+vid\s*=\s*['"](.+?)['"]""").find(jsScript)?.groupValues?.get(1) ?: return@forEach
+        "https://dzen.ru/embed/$vid"
+    }
+
+    veri.baslik.contains("Pixel", ignoreCase = true) -> {
+        val pixelIframe = fixUrlNull(veriResponse.selectFirst("iframe")?.attr("src")) ?: return@forEach
+        val pixelPage = app.get(pixelIframe).document
+        val pixelScript = pixelPage.select("script").mapNotNull { it.data() }.joinToString("\n")
+
+        val hexEncoded = Regex("""file\s*:\s*["']((?:\\x[0-9a-fA-F]{2})+)["']""").find(pixelScript)?.groupValues?.get(1) ?: return@forEach
+
+        val decodedUrl = hexEncoded
+            .replace("""\\x""".toRegex(), "")
+            .chunked(2)
+            .joinToString("") { it.toInt(16).toChar().toString() }
+
+        decodedUrl
+    }
+
+    else -> {
+        fixUrlNull(veriResponse.selectFirst("iframe")?.attr("src")) ?: return@forEach
+    }
+}
             Log.d("SZD", "dil»0 | iframe » $iframe")
 
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback) { link ->
