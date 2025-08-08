@@ -1,9 +1,9 @@
 
-version = 3
+version = 4
 
 
 cloudstream {
-    authors     = listOf("kerimmkirac")
+    authors     = listOf("kerimmkirac","kraptor")
 
     language    = "tr"
     description = "DiziPal Orijinal."
