@@ -1,7 +1,7 @@
-version = 1
+version = 22
 
 cloudstream {
-    authors     = listOf("kerimmkirac")
+    authors     = listOf("kraptor","kerimmkirac")
     language    = "tr"
     description = "Fullhdfilm ile en yeni vizyon filmler Full HD ve kesintisiz film sizlerle. Özgün film arşivimizle en üstün kaliteli film izle keyfini sunuyoruz."
 
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie", "TvSeries")
-    iconUrl = "https://www.google.com/s2/favicons?domain=fullhdfilm.us&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=fullhdfilm.pro&sz=%size%"
 }
