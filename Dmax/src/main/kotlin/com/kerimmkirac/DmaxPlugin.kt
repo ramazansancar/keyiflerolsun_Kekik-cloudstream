@@ -1,4 +1,3 @@
-// ! Bu araç @Kraptor123 tarafından | @kekikanime için yazılmıştır.
 package com.kerimmkirac
 
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
