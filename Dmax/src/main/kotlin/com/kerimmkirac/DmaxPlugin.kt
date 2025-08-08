@@ -1,0 +1,12 @@
+// ! Bu araç @Kraptor123 tarafından | @kekikanime için yazılmıştır.
+package com.kerimmkirac
+
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
+import com.lagradost.cloudstream3.plugins.BasePlugin
+
+@CloudstreamPlugin
+class DmaxPlugin: BasePlugin() {
+    override fun load() {
+        registerMainAPI(Dmax())
+    }
+}
