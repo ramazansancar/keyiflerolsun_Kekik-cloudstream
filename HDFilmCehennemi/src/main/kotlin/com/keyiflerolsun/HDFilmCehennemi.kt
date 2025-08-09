@@ -70,7 +70,14 @@ class HDFilmCehennemi : MainAPI() {
         "${mainUrl}/load/page/1/categories/tavsiye-filmler-izle2/"        to "Tavsiye Filmler",
         "${mainUrl}/load/page/1/imdb7/"                                   to "IMDB 7+ Filmler",
         "${mainUrl}/load/page/1/mostLiked/"                               to "En Çok Beğenilenler",
-        
+        "${mainUrl}/load/page/1/genres/aile-filmleri-izleyin-6/"          to "Aile Filmleri",
+        "${mainUrl}/load/page/1/genres/aksiyon-filmleri-izleyin-5/"       to "Aksiyon Filmleri",
+        "${mainUrl}/load/page/1/genres/animasyon-filmlerini-izleyin-5/"   to "Animasyon Filmleri",
+        "${mainUrl}/load/page/1/genres/belgesel-filmlerini-izle-1/"       to "Belgesel Filmleri",
+        "${mainUrl}/load/page/1/genres/bilim-kurgu-filmlerini-izleyin-3/" to "Bilim Kurgu Filmleri",
+        "${mainUrl}/load/page/1/genres/komedi-filmlerini-izleyin-1/"      to "Komedi Filmleri",
+        "${mainUrl}/load/page/1/genres/korku-filmlerini-izle-4/"          to "Korku Filmleri",
+        "${mainUrl}/load/page/1/genres/romantik-filmleri-izle-2/"         to "Romantik Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -419,26 +426,75 @@ class HDFilmCehennemi : MainAPI() {
 }
 
 fun dcDecode(valueParts: List<String>): String {
-    // Try new method first (matches JavaScript exactly)
+    // Try the exact JavaScript method first (with double base64 decode)
     try {
-        return dcDecodeNewMethod(valueParts)
+        return dcDecodeExactJS(valueParts)
     } catch (e: Exception) {
-        Log.d("dcDecode", "New method failed: ${e.message}, trying fallback methods")
+        Log.d("dcDecode", "Exact JS method failed: ${e.message}, trying new method")
 
-        // Try fallback method 1 (your current implementation)
+        // Try new method (matches previous JavaScript exactly)
         try {
-            return dcDecodeOldMethod(valueParts)
-        } catch (e2: Exception) {
-            Log.d("dcDecode", "Old method also failed: ${e2.message}")
+            return dcDecodeNewMethod(valueParts)
+        } catch (e: Exception) {
+            Log.d("dcDecode", "New method failed: ${e.message}, trying fallback methods")
 
-            // Try alternative decoding approach
+            // Try fallback method 1 (your current implementation)
             try {
-                return dcDecodeAlternative(valueParts)
-            } catch (e3: Exception) {
-                Log.d("dcDecode", "All methods failed")
-                return ""
+                return dcDecodeOldMethod(valueParts)
+            } catch (e2: Exception) {
+                Log.d("dcDecode", "Old method also failed: ${e2.message}")
+
+                // Try alternative decoding approach
+                try {
+                    return dcDecodeAlternative(valueParts)
+                } catch (e3: Exception) {
+                    Log.d("dcDecode", "Alternative method also failed: ${e3.message}")
+
+                    // Try fourth method (UTF-8 encoding)
+                    try {
+                        return dcDecodeFourthMethod(valueParts)
+                    } catch (e4: Exception) {
+                        Log.d("dcDecode", "All methods failed")
+                        return ""
+                    }
+                }
             }
         }
+    }
+}
+
+private fun dcDecodeExactJS(valueParts: List<String>): String {
+    // Exactly match the JavaScript function dc_yIWREN2ntak from your log
+    // JavaScript: let value = value_parts.join('');
+    var result = valueParts.joinToString(separator = "")
+
+    // JavaScript: result = result.split('').reverse().join('');
+    result = result.reversed()
+
+    // JavaScript: result = atob(result);
+    val firstDecode = Base64.decode(result, Base64.DEFAULT)
+    result = String(firstDecode, StandardCharsets.ISO_8859_1)
+
+    // JavaScript: result = atob(result); (SECOND BASE64 DECODE!)
+    val secondDecode = Base64.decode(result, Base64.DEFAULT)
+    result = String(secondDecode, StandardCharsets.ISO_8859_1)
+
+    // JavaScript: let unmix=''; for(let i=0;i<result.length;i++){let charCode=result.charCodeAt(i);charCode=(charCode-(399756995%(i+5))+256)%256;unmix+=String.fromCharCode(charCode)}
+    val unmixed = StringBuilder()
+    for (i in result.indices) {
+        val charCode = result[i].code
+        val delta = 399756995 % (i + 5)
+        val transformedChar = ((charCode - delta + 256) % 256).toChar()
+        unmixed.append(transformedChar)
+    }
+
+    val finalResult = unmixed.toString()
+
+    // Validate result
+    if (isValidUrl(finalResult)) {
+        return finalResult
+    } else {
+        throw Exception("Result doesn't look like a valid URL: $finalResult")
     }
 }
 
