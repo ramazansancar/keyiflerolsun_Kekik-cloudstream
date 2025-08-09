@@ -20,32 +20,24 @@ class Sinezy : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/"                    to  "Yeni Eklenenler",
+        "${mainUrl}/izle/en-yeni-filmler/"          to  "Yeni Filmler",
+        "${mainUrl}/izle/en-iyi-filmler/"           to  "En İyi Filmler",
+        
         "${mainUrl}/izle/aksiyon-filmleri/"         to  "Aksiyon",
-        "${mainUrl}/izle/animasyon-filmleri/"       to  "Animasyon",
-        "${mainUrl}/izle/belgesel-izle/"            to  "Belgesel",
+       
+       
         "${mainUrl}/izle/bilim-kurgu-filmleri/"     to  "Bilim Kurgu",
-        "${mainUrl}/izle/biyografi-filmleri/"       to  "Biyografi",
-        "${mainUrl}/izle/dram-filmleri/"            to  "Dram",
+        
         "${mainUrl}/izle/fantastik-filmler/"        to  "Fantastik",
-        "${mainUrl}/izle/gelecek-filmler/"          to  "Yakında",
+       
         "${mainUrl}/izle/gerilim-filmleri/"         to  "Gerilim",
         "${mainUrl}/izle/gizem-filmleri/"           to  "Gizem",
         "${mainUrl}/izle/komedi-filmleri/"          to  "Komedi",
         "${mainUrl}/izle/korku-filmleri/"           to  "Korku",
-        "${mainUrl}/izle/macera-filmleri/"          to  "Macera",
-        "${mainUrl}/izle/muzikal-izle/"             to  "Müzika",
-        "${mainUrl}/izle/romantik-film/"            to  "Romantik",
-        "${mainUrl}/izle/savas-filmleri/"           to  "Savaş",
-        "${mainUrl}/izle/spor-filmleri/"            to  "Spor",
-        "${mainUrl}/izle/suc-filmleri/"             to  "Suç",
-        "${mainUrl}/izle/tarih-filmleri/"           to  "Tarih",
- //       "${mainUrl}/izle/turkce-altyazili-promo/"   to  "Altyazılı Pr",
- //       "${mainUrl}/izle/yabanci-dizi/"             to  "Yabancı Dizi",
-        "${mainUrl}/izle/en-iyi-filmler/"           to  "En İyi Filmler",
-        "${mainUrl}/izle/en-yeni-filmler/"          to  "Yeni Filmler",
-        "${mainUrl}/izle/yerli-filmler/"            to  "Yerli Filmler",
- //       "${mainUrl}/izle/erotik-film-izle/"         to  "Erotik",
- //       "${mainUrl}/izle/yetiskin-film/"            to  "Yetişkin +18",
+        
+        
+        
+
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
