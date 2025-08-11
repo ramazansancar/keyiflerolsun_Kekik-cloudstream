@@ -32,7 +32,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle 
-        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'AsyaAnimeleri.cs3' ! -name 'AsyaFilmIzlesene.cs3' ! -name 'Kanal7.cs3' ! -name 'Puhu.cs3' ! -name 'AnimeciX.cs3' ! -name 'AsyaWatch.cs3'  ! -name 'WebDramaTurkey.cs3' ! -name 'InatBox.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3'  -delete
+        run: find $GITHUB_WORKSPACE/builds -name '*.cs3' ! -name 'AsyaAnimeleri.cs3' -name 'Anizium.cs3' ! -name 'AsyaFilmIzlesene.cs3' ! -name 'Kanal7.cs3' ! -name 'Puhu.cs3' ! -name 'AnimeciX.cs3' ! -name 'AsyaWatch.cs3'  ! -name 'WebDramaTurkey.cs3' ! -name 'InatBox.cs3' ! -name 'YerelDiziler.cs3' ! -name 'SineWix.cs3'  -delete
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -107,6 +107,30 @@ jobs:
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "Kanal7 zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
+
+
+      - name: Anizium Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "Anizium")' plugins.json > /dev/null; then
+            jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["AnimeMovie","Anime"],
+              "version": 1,
+              "internalName": "Anizium",
+              "description": "Anizium ile dünyada ilk ve tek 4K Türkçe dublaj platformunda anime keyfini yaşa. En yeni animeleri İngilizce altyazı ve dublaj seçenekleriyle 1080p ve 4K kalitesinde HD izle.",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/Anizium.cs3",
+              "name": "Anizium",
+              "iconUrl": "https://www.google.com/s2/favicons?domain=anizium.co&sz=%size%"
+            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "Anizium zaten plugins.json'da mevcut, eklenmedi."
           fi
 
       - name: Puhu Eklentisini plugins.json'a Elle Ekle
