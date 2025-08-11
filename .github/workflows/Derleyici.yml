@@ -117,7 +117,7 @@ jobs:
           if ! jq -e '.[] | select(.internalName == "Anizium")' plugins.json > /dev/null; then
             jq '. += [{
               "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
+              "apiVersion": 2,
               "status": 1,
               "language": "tr",
               "authors": ["kerimmkirac"],
@@ -127,7 +127,7 @@ jobs:
               "description": "Anizium ile dünyada ilk ve tek 4K Türkçe dublaj platformunda anime keyfini yaşa. En yeni animeleri İngilizce altyazı ve dublaj seçenekleriyle 1080p ve 4K kalitesinde HD izle.",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/Anizium.cs3",
               "name": "Anizium",
-              "iconUrl": "https://www.google.com/s2/favicons?domain=anizium.co&sz=%size%"
+              "iconUrl": "https://anizium.co/assets/images/logo.png"
             }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "Anizium zaten plugins.json'da mevcut, eklenmedi."
