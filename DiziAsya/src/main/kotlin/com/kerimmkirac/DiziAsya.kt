@@ -2,7 +2,7 @@
 
 package com.kerimmkirac
 
-import android.util.Log
+import com.lagradost.api.Log
 import org.jsoup.nodes.Element
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -26,7 +26,7 @@ class DiziAsya : MainAPI() {
     )
 
     override val mainPage = mainPageOf(
-        "$mainUrl/v2/contents/new-contents?take=18" to "Yeni Eklenenler",
+        "$mainUrl/v2/contents/new-contents?take=18" to "Yeni Bölümler",
         "$mainUrl/v2/contents/content-by-type?type=SERIES&take=18" to "Diziler",
         "$mainUrl/v2/contents/content-by-type?type=MOVIE&take=18" to "Filmler",
         "$mainUrl/v2/contents/content-by-type?type=ANIME&take=18" to "Anime",
@@ -53,7 +53,7 @@ class DiziAsya : MainAPI() {
             }
 
             
-            val displayTitle = if (request.name == "Yeni Eklenenler" && tvType != TvType.Movie) {
+            val displayTitle = if (request.name == "Yeni Bölümler" && tvType != TvType.Movie) {
                 
                 val chapters = item["chapters"] as? List<Map<String, Any>>
                 if (!chapters.isNullOrEmpty()) {
@@ -355,65 +355,206 @@ class DiziAsya : MainAPI() {
     }
 
     private suspend fun processLinks(
-        titles: List<String>,
-        links: List<String>,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val linkPairs = titles.zip(links)
+    titles: List<String>,
+    links: List<String>,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+) {
+    val linkPairs = titles.zip(links)
+    
+    linkPairs.forEach { (title, link) ->
+        val cleanLink = if (link.startsWith("//")) "https:$link" else link
+        Log.d("DiziAsya", "Processing $title: $cleanLink")
         
-        linkPairs.forEach { (title, link) ->
-            val cleanLink = if (link.startsWith("//")) "https:$link" else link
-            Log.d("DiziAsya", "Processing $title: $cleanLink")
-            
-            when (title.lowercase()) {
-                "vidmoly" -> {
-                    Log.d("DiziAsya", "Vidmoly iframe çözümleyici çalışıyor...")
-                    extractVidmolyDirectly(cleanLink, callback)
+        
+        when (title.lowercase()) {
+            "vidmoly" -> {
+                Log.d("DiziAsya", " Vidmoly iframe çözümleyici çalışıyor...")
+                val modifiedLink = if (cleanLink.contains("vidmoly.to")) {
+                    cleanLink.replace("vidmoly.to", "vidmoly.net")
+                } else {
+                    cleanLink
                 }
-                "okru" -> {
-                    Log.d("DiziAsya", " OkRu extractor loading...")
-                    loadExtractor(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                Log.d("DiziAsya", " Original: $cleanLink → Modified: $modifiedLink")
+                extractVidmolyDirectly(modifiedLink, callback)
+                return@forEach
+            }
+            "okru" -> {
+                Log.d("DiziAsya", " OkRu extractor loading")
+                loadExtractor(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                return@forEach
+            }
+            "dracarys" -> {
+                Log.d("DiziAsya", " DzenRu extractor loading")
+                loadExtractor(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                return@forEach
+            }
+            "diziasya", "diziasya2" -> {
+                Log.d("DiziAsya", " DiziAsya custom extractor loading")
+                
+                try {
+                    val diziAsyaExtractor = DiziAsyauns()
+                    diziAsyaExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " DiziAsya VidStack error: ${e.message}")
                 }
-                "dracarys" -> {
-                    Log.d("DiziAsya", " DzenRu extractor loading...")
-                    loadExtractor(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                return@forEach
+            }
+            "klaus" -> {
+                Log.d("DiziAsya", " Klaus custom extractor loading")
+                extractKlausLinks(cleanLink, callback)
+                return@forEach
+            }
+            "LULU" -> {
+                Log.d("DiziAsya", " LuluStream custom extractor loading")
+                try {
+                    val luluExtractor = LuluuExtractor()
+                    luluExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " LuluStream extractor error: ${e.message}")
                 }
-                "diziasya", "diziasya2" -> {
-                    Log.d("DiziAsya", " DiziAsya custom extractor loading...")
-                    extractDiziAsyaLinks(cleanLink, callback)
+                return@forEach
+            }
+            "ev" -> {
+                Log.d("DiziAsya", " EV custom extractor loading")
+                try {
+                    val EvExtractor = mivalyo()
+                    EvExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " EvExtractor extractor error: ${e.message}")
                 }
-                "klaus" -> {
-                    Log.d("DiziAsya", " Klaus custom extractor loading...")
-                    extractKlausLinks(cleanLink, callback)
-                }
-                "lulu" -> {
-                    Log.d("DiziAsya", " LuluVdo custom extractor loading...")
-                    extractLuluLinks(cleanLink, callback)
-                }
-                "ev" -> {
-                    Log.d("DiziAsya", " EV custom extractor loading...")
-                    extractGenericLinks(cleanLink, "EV", callback)
-                }
-                "p2p" -> {
-                    Log.d("DiziAsya", " P2P custom extractor loading...")
+                return@forEach
+            }
+            "p2p" -> {
+                Log.d("DiziAsya", " P2P custom extractor loading")
+                if (cleanLink.contains("p2pplay.pro")) {
+                    try {
+                        val p2pExtractor = DiziAsyaP2P()
+                        p2pExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                    } catch (e: Exception) {
+                        Log.e("DiziAsya", " P2P VidStack error: ${e.message}")
+                    }
+                } else {
                     extractGenericLinks(cleanLink, "P2P", callback)
                 }
-                "abstr" -> {
-                    Log.d("DiziAsya", " ABStr custom extractor loading...")
-                    extractGenericLinks(cleanLink, "ABStr", callback)
+                return@forEach
+            }
+            "abstr" -> {
+                Log.d("DiziAsya", " ABStr custom extractor loading")
+                try {
+                    val diziAsyaRPMExtractor = DiziAsyarpmplay()
+                    diziAsyaRPMExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " DiziAsya RPMPlay error: ${e.message}")
                 }
-                else -> {
-                    Log.d("DiziAsya", "⚙️ Generic extractor trying for $title...")
-                    try {
-                        loadExtractor(cleanLink, "$mainUrl/", subtitleCallback, callback)
-                    } catch (e: Exception) {
-                        Log.w("DiziAsya", " Could not extract from $title: ${e.message}")
-                    }
+                return@forEach
+            }
+            "server1", "vidstack" -> {
+                Log.d("DiziAsya", " VidStack (Server1) extractor loading")
+                try {
+                    val server1Extractor = Server1uns()
+                    server1Extractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " VidStack (Server1) error: ${e.message}")
+                }
+                return@forEach
+            }
+        }
+        
+       
+        when {
+            cleanLink.contains("diziasya.uns.bio") -> {
+                Log.d("DiziAsya", " DiziAsya VidStack extractor loading")
+                try {
+                    val diziAsyaExtractor = DiziAsyauns()
+                    diziAsyaExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " DiziAsya VidStack error: ${e.message}")
+                }
+            }
+            cleanLink.contains("diziasya.p2pplay.pro") -> {
+                Log.d("DiziAsya", " DiziAsya P2P extractor loading")
+                try {
+                    val diziAsyaP2PExtractor = DiziAsyaP2P()
+                    diziAsyaP2PExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " DiziAsya P2P error: ${e.message}")
+                }
+            }
+            cleanLink.contains("diziasya.rpmplay.xyz") -> {
+                Log.d("DiziAsya", " DiziAsya RPMPlay extractor loading")
+                try {
+                    val diziAsyaRPMExtractor = DiziAsyarpmplay()
+                    diziAsyaRPMExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " DiziAsya RPMPlay error: ${e.message}")
+                }
+            }
+            cleanLink.contains("luluvdoo.com") -> {
+                Log.d("DiziAsya", " LuluStream extractor ")
+                try {
+                    val luluExtractor = LuluuExtractor()
+                    luluExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " LuluStream error: ${e.message}")
+                }
+            }
+            cleanLink.contains("server1.uns.bio") -> {
+                Log.d("DiziAsya", " VidStack (Server1) extractor ")
+                try {
+                    val server1Extractor = Server1uns()
+                    server1Extractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " VidStack (Server1) error: ${e.message}")
+                }
+            }
+            cleanLink.contains("p2pplay.pro") -> {
+                Log.d("DiziAsya", " P2P extractor ")
+                try {
+                    val p2pExtractor = DiziAsyaP2P()
+                    p2pExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " P2P extractor error: ${e.message}")
+                }
+            }
+            cleanLink.contains("mivalyo.com") -> {
+                Log.d("DiziAsya", " mivalyo extractor ")
+                try {
+                    val mivalyoExtractor = mivalyo()
+                    mivalyoExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " mivalyo extractor error: ${e.message}")
+                }
+            }
+            cleanLink.contains("movearnpre.com") -> {
+                Log.d("DiziAsya", " movearnpre.com extractor ")
+                try {
+                    val movearnpreExtractor = movearnpre()
+                    movearnpreExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " movearnpre.com extractor error: ${e.message}")
+                }
+            }
+            cleanLink.contains("rpmplay.xyz") -> {
+                Log.d("DiziAsya", " RPMPlay extractor ")
+                try {
+                    val rpmExtractor = DiziAsyarpmplay()
+                    rpmExtractor.getUrl(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.e("DiziAsya", " RPMPlay extractor error: ${e.message}")
+                }
+            }
+            else -> {
+                Log.d("DiziAsya", " Generic extractor trying for $title...")
+                try {
+                    loadExtractor(cleanLink, "$mainUrl/", subtitleCallback, callback)
+                } catch (e: Exception) {
+                    Log.w("DiziAsya", "⚠️ Could not extract from $title: ${e.message}")
                 }
             }
         }
     }
+}
 
     private suspend fun extractDiziAsyaLinks(url: String, callback: (ExtractorLink) -> Unit) {
         try {
@@ -488,7 +629,7 @@ class DiziAsya : MainAPI() {
             val headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
                 "Sec-Fetch-Dest" to "iframe",
-                "Referer" to "https://vidmoly.to/"
+                "Referer" to "https://vidmoly.net/"
             )
 
             val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
