@@ -13,7 +13,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 class YabanciDizi : MainAPI() {
-    override var mainUrl = "https://yabancidizi.tv"
+    override var mainUrl = "https://yabancidizi.so"
     override var name = "YabanciDizi"
     override val hasMainPage = true
     override var lang = "tr"
@@ -204,7 +204,7 @@ class YabanciDizi : MainAPI() {
             val dataLink = it.attr("data-link")
             if (name.contains("Mac")) {
                 val mac = app.get(
-                    "https://yabancidizi.tv/api/drive/" +
+                    "https://yabancidizi.so/api/drive/" +
                             dataLink.replace("/", "_").replace("+", "-"),headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
                         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -274,14 +274,14 @@ class YabanciDizi : MainAPI() {
                 }
             } else if (name.contains("VidMoly")) {
                 val mac = app.post(
-                    "https://yabancidizi.tv/api/moly/" +
+                    "https://yabancidizi.so/api/moly/" +
                             dataLink.replace("/", "_").replace("+", "-"), referer = "$mainUrl/"
                             , interceptor = interceptor).document
                 val subFrame = mac.selectFirst("iframe")?.attr("src") ?: return false
                 loadExtractor(subFrame, "${mainUrl}/", subtitleCallback, callback)
             } else if (name.contains("Okru")) {
                 val mac = app.post(
-                    "https://yabancidizi.tv/api/ruplay/" +
+                    "https://yabancidizi.so/api/ruplay/" +
                             dataLink.replace("/", "_").replace("+", "-"), referer = "$mainUrl/"
                             , interceptor = interceptor).document
                 val subFrame = mac.selectFirst("iframe")?.attr("src") ?: return false
