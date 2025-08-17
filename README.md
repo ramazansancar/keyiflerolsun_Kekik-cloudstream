@@ -14,7 +14,7 @@ _CloudStream için Türkçe yayın yapan sitelere ait eklentiler.._
 
 _Kullanabilmek için kendiniz derlemelisiniz.._
 
-[Döküman](https://recloudstream.github.io/csdocs/) **━** [Resmi Site](https://dweb.link/ipns/cloudstream.on.fleek.co/) **━** [Wiki](https://cloudstream.miraheze.org/wiki/Main_Page)
+[Döküman](https://recloudstream.github.io/csdocs/) **━** [Resmi Site](https://cloudstream.on.fleek.co/) **━** [Wiki](https://cloudstream.miraheze.org/wiki/Main_Page)
 
 ## 💾 Kurulum
 
