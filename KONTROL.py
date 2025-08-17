@@ -17,7 +17,7 @@ class MainUrlUpdater:
             dosya for dosya in os.listdir(self.base_dir)
                 if os.path.isdir(os.path.join(self.base_dir, dosya))
                     and not dosya.startswith(".")
-                        and dosya not in {"gradle", "CanliTV", "OxAx", "__Temel", "SineWix", "YouTube", "NetflixMirror", "HQPorner"}
+                        and dosya not in {"gradle", "CanliTV", "OxAx", "__Temel", "SineWix", "YouTube", "NetflixMirror", "HQPorner", "InatBox"}
         ])
 
     def _kt_dosyasini_bul(self, dizin, dosya_adi):
@@ -78,14 +78,18 @@ class MainUrlUpdater:
                 "appId"         : "1:791583031279:android:1",
             }
         )
-        return istek.json().get("entries", {}).get("api_url", "").replace("/api/", "")
+        data = istek.json()
+        #konsol.log(f"[~] RecTV API Response: {json.dumps(data, indent=2, ensure_ascii=False)}")
+        return data.get("entries", {}).get("api_url", "").replace("/api/", "")
 
     def _golgetv_ver(self):
         istek = self.oturum.get("https://raw.githubusercontent.com/sevdaliyim/sevdaliyim/main/ssl2.key").text
         cipher = AES.new(b"trskmrskslmzbzcnfstkcshpfstkcshp", AES.MODE_CBC, b"trskmrskslmzbzcn")
         encrypted_data = base64.b64decode(istek)
         decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size).decode("utf-8")
-        return json.loads(decrypted_data, strict=False)["apiUrl"]
+        parsed_data = json.loads(decrypted_data, strict=False)
+        #konsol.log(f"[~] GolgeTV API Response: {json.dumps(parsed_data, indent=2, ensure_ascii=False)}")
+        return parsed_data["apiUrl"]
 
     @property
     def mainurl_listesi(self):
@@ -95,45 +99,38 @@ class MainUrlUpdater:
 
     def guncelle(self):
         for dosya, mainurl in self.mainurl_listesi.items():
-            eklenti_adi = dosya.split("/")[0]
+            # Dosya yolundan eklenti adını çıkar (ilk dizin adı)
+            eklenti_adi = os.path.normpath(dosya).split(os.sep)[0]
 
             print("\n")
             konsol.log(f"[~] Kontrol Ediliyor : {eklenti_adi}")
-            if eklenti_adi == "RecTV":
-                try:
+            
+            try:
+                if eklenti_adi == "RecTV":
                     final_url = self._rectv_ver()
-                    konsol.log(f"[+] Kontrol Edildi   : {mainurl}")
-                except Exception as hata:
-                    konsol.log(f"[!] Kontrol Edilemedi : {mainurl}")
-                    konsol.log(f"[!] {type(hata).__name__} : {hata}")
-                    continue
-            elif eklenti_adi == "GolgeTV":
-                try:
+                elif eklenti_adi == "GolgeTV":
                     final_url = self._golgetv_ver()
-                    konsol.log(f"[+] Kontrol Edildi   : {mainurl}")
-                except Exception as hata:
-                    konsol.log(f"[!] Kontrol Edilemedi : {mainurl}")
-                    konsol.log(f"[!] Kontrol Edilemedi : {mainurl}")
-                    konsol.log(f"[!] {type(hata).__name__} : {hata}")
-                    continue
-            else:
-                try:
+                else:
                     istek = self.oturum.get(mainurl, allow_redirects=True)
-                    konsol.log(f"[+] Kontrol Edildi   : {mainurl}")
-                except Exception as hata:
-                    konsol.log(f"[!] Kontrol Edilemedi : {mainurl}")
-                    konsol.log(f"[!] {type(hata).__name__} : {hata}")
+                    final_url = istek.url[:-1] if istek.url.endswith("/") else istek.url
+                
+                konsol.log(f"[+] Kontrol Edildi   : {mainurl}")
+                
+                if mainurl == final_url:
                     continue
 
-                final_url = istek.url[:-1] if istek.url.endswith("/") else istek.url
+                self._mainurl_guncelle(dosya, mainurl, final_url)
 
-            if mainurl == final_url:
+                yeni_versiyon = self._versiyonu_artir(f"{eklenti_adi}/build.gradle.kts")
+                if yeni_versiyon:
+                    konsol.log(f"[»] {mainurl} -> {final_url}")
+                else:
+                    konsol.log(f"[!] Versiyon artırılamadı: {eklenti_adi}")
+                    
+            except Exception as hata:
+                konsol.log(f"[!] Kontrol Edilemedi : {mainurl}")
+                konsol.log(f"[!] {type(hata).__name__} : {hata}")
                 continue
-
-            self._mainurl_guncelle(dosya, mainurl, final_url)
-
-            if self._versiyonu_artir(f"{eklenti_adi}/build.gradle.kts"):
-                konsol.log(f"[»] {mainurl} -> {final_url}")
 
 
 if __name__ == "__main__":
