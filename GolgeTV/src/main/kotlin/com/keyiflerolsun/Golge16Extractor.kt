@@ -7,7 +7,9 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 open class Golge16 : ExtractorApi() {
     override val name = "Golge16"
@@ -54,14 +56,15 @@ open class Golge16 : ExtractorApi() {
         val (streamLink) = Regex(""""url":"(.*?)"""").find(thirdResp)!!.destructured
         Log.d("GOLGE16", "streamLink: $streamLink")
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = this.name,
                 name = content.isim,
                 url = streamLink,
-                referer = "",
-                quality = Qualities.Unknown.value,
-                isM3u8 = true,
-            )
+                type = ExtractorLinkType.M3U8
+            ) {
+                this.referer = ""
+                this.quality = Qualities.Unknown.value
+            }
         )
     }
 }
