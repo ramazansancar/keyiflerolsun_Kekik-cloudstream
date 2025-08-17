@@ -2,6 +2,28 @@
 
 package com.keyiflerolsun
 
+import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.ActorData
+import com.lagradost.cloudstream3.HomePageList
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.LoadResponse
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.newHomePageResponse
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.StringUtils.encodeUri
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
@@ -71,7 +93,10 @@ class YouTube : MainAPI() {
         return res?.toLoadResponse(this)
     }
 
-    private data class SearchEntry(val title: String, val videoId: String) {
+    private data class SearchEntry(
+        val title: String,
+        val videoId: String
+    ) {
         fun toSearchResponse(provider: YouTube): SearchResponse {
             return provider.newMovieSearchResponse(
                 title,
@@ -101,31 +126,42 @@ class YouTube : MainAPI() {
                 plot            = description
                 posterUrl       = "${provider.mainUrl}/vi/${videoId}/hqdefault.jpg"
                 recommendations = recommendedVideos.map { it.toSearchResponse(provider) }
-                actors          = listOf(ActorData(Actor(
-                    author,
-                    if (authorThumbnails.isNotEmpty()) authorThumbnails.last().url else ""
-                )))
+                actors          = listOf(
+                    ActorData(
+                        Actor(author, authorThumbnails.getOrNull(authorThumbnails.size - 1)?.url ?: ""),
+                        roleString = "Author"
+                    )
+                )
             }
         }
     }
 
-    private data class Thumbnail(val url: String)
+    private data class Thumbnail(
+        val url: String
+    )
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        loadExtractor("https://youtube.com/watch?v=${data}", subtitleCallback, callback)
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        loadExtractor(
+            "https://youtube.com/watch?v=$data",
+            subtitleCallback,
+            callback
+        )
         callback(
             newExtractorLink(
-                "YouTube",
-                "YouTube",
+                this.name,
+                this.name,
                 "${mainUrl}/api/manifest/dash/id/${data}",
-                ExtractorLinkType.DASH
             ) {
-                this.referer = ""
-                //this.extractorData = null
-                //this.headers = mapOf()
+                quality = Qualities.Unknown.value
+                type = ExtractorLinkType.DASH
+                referer = ""
             }
         )
         return true
     }
-
 }

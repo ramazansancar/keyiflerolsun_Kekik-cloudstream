@@ -22,13 +22,13 @@ class TwitchProvider : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         return when (request.name) {
-            gamesName -> HomePageResponse(parseGames(), hasNext = false) // Get top games
+            gamesName -> newHomePageResponse(parseGames(), hasNext = false) // Get top games
             else -> {
                 val doc = app.get(request.data, params = mapOf("page" to page.toString())).document
                 val channels = doc.select("table#channels tr").map { element ->
                     element.toLiveSearchResponse()
                 }
-                HomePageResponse(
+                newHomePageResponse(
                     listOf(
                         HomePageList(
                             request.name,
@@ -46,7 +46,12 @@ class TwitchProvider : MainAPI() {
         val linkName = anchor.attr("href").substringAfterLast("/")
         val name = anchor.firstOrNull { it.text().isNotBlank() }?.text()
         val image = this.select("img").attr("src")
-        return LiveSearchResponse(name ?: "", linkName, this@TwitchProvider.name, TvType.Live, image)
+        return newLiveSearchResponse(
+            name ?: "",
+            linkName,
+            TvType.Live,
+            fix = false
+        ) { posterUrl = image }
     }
 
     private suspend fun parseGames(): List<HomePageList> {
@@ -81,7 +86,7 @@ class TwitchProvider : MainAPI() {
         val poster = doc.select("div.embed-responsive > img").attr("src").ifEmpty { image }
         val description = doc.select("div[style='word-wrap:break-word;font-size:12px;']").text()
         val language = doc.select("a.label.label-soft").text().ifEmpty { null }
-        val isLive = !doc.select("div.live-indicator-container").isEmpty()
+        val isLive = doc.select("div.live-indicator-container").isNotEmpty()
 
         val tags = listOfNotNull(
             isLive.let { if (it) "Live" else "Offline" },
@@ -91,9 +96,14 @@ class TwitchProvider : MainAPI() {
 
         val twitchUrl = "https://twitch.tv/$realUrl"
 
-        return LiveStreamLoadResponse(
-            name, twitchUrl, this.name, twitchUrl, plot = description, posterUrl = image, backgroundPosterUrl = poster, tags = tags
-        )
+        return newLiveStreamLoadResponse(
+            name, twitchUrl, twitchUrl
+        ) {
+            plot = description
+            posterUrl = image
+            backgroundPosterUrl = poster
+            this@newLiveStreamLoadResponse.tags = tags
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse>? {
@@ -131,13 +141,13 @@ class TwitchProvider : MainAPI() {
                 val quality = getQualityFromName(name.substringBefore("p"))
                 callback.invoke(
                     newExtractorLink(
-                        source = "${this.name} ${name.replace("${quality}p", "")}",
-                        name = "${this.name} ${name.replace("${quality}p", "")}",
-                        url = url,
-                        type = ExtractorLinkType.M3U8,
+                        this.name,
+                        "${this.name} ${name.replace("${quality}p", "")}",
+                        url
                     ) {
-                        this.referer = mainUrl
+                        this.type = ExtractorLinkType.M3U8
                         this.quality = quality
+                        this.referer = ""
                     }
                 )
             }
