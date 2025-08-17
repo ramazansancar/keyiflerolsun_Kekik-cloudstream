@@ -18,7 +18,8 @@ import org.json.JSONObject
 import okio.BufferedSource
 
 class InatBox : MainAPI() {
-    private val contentUrl  = "https://dizibox.rest"
+    private val contentUrl  = "https://dizibox.cfd"
+    //private val contentUrl  = "https://dizibox.rest"
     //private val categoryUrl = "https://dizilab.cfd"
 
     override var name                 = "InatBox"
@@ -34,8 +35,8 @@ class InatBox : MainAPI() {
     //This urls come from ${categoryUrl}/ct.php | I assume they won't change in the near future
     // Source: https://github.com/ramazansancar/keyiflerolsun_Kekik-cloudstream/commit/b3f835a6556710597fce56becdfdfa4dc498b3e3
     override val mainPage = mainPageOf(
-        "https://boxbc.sbs/CDN/001_STR/boxbc.sbs/spor_v2.php"  to "Spor Kanalları",
-        "https://boxbc.sbs/CDN/001_STR/boxbc.sbs/derbiler.php" to "Derbiler",
+        "https://boxyz.cfd/CDN/001_STR/boxyz.cfd/spor_v2.php"  to "Spor Kanalları",
+        "https://boxyz.cfd/CDN/001_STR/boxyz.cfd/derbiler.php" to "Derbiler",
 
         "${contentUrl}/tv/list1.php"                           to "Kanallar Liste 1 - TR",
         "${contentUrl}/tv/list2.php"                           to "Kanallar Liste 2 - GLB",
@@ -50,7 +51,7 @@ class InatBox : MainAPI() {
 
         "${contentUrl}/ex/index.php"                           to "EXXEN",
         "${contentUrl}/ga/index.php"                           to "Gain",
-        "${contentUrl}/blu/index.php"                          to "BluTV",
+        // "${contentUrl}/blu/index.php"                          to "BluTV", // HBO Max 'e taşındı.
         "${contentUrl}/nf/index.php"                           to "Netflix", // Burası şu an çalışmıyor.
         "${contentUrl}/dsny/index.php"                         to "Disney+",
         "${contentUrl}/amz/index.php"                          to "Amazon Prime",
