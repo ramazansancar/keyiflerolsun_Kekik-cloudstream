@@ -40,7 +40,7 @@ class RecTV : MainAPI() {
         @Suppress("NAME_SHADOWING") val page = page - 1
 
         val url  = request.data.replace("SAYFA", "$page")
-        val home = app.get(url, headers=mapOf("user-agent" to "okhttp/4.12.0"))
+        val home = app.get(url, headers=mapOf("User-Agent" to "okhttp/4.12.0"))
 
         val movies = AppUtils.tryParseJson<List<RecItem>>(home.text)!!.map { item ->
             val toDict = jacksonObjectMapper().writeValueAsString(item)
