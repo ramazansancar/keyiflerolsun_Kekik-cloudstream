@@ -4,6 +4,8 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import java.net.URLEncoder
 
+
+
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
@@ -70,6 +72,8 @@ class Xprime : MainAPI() {
                 val overview = item.optString("overview", "")
                 val dateField = if (isMovie) "release_date" else "first_air_date"
                 val releaseDate = item.optString(dateField, "")
+                val score = item.optDouble("vote_average", 0.0)
+
                 val year = if (releaseDate.isNotEmpty()) {
                     releaseDate.split("-").getOrNull(0)
                 } else null
@@ -80,10 +84,12 @@ class Xprime : MainAPI() {
                 val searchResponse = if (isMovie) {
                     newMovieSearchResponse(title, link, TvType.Movie) {
                         this.posterUrl = poster
+                         this.score = Score.from10(score)
                     }
                 } else {
                     newTvSeriesSearchResponse(title, link, TvType.TvSeries) {
                         this.posterUrl = poster
+                         this.score = Score.from10(score)
                     }
                 }
 
@@ -127,7 +133,7 @@ class Xprime : MainAPI() {
                 }
                 
                 if (title.isEmpty()) continue
-
+                val score = item.optDouble("vote_average", 0.0)
                 val posterPath = item.optString("poster_path", "")
                 val poster = if (posterPath.isNotEmpty()) "https://image.tmdb.org/t/p/w500$posterPath" else null
 
@@ -136,10 +142,12 @@ class Xprime : MainAPI() {
                 val searchResult = if (mediaType == "movie") {
                     newMovieSearchResponse(title, link, TvType.Movie) {
                         this.posterUrl = poster
+                        this.score = Score.from10(score)
                     }
                 } else {
                     newTvSeriesSearchResponse(title, link, TvType.TvSeries) {
                         this.posterUrl = poster
+                        this.score = Score.from10(score)
                     }
                 }
                 
@@ -289,9 +297,7 @@ class Xprime : MainAPI() {
             List(arr.length()) { i -> arr.getJSONObject(i).optString("name", "") }
         }?.filter { it.isNotEmpty() } ?: emptyList()
 
-        val rating = json.optDouble("vote_average", 0.0).takeIf { it > 0 }?.let {
-            (it * 10).toInt()
-        }
+        val score = json.optDouble("vote_average", 0.0)
 
         
         val status = if (!isMovie) {
@@ -375,10 +381,12 @@ val showStatus = if (!isMovie) {
                     val recItem = if (isMovie) {
                         newMovieSearchResponse(recTitle, recLink, TvType.Movie) {
                             this.posterUrl = recPoster
+                            this.score = Score.from10(score)
                         }
                     } else {
                         newTvSeriesSearchResponse(recTitle, recLink, TvType.TvSeries) {
                             this.posterUrl = recPoster
+                            this.score = Score.from10(score)
                         }
                     }
                     recommendations.add(recItem)
@@ -394,7 +402,7 @@ val showStatus = if (!isMovie) {
                 this.plot = description
                 this.year = year
                 this.tags = if (countries.isNotEmpty()) (tags + countries).distinct() else tags
-                this.rating = rating
+                this.score = Score.from10(score)
                 this.recommendations = recommendations
                 addActors(actors)
                 trailerUrl?.let { addTrailer(it) }
@@ -446,7 +454,7 @@ val showStatus = if (!isMovie) {
                 this.plot = description
                 this.year = year
                 this.tags = if (countries.isNotEmpty()) (tags + countries).distinct() else tags
-                this.rating = rating
+                this.score = Score.from10(score)
                 this.recommendations = recommendations
                 this.showStatus = showStatus
                 addActors(actors)
