@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import okhttp3.Interceptor
 
 class RecTV : MainAPI() {
-    override var mainUrl              = "https://m.prectv52.lol"
+    override var mainUrl              = "https://m.prectv51.sbs"
     override var name                 = "RecTV"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -20,27 +20,27 @@ class RecTV : MainAPI() {
     private val swKey = "4F5A9C3D9A86FA54EACEDDD635185/c3c5bd17-e37b-4b94-a944-8a3688a30452"
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/api/channel/by/filtres/0/0/SAYFA${swKey}/"      to "Canlı",
-        "${mainUrl}/api/movie/by/filtres/0/created/SAYFA${swKey}/"  to "Son Filmler",
-        "${mainUrl}/api/serie/by/filtres/0/created/SAYFA${swKey}/"  to "Son Diziler",
-        "${mainUrl}/api/movie/by/filtres/14/created/SAYFA${swKey}/" to "Aile",
-        "${mainUrl}/api/movie/by/filtres/1/created/SAYFA${swKey}/"  to "Aksiyon",
+        "${mainUrl}/api/channel/by/filtres/0/0/SAYFA/${swKey}/"      to "Canlı",
+        "${mainUrl}/api/movie/by/filtres/0/created/SAYFA/${swKey}/"  to "Son Filmler",
+        "${mainUrl}/api/serie/by/filtres/0/created/SAYFA/${swKey}/"  to "Son Diziler",
+        "${mainUrl}/api/movie/by/filtres/14/created/SAYFA/${swKey}/" to "Aile",
+        "${mainUrl}/api/movie/by/filtres/1/created/SAYFA/${swKey}/"  to "Aksiyon",
         "${mainUrl}/api/movie/by/filtres/13/created/SAYFA/${swKey}/" to "Animasyon",
-        "${mainUrl}/api/movie/by/filtres/19/created/SAYFA${swKey}/" to "Belgesel",
-        "${mainUrl}/api/movie/by/filtres/4/created/SAYFA${swKey}/"  to "Bilim Kurgu",
-        "${mainUrl}/api/movie/by/filtres/2/created/SAYFA${swKey}/"  to "Dram",
-        "${mainUrl}/api/movie/by/filtres/10/created/SAYFA${swKey}/" to "Fantastik",
-        "${mainUrl}/api/movie/by/filtres/3/created/SAYFA${swKey}/"  to "Komedi",
-        "${mainUrl}/api/movie/by/filtres/8/created/SAYFA${swKey}/"  to "Korku",
-        "${mainUrl}/api/movie/by/filtres/17/created/SAYFA${swKey}/" to "Macera",
-        "${mainUrl}/api/movie/by/filtres/5/created/SAYFA${swKey}/"  to "Romantik"
+        "${mainUrl}/api/movie/by/filtres/19/created/SAYFA/${swKey}/" to "Belgesel",
+        "${mainUrl}/api/movie/by/filtres/4/created/SAYFA/${swKey}/"  to "Bilim Kurgu",
+        "${mainUrl}/api/movie/by/filtres/2/created/SAYFA/${swKey}/"  to "Dram",
+        "${mainUrl}/api/movie/by/filtres/10/created/SAYFA/${swKey}/" to "Fantastik",
+        "${mainUrl}/api/movie/by/filtres/3/created/SAYFA/${swKey}/"  to "Komedi",
+        "${mainUrl}/api/movie/by/filtres/8/created/SAYFA/${swKey}/"  to "Korku",
+        "${mainUrl}/api/movie/by/filtres/17/created/SAYFA/${swKey}/" to "Macera",
+        "${mainUrl}/api/movie/by/filtres/5/created/SAYFA/${swKey}/"  to "Romantik"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         @Suppress("NAME_SHADOWING") val page = page - 1
 
         val url  = request.data.replace("SAYFA", "$page")
-        val home = app.get(url, headers=mapOf("User-Agent" to "googleusercontent", "Referer" to "https://twitter.com/" ))
+        val home = app.get(url, headers = mapOf("User-Agent" to "googleusercontent", "Referer" to "https://twitter.com/" ))
 
         val movies = AppUtils.tryParseJson<List<RecItem>>(home.text)!!.map { item ->
             val toDict = jacksonObjectMapper().writeValueAsString(item)
