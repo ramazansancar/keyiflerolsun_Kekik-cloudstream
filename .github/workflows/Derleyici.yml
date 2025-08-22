@@ -155,27 +155,7 @@ jobs:
             echo "Puhu zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-      - name: AsyaWatch Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "AsyaWatch")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["Movie","TvSeries","AsianDrama"],
-              "version": 1,
-              "internalName": "AsyaWatch",
-              "description": "AsyaWatch için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/AsyaWatch.cs3",
-              "name": "AsyaWatch",
-              "iconUrl": "https://www.google.com/s2/favicons?domain=asyawatch.com&sz=%size%"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "AsyaWatch zaten plugins.json'da mevcut, eklenmedi."
-          fi
+      
 
       - name: InatBox Eklentisini plugins.json'a Elle Ekle
         run: |
