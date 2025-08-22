@@ -3,7 +3,7 @@
 
 package com.keyiflerolsun
 
-import android.util.Log
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -17,7 +17,7 @@ class RecTV : MainAPI() {
     override val hasQuickSearch       = false
     override val supportedTypes       = setOf(TvType.Movie, TvType.Live, TvType.TvSeries)
 
-    private val swKey = "4F5A9C3D9A86FA54EACEDDD635185/c3c5bd17-e37b-4b94-a944-8a3688a30452"
+    private val swKey = "4F5A9C3D9A86FA54EACEDDD635185/64f9535b-bd2e-4483-b234-89060b1e631c"
 
     override val mainPage = mainPageOf(
         "${mainUrl}/api/channel/by/filtres/0/0/SAYFA/${swKey}/"      to "Canlı",
@@ -40,7 +40,7 @@ class RecTV : MainAPI() {
         @Suppress("NAME_SHADOWING") val page = page - 1
 
         val url  = request.data.replace("SAYFA", "$page")
-        val home = app.get(url, headers=mapOf("user-agent" to "okhttp/4.12.0"))
+        val home = app.get(url, headers=mapOf("user-agent" to "Dart/3.7 (dart:io)"))
 
         val movies = AppUtils.tryParseJson<List<RecItem>>(home.text)!!.map { item ->
             val toDict = jacksonObjectMapper().writeValueAsString(item)
@@ -60,7 +60,7 @@ class RecTV : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val home    = app.get(
             "${mainUrl}/api/search/${query}/${swKey}/",
-            headers = mapOf("user-agent" to "okhttp/4.12.0")
+            headers = mapOf("user-agent" to "Dart/3.7 (dart:io)")
         )
         val veriler = AppUtils.tryParseJson<RecSearch>(home.text)
 
@@ -93,7 +93,7 @@ class RecTV : MainAPI() {
         if (veri.type == "serie") {
             val diziReq  = app.get(
                 "${mainUrl}/api/season/by/serie/${veri.id}/${swKey}/",
-                headers = mapOf("user-agent" to "okhttp/4.12.0")
+                headers = mapOf("user-agent" to "Dart/3.7 (dart:io)")
             )
             val sezonlar = AppUtils.tryParseJson<List<RecDizi>>(diziReq.text) ?: return null
 
@@ -120,7 +120,7 @@ class RecTV : MainAPI() {
                 this.plot      = veri.description
                 this.year      = veri.year
                 this.tags      = veri.genres?.map { it.title }
-                this.rating    = "${veri.rating}".toRatingInt()
+                this.score     = Score.from10("${veri.rating}")
             }
         }
 
@@ -130,7 +130,7 @@ class RecTV : MainAPI() {
                 this.plot      = veri.description
                 this.year      = veri.year
                 this.tags      = veri.genres?.map { it.title }
-                this.rating    = "${veri.rating}".toRatingInt()
+                this.score     = Score.from10("${veri.rating}")
             }
         } else {
             newLiveStreamLoadResponse(veri.title, url, url) {
@@ -151,8 +151,8 @@ class RecTV : MainAPI() {
                     url     = data,
                     type    = INFER_TYPE
                 ) {
-                    this.referer = "https://twitter.com/"
-                    this.quality = Qualities.Unknown.value
+                    headers = mapOf("Referer" to "https://twitter.com/") // "Referer" ayarı burada yapılabilir
+                    quality = getQualityFromName(Qualities.Unknown.value.toString())
                 }
             )
             return true
@@ -189,4 +189,3 @@ class RecTV : MainAPI() {
         return interceptor
     }
 }
-
