@@ -122,7 +122,7 @@ jobs:
               "language": "tr",
               "authors": ["kerimmkirac"],
               "tvTypes": ["AnimeMovie","Anime"],
-              "version": 2,
+              "version": 3,
               "internalName": "Anizium",
               "description": "Anizium ile dünyada ilk ve tek 4K Türkçe dublaj platformunda anime keyfini yaşa. En yeni animeleri İngilizce altyazı ve dublaj seçenekleriyle 1080p ve 4K kalitesinde HD izle.",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/Anizium.cs3",
