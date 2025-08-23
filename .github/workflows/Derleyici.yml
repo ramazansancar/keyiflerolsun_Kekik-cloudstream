@@ -54,15 +54,6 @@ jobs:
       - name: jq Araçlarını Kur (GolgeTV ve AnimeciX eklemeleri için)
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      
-
-      
-      
-      
-      
-
-     
-      
       - name: YerelDiziler Eklentisini plugins.json'a Elle Ekle
         run: |
           cd $GITHUB_WORKSPACE/builds
@@ -85,12 +76,11 @@ jobs:
             echo "YerelDiziler zaten plugins.json'da mevcut, eklenmedi."
           fi
 
-
       - name: FilmMakinesi Eklentisini plugins.json'a Elle Ekle
         run: |
           cd $GITHUB_WORKSPACE/builds
           if ! jq -e '.[] | select(.internalName == "FilmMakinesi")' plugins.json > /dev/null; then
-            jq '. += [{
+            cat plugins.json | jq '. += [{
               "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
               "apiVersion": 1,
               "status": 1,
@@ -103,7 +93,7 @@ jobs:
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/FilmMakinesi.cs3",
               "name": "FilmMakinesi",
               "iconUrl": "https://www.google.com/s2/favicons?domain=filmmakinesi.film&sz=%size%"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+            }]' > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "FilmMakinesi zaten plugins.json'da mevcut, eklenmedi."
           fi
@@ -112,7 +102,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/builds
           if ! jq -e '.[] | select(.internalName == "HDFilmCehennemi")' plugins.json > /dev/null; then
-            jq '. += [{
+            cat plugins.json | jq '. += [{
               "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
               "apiVersion": 1,
               "status": 1,
@@ -121,15 +111,14 @@ jobs:
               "tvTypes": ["Tv","Movie"],
               "version": 1,
               "internalName": "HDFilmCehennemi",
-              "description": "Türkiye'nin en hızlı hd film izleme sitesi",
+              "description": "Türkiye'\''nin en hızlı hd film izleme sitesi",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/HDFilmCehennemi.cs3",
               "name": "HDFilmCehennemi",
               "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmcehennemi.com&sz=%size%"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
+            }]' > plugins-new.json && mv plugins-new.json plugins.json
           else
             echo "HDFilmCehennemi zaten plugins.json'da mevcut, eklenmedi."
           fi
-      
 
       - name: Kanal7 Eklentisini plugins.json'a Elle Ekle
         run: |
@@ -152,8 +141,6 @@ jobs:
           else
             echo "Kanal7 zaten plugins.json'da mevcut, eklenmedi."
           fi
-
-
 
       - name: Anizium Eklentisini plugins.json'a Elle Ekle
         run: |
@@ -200,28 +187,6 @@ jobs:
           fi
 
       
-
-      - name: InatBox Eklentisini plugins.json'a Elle Ekle
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          if ! jq -e '.[] | select(.internalName == "InatBox")' plugins.json > /dev/null; then
-            jq '. += [{
-              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
-              "apiVersion": 1,
-              "status": 1,
-              "language": "tr",
-              "authors": ["kerimmkirac"],
-              "tvTypes": ["Movie","TvSeries","Live"],
-              "version": 1,
-              "internalName": "InatBox",
-              "description": "InatBox için CloudStream eklentisi",
-              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/InatBox.cs3",
-              "name": "InatBox",
-              "iconUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3vCp6N1K4bECoYRQD-cisJF2_6V_Hk01ZhDmoPR2JuM8O5qr4MqrPO1munM9cRlleBBSK6odYhLtDBWv4E3vhPhynlmS5hVVtJZShHoGA5REQ8_3v8SIlccTEqzVQu2UJyNYQdJNrKIfWy66RQeT0D-CcmFCbHPz5023H6p2v5fv4NVloZ5Rqo_yGrIY/s320/iNat-Box-App.png"
-            }]' plugins.json > plugins-new.json && mv plugins-new.json plugins.json
-          else
-            echo "InatBox zaten plugins.json'da mevcut, eklenmedi."
-          fi
 
       - name: Derlemeleri Yükle
         run: |
