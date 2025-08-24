@@ -20,7 +20,7 @@ import org.jsoup.nodes.Document
 import java.net.URLDecoder
 
 class UnutulmazFilmler : MainAPI() {
-    override var mainUrl              = "https://unutulmazfilmler4.com"
+    override var mainUrl              = "https://unutulmazfilmler.org"
     override var name                 = "UnutulmazFilmler"
     override val hasMainPage          = true
     override var lang                 = "tr"
