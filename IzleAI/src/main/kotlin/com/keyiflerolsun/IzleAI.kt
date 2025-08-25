@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class IzleAI : MainAPI() {
-    override var mainUrl              = "https://selcukflix.com"
+    override var mainUrl              = "https://selcukflix.net"
     override var name                 = "720PizleAI"
     override val hasMainPage          = true
     override var lang                 = "tr"
