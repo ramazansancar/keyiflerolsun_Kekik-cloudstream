@@ -70,7 +70,7 @@ class PrimeVideoMirrorProvider : MainAPI() {
 
     private fun toSearchResult(id: String): SearchResponse? {
         return newAnimeSearchResponse("", Id(id).toJson()) {
-            this.posterUrl = "https://img.nfmirrorcdn.top/pv/900/$id.jpg"
+            this.posterUrl = "https://imgcdn.media/pv/341/$id.jpg"
             posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
         }
     }
@@ -87,7 +87,7 @@ class PrimeVideoMirrorProvider : MainAPI() {
 
         return data.searchResult.map {
             newAnimeSearchResponse(it.t, Id(it.id).toJson()) {
-                posterUrl = "https://img.nfmirrorcdn.top/pv/900/${it.id}.jpg"
+                posterUrl = "https://imgcdn.media/pv/341/${it.id}.jpg"
                 posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
             }
         }
@@ -151,7 +151,7 @@ class PrimeVideoMirrorProvider : MainAPI() {
         val type = if (data.episodes.first() == null) TvType.Movie else TvType.TvSeries
 
         return newTvSeriesLoadResponse(title, url, type, episodes) {
-            posterUrl = "https://img.nfmirrorcdn.top/pv/900/$id.jpg"
+            posterUrl = "https://imgcdn.media/pv/341/$id.jpg"
             posterHeaders = mapOf("Referer" to "$mainUrl/tv/home")
             plot = data.desc
             year = data.year.toIntOrNull()
@@ -219,10 +219,10 @@ class PrimeVideoMirrorProvider : MainAPI() {
                     newExtractorLink(
                         name,
                         it.label,
-                        fixUrl(it.file),
+                        "https://net50.cc${it.file.replace("/tv/", "/")}",
                         type = ExtractorLinkType.M3U8
                     ) {
-                        this.referer = "$mainUrl/tv/home"
+                        this.referer = "https://net50.cc/"
                         this.quality = getQualityFromName(it.file.substringAfter("q=", ""))
                     }
                 )
