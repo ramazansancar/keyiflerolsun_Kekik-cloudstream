@@ -11,7 +11,7 @@ import android.util.Base64
 import org.jsoup.Jsoup
 
 class KultFilmler : MainAPI() {
-    override var mainUrl              = "https://kultfilmler.net"
+    override var mainUrl              = "https://kultfilmler.pro"
     override var name                 = "KultFilmler"
     override val hasMainPage          = true
     override var lang                 = "tr"
