@@ -28,7 +28,12 @@ class CloseLoad : ExtractorApi() {
         try {
             val iSource = app.get(url, referer = mainUrl, headers = headers2)
 
-            val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
+            val scripts = iSource.document.select("script[type=text/javascript]")
+            if (scripts.size < 2) {
+                throw ErrorLoadingException("Script not found")
+            }
+
+            val obfuscatedScript = scripts[1].data().trim()
             val rawScript = getAndUnpack(obfuscatedScript)
             
             Log.d("Kekik_${this.name}", "Raw Script: ${rawScript.take(200)}...")
@@ -45,24 +50,23 @@ class CloseLoad : ExtractorApi() {
             Log.d("Kekik_${this.name}", "Decoded URL: $lastUrl")
 
             if (!lastUrl.startsWith("http")) {
-                throw ErrorLoadingException("Invalid URL format")
+                throw ErrorLoadingException("Invalid URL format: $lastUrl")
             }
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = lastUrl,
-                    ExtractorLinkType.M3U8
-                ) {
-                    this.referer = mainUrl
-                    this.quality = Qualities.Unknown.value
-                    this.headers = headers2
-                }
+                    referer = mainUrl,
+                    quality = Qualities.Unknown.value,
+                    headers = headers2,
+                    type = ExtractorLinkType.M3U8
+                )
             )
 
             // Altyazıları işle
-            processSubtitles(iSource, subtitleCallback, headers2)
+            processSubtitles(iSource.document, subtitleCallback)
 
         } catch (e: Exception) {
             Log.e("Kekik_${this.name}", "Error: ${e.message}")
@@ -101,8 +105,8 @@ class CloseLoad : ExtractorApi() {
             // Base64 input temizleme (geçersiz karakterleri kaldır)
             val cleanedInput = base64Input.replace("[^A-Za-z0-9+/=]".toRegex(), "")
             
-            // İlk decode
-            val decodedOnce = base64Decode(cleanedInput)
+            // İlk decode - Android Base64 kullan
+            val decodedOnce = androidBase64Decode(cleanedInput)
             Log.d("Kekik_${this.name}", "First decode: $decodedOnce")
             
             // Reverse
@@ -111,26 +115,33 @@ class CloseLoad : ExtractorApi() {
             
             // İkinci decode (reversed string'i temizle)
             val cleanedReversed = reversedString.replace("[^A-Za-z0-9+/=]".toRegex(), "")
-            val decodedTwice = base64Decode(cleanedReversed)
+            val decodedTwice = androidBase64Decode(cleanedReversed)
             Log.d("Kekik_${this.name}", "Second decode: $decodedTwice")
             
             // URL çıkarma
-            when {
+            val result = when {
                 decodedTwice.contains("+") -> {
-                    val result = "https" + decodedTwice.substringAfterLast("+")
-                    Log.d("Kekik_${this.name}", "Extracted from +: $result")
-                    result
+                    val extracted = "https" + decodedTwice.substringAfterLast("+")
+                    Log.d("Kekik_${this.name}", "Extracted from +: $extracted")
+                    extracted
                 }
                 decodedTwice.contains("|") -> {
                     val parts = decodedTwice.split("|")
-                    val result = if (parts.size > 1) "https" + parts[1] else decodedTwice
-                    Log.d("Kekik_${this.name}", "Extracted from |: $result")
-                    result
+                    val extracted = if (parts.size > 1) "https" + parts[1] else decodedTwice
+                    Log.d("Kekik_${this.name}", "Extracted from |: $extracted")
+                    extracted
                 }
                 else -> {
                     Log.d("Kekik_${this.name}", "Using raw result: $decodedTwice")
                     if (decodedTwice.startsWith("http")) decodedTwice else "https://$decodedTwice"
                 }
+            }
+            
+            // Son kontrol
+            if (result.startsWith("http")) {
+                result
+            } else {
+                throw ErrorLoadingException("Invalid final URL: $result")
             }
         } catch (e: Exception) {
             Log.e("Kekik_${this.name}", "dcHello error: ${e.message}")
@@ -138,25 +149,19 @@ class CloseLoad : ExtractorApi() {
         }
     }
 
-    // Güvenli base64 decode fonksiyonu
-    private fun base64Decode(input: String): String {
+    // Android Base64 decode fonksiyonu
+    private fun androidBase64Decode(input: String): String {
         return try {
-            // Android Base64 kullan
             val decodedBytes = Base64.decode(input, Base64.DEFAULT)
             String(decodedBytes, StandardCharsets.UTF_8)
         } catch (e: Exception) {
-            // Kotlin Base64 fallback
-            try {
-                kotlin.io.encoding.Base64.decode(input)
-            } catch (e2: Exception) {
-                Log.e("Kekik_${this.name}", "Base64 decode failed for: $input")
-                throw e2
-            }
+            Log.e("Kekik_${this.name}", "Android Base64 decode failed for: $input")
+            throw e
         }
     }
 
-    private fun processSubtitles(iSource: AppResponse, subtitleCallback: (SubtitleFile) -> Unit, headers: Map<String, String>) {
-        iSource.document.select("track").forEach { track ->
+    private fun processSubtitles(document: org.jsoup.nodes.Document, subtitleCallback: (SubtitleFile) -> Unit) {
+        document.select("track").forEach { track ->
             val rawSrc = track.attr("src").trim()
             val label = track.attr("label").ifBlank { "Altyazı" }
             
