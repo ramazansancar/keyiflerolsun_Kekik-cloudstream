@@ -78,9 +78,9 @@ class CloseLoad : ExtractorApi() {
         return try {
             // Farklı pattern'ler deneyelim
             val patterns = listOf(
-                "dc_hello\\(\"([^\"]+)\"\\)",
-                "dc_hello\\('([^']+)'\\)",
-                "dc_hello\\(['\"]([^'\"]+)['\"]\\)"
+                "dc_hn0BNgnhGP8\\(\"([^\"]+)\"\\)",
+                "dc_hn0BNgnhGP8\\('([^']+)'\\)",
+                "dc_hn0BNgnhGP8\\(['\"]([^'\"]+)['\"]\\)"
             )
             
             for (pattern in patterns) {
