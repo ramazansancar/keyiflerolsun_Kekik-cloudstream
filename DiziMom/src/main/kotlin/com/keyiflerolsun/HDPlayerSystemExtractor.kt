@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 open class HDPlayerSystem : ExtractorApi() {
     override val name            = "HDPlayerSystem"
-    override val mainUrl         = "https://hdplayersystem.live"
+    override val mainUrl         = "https://hdplayersystem.com"
     override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
