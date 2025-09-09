@@ -4,15 +4,9 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import android.util.Base64
+import java.nio.charset.StandardCharsets
 
-private fun getm3uLink(data: String): String {
-    val first = Base64.decode(data, Base64.DEFAULT).reversedArray()
-    val second = Base64.decode(first, Base64.DEFAULT)
-    val result = second.toString(Charsets.UTF_8).split("|")[1]
-    return result
-}
-
-open class CloseLoad : ExtractorApi() {
+class CloseLoad : ExtractorApi() {
     override val name = "CloseLoad"
     override val mainUrl = "https://closeload.filmmakinesi.de"
     override val requiresReferer = true
@@ -23,102 +17,161 @@ open class CloseLoad : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val extRef = referer ?: ""
-	val headers2 = mapOf(
-        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0",
-		"Referer" to "https://filmmakinesi.de",
-        "Origin" to "https://filmmakinesi.de"
+        val headers2 = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Referer" to mainUrl,
+            "Origin" to mainUrl
         )
+        
         Log.d("Kekik_${this.name}", "url » $url")
 
-        val iSource = app.get(url, referer = mainUrl, headers=headers2)
+        try {
+            val iSource = app.get(url, referer = mainUrl, headers = headers2)
 
-        val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
-        val rawScript = getAndUnpack(obfuscatedScript)
-        val regex = Regex("var player=this\\}\\);var(.*?);myPlayer\\.src")
-        val matchResult = regex.find(rawScript)
-        val base64Input = rawScript.substringAfter("dc_hello(\"").substringBefore("\");")
-        val lastUrl = dcHello(base64Input).substringAfter("https").let { "https$it" }
-        callback.invoke(
-            newExtractorLink(
-                source = this.name,
-                name = this.name,
-                url = lastUrl,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = mainUrl
-                this.quality = Qualities.Unknown.value
+            val obfuscatedScript = iSource.document.select("script[type=text/javascript]")[1].data().trim()
+            val rawScript = getAndUnpack(obfuscatedScript)
+            
+            Log.d("Kekik_${this.name}", "Raw Script: ${rawScript.take(200)}...")
+            
+            // Base64 input'u daha güvenli şekilde al
+            val base64Input = extractBase64Input(rawScript)
+            if (base64Input.isNullOrEmpty()) {
+                throw ErrorLoadingException("Base64 input not found")
             }
-        )
 
-        if (matchResult != null) {
-            val extractedString = matchResult.groups[1]?.value
-                ?.trim()?.substringAfter("=\"")?.substringBefore("\"")
-            val m3uLink = Base64.decode(extractedString, Base64.DEFAULT).toString(Charsets.UTF_8)
-            Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
+            Log.d("Kekik_${this.name}", "Base64 Input: $base64Input")
+            
+            val lastUrl = dcHello(base64Input)
+            Log.d("Kekik_${this.name}", "Decoded URL: $lastUrl")
+
+            if (!lastUrl.startsWith("http")) {
+                throw ErrorLoadingException("Invalid URL format")
+            }
 
             callback.invoke(
                 newExtractorLink(
                     source = this.name,
                     name = this.name,
-                    url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                    type = ExtractorLinkType.M3U8
+                    url = lastUrl,
+                    ExtractorLinkType.M3U8
                 ) {
-                    quality = Qualities.Unknown.value
-                    headers = headers2
+                    this.referer = mainUrl
+                    this.quality = Qualities.Unknown.value
+                    this.headers = headers2
                 }
             )
 
-        // Şimdi altyazıları gönder
-        iSource.document.select("track").forEach {
-            val rawSrc = it.attr("src").trim()
-        
-            // Eğer src boşsa veya anlamlı bir yol değilse atla
-            if (rawSrc.isBlank() || (!rawSrc.startsWith("http") && !rawSrc.startsWith("/"))) {
-                Log.w("Kekik_${this.name}", "Geçersiz veya boş altyazı src: [$rawSrc]")
-                return@forEach
-            }
-        
-            // URL'yi düzgün oluştur
-            val fullUrl = if (rawSrc.startsWith("http")) {
-                rawSrc
-            } else {
-                mainUrl.trimEnd('/') + rawSrc
-            }
-        
-            // Tam URL'nin geçerli bir http(s) adresi olup olmadığını kontrol et
-            if (fullUrl.startsWith("http://") || fullUrl.startsWith("https://")) {
-                val label = it.attr("label").ifBlank { "Altyazı" }
-                Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
-        
-                try {
-                    val subtitleResponse = app.get(fullUrl, headers = headers2)
-                    if (subtitleResponse.isSuccessful) {
-                        subtitleCallback(SubtitleFile(label, fullUrl))
-                        Log.d("FLMM", "Subtitle added: $fullUrl")
-                    } else {
-                        Log.d("FLMM", "Subtitle URL erişilemedi: ${subtitleResponse.code}")
-                    }
-                } catch (e: Exception) {
-                    Log.e("Kekik_${this.name}", "Altyazı indirme hatası: ${e.localizedMessage}")
+            // Altyazıları işle
+            processSubtitles(iSource, subtitleCallback, headers2)
+
+        } catch (e: Exception) {
+            Log.e("Kekik_${this.name}", "Error: ${e.message}")
+            throw ErrorLoadingException("Failed to extract video URL: ${e.message}")
+        }
+    }
+
+    private fun extractBase64Input(rawScript: String): String? {
+        return try {
+            // Farklı pattern'ler deneyelim
+            val patterns = listOf(
+                "dc_hello\\(\"([^\"]+)\"\\)",
+                "dc_hello\\('([^']+)'\\)",
+                "dc_hello\\(['\"]([^'\"]+)['\"]\\)"
+            )
+            
+            for (pattern in patterns) {
+                val regex = Regex(pattern)
+                val match = regex.find(rawScript)
+                if (match != null) {
+                    return match.groupValues[1]
                 }
-            } else {
-                Log.w("Kekik_${this.name}", "Hatalı altyazı URL'si: $fullUrl")
+            }
+            
+            null
+        } catch (e: Exception) {
+            Log.e("Kekik_${this.name}", "Extract base64 error: ${e.message}")
+            null
+        }
+    }
+
+    private fun dcHello(base64Input: String): String {
+        return try {
+            Log.d("Kekik_${this.name}", "Input for dcHello: $base64Input")
+            
+            // Base64 input temizleme (geçersiz karakterleri kaldır)
+            val cleanedInput = base64Input.replace("[^A-Za-z0-9+/=]".toRegex(), "")
+            
+            // İlk decode
+            val decodedOnce = base64Decode(cleanedInput)
+            Log.d("Kekik_${this.name}", "First decode: $decodedOnce")
+            
+            // Reverse
+            val reversedString = decodedOnce.reversed()
+            Log.d("Kekik_${this.name}", "Reversed: $reversedString")
+            
+            // İkinci decode (reversed string'i temizle)
+            val cleanedReversed = reversedString.replace("[^A-Za-z0-9+/=]".toRegex(), "")
+            val decodedTwice = base64Decode(cleanedReversed)
+            Log.d("Kekik_${this.name}", "Second decode: $decodedTwice")
+            
+            // URL çıkarma
+            when {
+                decodedTwice.contains("+") -> {
+                    val result = "https" + decodedTwice.substringAfterLast("+")
+                    Log.d("Kekik_${this.name}", "Extracted from +: $result")
+                    result
+                }
+                decodedTwice.contains("|") -> {
+                    val parts = decodedTwice.split("|")
+                    val result = if (parts.size > 1) "https" + parts[1] else decodedTwice
+                    Log.d("Kekik_${this.name}", "Extracted from |: $result")
+                    result
+                }
+                else -> {
+                    Log.d("Kekik_${this.name}", "Using raw result: $decodedTwice")
+                    if (decodedTwice.startsWith("http")) decodedTwice else "https://$decodedTwice"
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Kekik_${this.name}", "dcHello error: ${e.message}")
+            throw ErrorLoadingException("Failed to decode URL: ${e.message}")
+        }
+    }
+
+    // Güvenli base64 decode fonksiyonu
+    private fun base64Decode(input: String): String {
+        return try {
+            // Android Base64 kullan
+            val decodedBytes = Base64.decode(input, Base64.DEFAULT)
+            String(decodedBytes, StandardCharsets.UTF_8)
+        } catch (e: Exception) {
+            // Kotlin Base64 fallback
+            try {
+                kotlin.io.encoding.Base64.decode(input)
+            } catch (e2: Exception) {
+                Log.e("Kekik_${this.name}", "Base64 decode failed for: $input")
+                throw e2
             }
         }
     }
-}
-    fun dcHello(base64Input: String): String {
-        val decodedOnce = base64Decode(base64Input)
-        val reversedString = decodedOnce.reversed()
-        val decodedTwice = base64Decode(reversedString)
-        val flmmLink = if (decodedTwice.contains("+")){
-        decodedTwice.substringAfterLast("+")
-            } else if (decodedTwice.contains("|")) {
-        decodedTwice.split("|")[1]
-            } else {
-        decodedTwice
+
+    private fun processSubtitles(iSource: AppResponse, subtitleCallback: (SubtitleFile) -> Unit, headers: Map<String, String>) {
+        iSource.document.select("track").forEach { track ->
+            val rawSrc = track.attr("src").trim()
+            val label = track.attr("label").ifBlank { "Altyazı" }
+            
+            if (rawSrc.isNotBlank()) {
+                val fullUrl = if (rawSrc.startsWith("http")) {
+                    rawSrc
+                } else {
+                    mainUrl.trimEnd('/') + "/" + rawSrc.trimStart('/')
+                }
+                
+                if (fullUrl.startsWith("http")) {
+                    Log.d("Kekik_${this.name}", "Altyazı bulundu: $label -> $fullUrl")
+                    subtitleCallback(SubtitleFile(label, fullUrl))
+                }
+            }
         }
-        return flmmLink
     }
 }
