@@ -19,7 +19,9 @@ class CloseLoad : ExtractorApi() {
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
             "Referer" to "https://closeload.filmmakinesi.de/",
-            "Origin" to mainUrl
+            "Origin" to mainUrl,
+            "Host" to "filmmakinesi.de",
+            "X-Forwarded-Host" to "filmmakinesi.de" 
         )
         
         try {
