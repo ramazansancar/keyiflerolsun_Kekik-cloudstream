@@ -4,6 +4,7 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Document
+import com.lagradost.cloudstream3.utils.INFER_TYPE
 
 class CloseLoad : ExtractorApi() {
     override val name = "CloseLoad"
