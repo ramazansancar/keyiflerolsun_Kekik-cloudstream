@@ -62,7 +62,7 @@ class CloseLoad : ExtractorApi() {
                     )
                 }
             }
-        }
+        }} 
     }
 
     private fun processSubtitles(document: Document, subtitleCallback: (SubtitleFile) -> Unit) {
