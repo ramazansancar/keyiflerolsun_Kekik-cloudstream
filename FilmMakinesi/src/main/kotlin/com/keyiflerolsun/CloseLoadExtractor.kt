@@ -53,12 +53,12 @@ class CloseLoad : ExtractorApi() {
                         newExtractorLink(
                             source = this.name,
                             name = this.name,
-                            url = videoUrl,
-                            referer = mainUrl,
-                            quality = Qualities.Unknown.value,
-                            headers = headers,
+                            url = videoUrl, 
                             type = INFER_TYPE
-                        )
+                        ) {
+                            quality = Qualities.Unknown.value
+                            headers = mapOf("Referer" to headers)
+                        }
                     )
                 }
             }
