@@ -56,7 +56,7 @@ class CloseLoad : ExtractorApi() {
                             referer = mainUrl,
                             quality = Qualities.Unknown.value,
                             headers = headers,
-                            type = ExtractorLinkType.DASH
+                            type = ExtractorLinkType.INFER_TYPE
                         )
                     )
                 }
