@@ -50,7 +50,7 @@ class CloseLoad : ExtractorApi() {
                 val videoUrl = match.groupValues[1]
                 if (videoUrl.startsWith("http")) {
                     callback.invoke(
-                        ExtractorLink(
+                        newExtractorLink(
                             source = this.name,
                             name = this.name,
                             url = videoUrl,
