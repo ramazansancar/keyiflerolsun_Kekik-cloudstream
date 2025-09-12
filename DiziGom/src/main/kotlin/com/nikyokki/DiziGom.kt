@@ -17,7 +17,7 @@ import org.jsoup.nodes.Element
 import java.net.URLDecoder
 
 class DiziGom : MainAPI() {
-    override var mainUrl = "https://dizigom1.live"
+    override var mainUrl = "https://dizigom1.plus"
     override var name = "DiziGom"
     override val hasMainPage = true
     override var lang = "tr"
