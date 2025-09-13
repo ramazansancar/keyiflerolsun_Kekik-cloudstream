@@ -39,31 +39,35 @@ class CloseLoad : ExtractorApi() {
         }
     }
 
-    private fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
-        val jsonLdScript = document.select("script[type=application/ld+json]").firstOrNull()
-        if (jsonLdScript != null) {
-            val jsonLd = jsonLdScript.data()
-            val contentUrlRegex = "\"contentUrl\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-            val match = contentUrlRegex.find(jsonLd)
-            
-            if (match != null) {
-                val videoUrl = match.groupValues[1]
-                if (videoUrl.startsWith("http")) {
-                    callback.invoke(
-                        newExtractorLink(
-                            source = this.name,
-                            name = this.name,
-                            url = videoUrl, 
-                            type = INFER_TYPE
-                        ) {
-                            quality = Qualities.Unknown.value
-                            headers = mapOf("Referer" to headers)
-                        }
-                    )
-                }
+private fun extractFromJsonLd(
+    document: Document,
+    callback: (ExtractorLink) -> Unit,
+    headers: Map<String, String>
+) {
+    val jsonLdScript = document.select("script[type=application/ld+json]").firstOrNull()
+    if (jsonLdScript != null) {
+        val jsonLd = jsonLdScript.data()
+        val contentUrlRegex = "\"contentUrl\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+        val match = contentUrlRegex.find(jsonLd)
+
+        if (match != null) {
+            val videoUrl = match.groupValues[1]
+            if (videoUrl.startsWith("http")) {
+                callback.invoke(
+                    newExtractorLink(
+                        source = this.name,
+                        name = this.name,
+                        url = videoUrl,
+                        type = INFER_TYPE
+                    ) {
+                        quality = Qualities.Unknown.value
+                        headers = headers 
+                    }
+                )
             }
-        }} 
+        }
     }
+}
 
     private fun processSubtitles(document: Document, subtitleCallback: (SubtitleFile) -> Unit) {
         document.select("track").forEach { track ->
