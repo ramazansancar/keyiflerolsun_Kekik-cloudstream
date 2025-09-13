@@ -92,7 +92,7 @@ class DiziBox : MainAPI() {
 
     private fun Element.toMainPageResult(): SearchResponse? {
         val title     = this.selectFirst("h3 a")?.text() ?: this.selectFirst("img")?.attr("alt") ?: return null
-        val posterUrl    = fixUrlNull(this.selectFirst("img")?.attr("src"))
+        val posterUrl    = fixUrlNull(this.selectFirst("img")?.attr("data-src")) ?: fixUrlNull(this.selectFirst("img")?.attr("src"))
         val href      = fixUrlNull(this.selectFirst("h3 a")?.attr("href")) ?: (this.selectFirst("a.figure-link")?.attr("href")
             ?.replace(Regex(pattern = """-[0-9]+-.*""", options = setOf(RegexOption.IGNORE_CASE)),"/")
             ?.replace("$mainUrl/","$mainUrl/diziler/") ?: return null)
