@@ -68,7 +68,7 @@ jobs:
 
       - name: Eklentileri Derle
         run: |
-          cd $GITHUB_WORKSPACE/source
+          cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
           ./gradlew --q --parallel make makePluginsJson --continue
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
