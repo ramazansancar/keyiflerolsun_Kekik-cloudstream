@@ -10,6 +10,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.fasterxml.jackson.annotation.JsonProperty
+
 import org.jsoup.Jsoup
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -205,14 +206,15 @@ class HDFilmCehennemi : MainAPI() {
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source  = source,
                 name    = source,
                 url     = base64Decode(videoData),
-                referer = "${mainUrl}/",
-                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
-            )
+            ) {
+                this.referer = "${mainUrl}/"
+                this.quality = Qualities.Unknown.value
+            }
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {
