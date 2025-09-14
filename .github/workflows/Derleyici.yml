@@ -25,12 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: "'src' Depo Kontrolü"
+      - name: "Kaynak Kod Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
           path: "src"
 
-      - name: "'build' Depo Kontrolü"
+      - name: "Build Sonuçları Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
           ref: "builds"
@@ -54,33 +54,21 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            src/.gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('src/**/*.gradle*', 'src/**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('src/**/*.gradle*', 'src/**/gradle-wrapper.properties', 'src/gradle.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Android SDK Cache
+      - name: Gradle Build Cache
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.android/cache
-            ~/.android/avd
-            ~/.android/adb_usb.ini
-          key: ${{ runner.os }}-android-${{ hashFiles('src/**/*.gradle*') }}
+          path: ${{ github.workspace }}/src/.gradle
+          key: ${{ runner.os }}-gradle-build-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-android-
-
-      - name: Maven Dependencies Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('src/**/*.gradle*', 'src/**/gradle.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-m2-
+            ${{ runner.os }}-gradle-build-
 
       - name: Eklentileri Derle
         run: |
-          cd $GITHUB_WORKSPACE/src
+          cd $GITHUB_WORKSPACE/source
           chmod +x gradlew
           ./gradlew --q --parallel make makePluginsJson --continue
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
