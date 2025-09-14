@@ -8,19 +8,45 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.jsoup.Jsoup
+import okhttp3.Interceptor
+import okhttp3.Response
 
 class HDFilmCehennemi : MainAPI() {
-    override var mainUrl              = "https://www.hdfilmcehennemi.nl"
+    override var mainUrl              = "https://www.hdfilmcehennemi.la"
     override var name                 = "HDFilmCehennemi"
     override val hasMainPage          = true
     override var lang                 = "tr"
     override val hasQuickSearch       = true
     override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
 
+    // ! CloudFlare bypass
+    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPageDelay       = 50L  // ? 0.05 saniye
+    override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
+
+    // ! CloudFlare v2
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request  = chain.request()
+            val response = chain.proceed(request)
+            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+            if (doc.select("title").text() == "Just a moment..." || doc.select("title").text() == "Bir dakika lütfen...") {
+                return cloudflareKiller.intercept(chain)
+            }
+ 
+            return response
+        }
+    }
+
     override val mainPage = mainPageOf(
-        mainUrl to "Yeni Eklenen Filmler",
+        mainUrl                                           to "Yeni Eklenen Filmler",
         "${mainUrl}/yabancidiziizle-2"                    to "Yeni Eklenen Diziler",
         "${mainUrl}/category/tavsiye-filmler-izle2"       to "Tavsiye Filmler",
         "${mainUrl}/imdb-7-puan-uzeri-filmler"            to "IMDB 7+ Filmler",
@@ -62,7 +88,7 @@ class HDFilmCehennemi : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data).document
+        val document = app.get(request.data, interceptor = interceptor).document
 
         val home: List<SearchResponse>?
 
@@ -84,6 +110,7 @@ class HDFilmCehennemi : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val response      = app.get(
             "${mainUrl}/search?q=${query}",
+            interceptor = interceptor,
             headers = mapOf("X-Requested-With" to "fetch")
         ).parsedSafe<Results>() ?: return emptyList()
         val searchResults = mutableListOf<SearchResponse>()
@@ -104,7 +131,7 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = interceptor).document
 
         val title       = document.selectFirst("h1.section-title")?.text()?.substringBefore(" izle") ?: return null
         val poster      = fixUrlNull(document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src"))
@@ -169,21 +196,23 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
-        val script    = app.get(url, referer = "${mainUrl}/").document.select("script").find { it.data().contains("sources:") }?.data() ?: return
+        val script    = app.get(
+                url,
+                interceptor = interceptor,
+                referer = "${mainUrl}/"
+            ).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
         val videoData = getAndUnpack(script).substringAfter("file_link=\"").substringBefore("\";")
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = source,
                 name    = source,
                 url     = base64Decode(videoData),
+                referer = "${mainUrl}/",
+                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
-            ) {
-                this.referer = "${mainUrl}/"
-                this.quality = Qualities.Unknown.value
-                // isM3u8  = true
-            }
+            )
         )
 
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {
@@ -195,7 +224,10 @@ class HDFilmCehennemi : MainAPI() {
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ): Boolean {
         Log.d("HDCH", "data » $data")
-        val document = app.get(data).document
+        val document = app.get(
+                data,
+                interceptor = interceptor
+            ).document
 
         document.select("div.alternative-links").map { element ->
             element to element.attr("data-lang").uppercase()
@@ -205,6 +237,7 @@ class HDFilmCehennemi : MainAPI() {
             }.forEach { (source, videoID) ->
                 val apiGet = app.get(
                     "${mainUrl}/video/$videoID/",
+                    interceptor = interceptor,
                     headers = mapOf(
                         "Content-Type"     to "application/json",
                         "X-Requested-With" to "fetch"
