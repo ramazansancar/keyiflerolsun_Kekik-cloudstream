@@ -17,9 +17,13 @@ on:
       - "**/*.png"
       - "**/*.py"
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+
 jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
@@ -43,6 +47,36 @@ jobs:
 
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
+
+      - name: Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            src/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('src/**/*.gradle*', 'src/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Android SDK Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/cache
+            ~/.android/avd
+            ~/.android/adb_usb.ini
+          key: ${{ runner.os }}-android-${{ hashFiles('src/**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-android-
+
+      - name: Maven Dependencies Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('src/**/*.gradle*', 'src/**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
 
       - name: Eklentileri Derle
         run: |
