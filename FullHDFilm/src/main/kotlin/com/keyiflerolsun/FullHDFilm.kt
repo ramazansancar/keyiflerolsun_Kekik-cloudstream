@@ -50,7 +50,7 @@ class FullHDFilm : MainAPI() {
         val headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                "Referer" to "https://fullhdfilm2.us:443/login_up.php/"
+                "Referer" to "https://fullhdfilm2.us"
             )
         val baseUrl = request.data
         val urlpage = if (page == 1) baseUrl else "$baseUrl/page/$page"
