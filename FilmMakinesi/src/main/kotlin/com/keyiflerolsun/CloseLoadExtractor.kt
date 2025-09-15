@@ -1,106 +1,69 @@
+@ -1,64 +1,64 @@
 package com.keyiflerolsun
 
-import com.lagradost.cloudstream3.ExtractorApi
-import com.lagradost.cloudstream3.utils.Video
-import com.lagradost.cloudstream3.utils.Subtitle
-import com.lagradost.cloudstream3.utils.loadHtml
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import android.util.Log
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Document
-import java.util.concurrent.TimeUnit
 
 class CloseLoad : ExtractorApi() {
-    override val name: String = "CloseLoad"
-    override val mainUrl: String = "https://closeload.filmmakinesi.de"
-    override val requiresReferer: Boolean = true
+    override val name = "CloseLoad"
+    override val mainUrl = "https://closeload.filmmakinesi.tv"
+    override val requiresReferer = true
 
-    private val client = OkHttpClient.Builder()
-        .callTimeout(15, TimeUnit.SECONDS)
-        .build()
-
-    // Session state (izleme süresi ve alt yazı durumu)
-    private val sessionState = mutableMapOf<String, Any>(
-        "watchingtimetotal" to 0,
-        "resumeAt" to 0,
-        "forced_altyazi_durum" to 0
-    )
-
-    // Ana video listesi
-    override suspend fun getVideoList(url: String): List<Video> {
-        val videos = mutableListOf<Video>()
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+            "Referer" to "https://closeload.filmmakinesi.tv/",
+            "Origin" to "https://closeload.filmmakinesi.tv"
+        )
+        
         try {
-            val doc: Document = loadHtml(url)
+            val response = app.get(url, referer = mainUrl, headers = headers)
+            val document = response.document
 
-            // Master.txt veya HLS linki
-            val masterTxtUrl = doc.selectFirst("source[src\$=.m3u8]")?.attr("src")
-                ?: doc.selectFirst("a[href\$=.txt]")?.attr("href")
-                ?: throw Exception("Master.txt bulunamadı")
+            // JSON-LD'den video URL'sini çıkar
+            extractFromJsonLd(document, callback, headers)
+            
+            // Altyazıları işle
+            processSubtitles(document, subtitleCallback)
 
-            // Cookie ve header simülasyonu
-            val cookies = "watchingtimetotal=${sessionState["watchingtimetotal"]}; " +
-                    "resumeAt=${sessionState["resumeAt"]}; " +
-                    "forced_altyazi_durum=${sessionState["forced_altyazi_durum"]}"
-
-            // Master.txt içeriğini al
-            val masterContent = getMasterTxtWithCookie(masterTxtUrl, cookies)
-
-            // Alt yazı parse
-            val subtitles = parseSubtitles(masterContent)
-
-            // Video ekle
-            videos.add(
-                Video(
-                    name = "CloseLoad Video",
-                    url = masterTxtUrl,
-                    headers = mapOf(
-                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-                        "Referer" to mainUrl,
-                        "Cookie" to cookies
-                    ),
-                    subtitles = subtitles
-                )
-            )
         } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return videos
-    }
-
-    // Master.txt'yi fetch et
-    private fun getMasterTxtWithCookie(masterTxtUrl: String, cookie: String): String? {
-        val request = Request.Builder()
-            .url(masterTxtUrl)
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
-            .header("Referer", mainUrl)
-            .header("Cookie", cookie)
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw Exception("Failed to fetch master.txt: ${response.code}")
-            return response.body?.string()
+            Log.e("Kekik_${this.name}", "Error: ${e.message}")
+            throw ErrorLoadingException("Failed to extract video URL")
         }
     }
 
-    // Alt yazıları parse et
-    private fun parseSubtitles(masterContent: String?): List<Subtitle> {
-        val subs = mutableListOf<Subtitle>()
-        masterContent?.lines()?.forEach { line ->
-            if (line.contains(".vtt") || line.contains(".srt")) {
-                val subUrl = line.trim()
-                subs.add(Subtitle(name = "Türkçe", url = subUrl, language = "tr"))
+    private fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
+        val jsonLdScript = document.select("script[type=application/ld+json]").firstOrNull()
+        if (jsonLdScript != null) {
+            val jsonLd = jsonLdScript.data()
+            val contentUrlRegex = "\"contentUrl\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+            val match = contentUrlRegex.find(jsonLd)
+            
+            if (match != null) {
+                val videoUrl = match.groupValues[1]
+                if (videoUrl.startsWith("http")) {
+                    callback.invoke(
+                        newExtractorLink(
+                            source = this.name,
+                            name = this.name,
+                            url = videoUrl,
+                            referer = mainUrl,
+                            quality = Qualities.Unknown.value,
+                            headers = headers,
+                            url = videoUrl, 
+                            type = ExtractorLinkType.M3U8
+                        )
+                        ) {
+                            quality = Qualities.Unknown.value
+                            headers = mapOf("Referer" to "$mainUrl/")
+                        }
+                    )
+                }
             }
-        }
-        return subs
-    }
-
-    // İzleme süresini güncelle
-    fun updateWatchingTime(currentTime: Int) {
-        sessionState["watchingtimetotal"] = (sessionState["watchingtimetotal"] as Int) + currentTime
-        sessionState["resumeAt"] = currentTime
-    }
-
-    // Alt yazı durumunu set et
-    fun setForcedSubtitle(enabled: Boolean) {
-        sessionState["forced_altyazi_durum"] = if (enabled) 1 else 0
-    }
-}
