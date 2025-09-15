@@ -27,7 +27,7 @@ class CloseLoad : ExtractorApi() {
             val document = response.document
 
             // JSON-LD'den video URL'sini çıkar
-            extractFromJsonLd(document, callback, headers2)
+            extractFromJsonLd(document, callback)
             
             // Altyazıları işle
             processSubtitles(document, subtitleCallback)
