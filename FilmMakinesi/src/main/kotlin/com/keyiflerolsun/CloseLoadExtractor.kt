@@ -16,14 +16,14 @@ class CloseLoad : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val headers = mapOf(
+        val headers2 = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
             "Referer" to "https://closeload.filmmakinesi.tv/",
             "Origin" to "https://closeload.filmmakinesi.tv"
         )
         
         try {
-            val response = app.get(url, referer = mainUrl, headers = headers)
+            val response = app.get(url, referer = mainUrl, headers = headers2)
             val document = response.document
 
             // JSON-LD'den video URL'sini çıkar
@@ -38,7 +38,7 @@ class CloseLoad : ExtractorApi() {
         }
     }
 
-    override suspend fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
+    private suspend fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
         val jsonLdScript = document.select("script[type=application/ld+json]").firstOrNull()
         if (jsonLdScript != null) {
             val jsonLd = jsonLdScript.data()
