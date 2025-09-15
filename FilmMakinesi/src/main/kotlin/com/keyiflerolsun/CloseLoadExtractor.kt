@@ -54,7 +54,6 @@ class CloseLoad : ExtractorApi() {
                             name = this.name,
                             url = videoUrl,
                             type = ExtractorLinkType.M3U8
-                        )
                         ) {
                             quality = Qualities.Unknown.value
                             headers = mapOf("Referer" to "$mainUrl/")
