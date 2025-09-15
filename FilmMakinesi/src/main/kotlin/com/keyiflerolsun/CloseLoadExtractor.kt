@@ -1,4 +1,3 @@
-@ -1,64 +1,64 @@
 package com.keyiflerolsun
 
 import android.util.Log
