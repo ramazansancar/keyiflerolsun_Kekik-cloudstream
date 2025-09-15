@@ -27,7 +27,7 @@ class CloseLoad : ExtractorApi() {
             val document = response.document
 
             // JSON-LD'den video URL'sini çıkar
-            extractFromJsonLd(document, callback, headers)
+            extractFromJsonLd(document, callback, headers2)
             
             // Altyazıları işle
             processSubtitles(document, subtitleCallback)
@@ -38,7 +38,7 @@ class CloseLoad : ExtractorApi() {
         }
     }
 
-    private suspend fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
+    private suspend fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit) {
         val jsonLdScript = document.select("script[type=application/ld+json]").firstOrNull()
         if (jsonLdScript != null) {
             val jsonLd = jsonLdScript.data()
