@@ -67,3 +67,20 @@ class CloseLoad : ExtractorApi() {
                     )
                 }
             }
+		}
+    }
+
+    private fun processSubtitles(document: Document, subtitleCallback: (SubtitleFile) -> Unit) {
+        document.select("track").forEach { track ->
+            val rawSrc = track.attr("src").trim()
+            val label = track.attr("label").ifBlank { track.attr("srclang").ifBlank { "Altyazı" } }
+            
+            if (rawSrc.isNotBlank()) {
+                val fullUrl = if (rawSrc.startsWith("http")) rawSrc else mainUrl + rawSrc
+                if (fullUrl.startsWith("http")) {
+                    subtitleCallback(SubtitleFile(label, fullUrl))
+                }
+            }
+        }
+    }
+}
