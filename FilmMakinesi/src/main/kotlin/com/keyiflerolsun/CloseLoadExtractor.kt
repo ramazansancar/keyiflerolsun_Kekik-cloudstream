@@ -38,7 +38,7 @@ class CloseLoad : ExtractorApi() {
         }
     }
 
-    private fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
+    private suspend fun extractFromJsonLd(document: Document, callback: (ExtractorLink) -> Unit, headers: Map<String, String>) {
         val jsonLdScript = document.select("script[type=application/ld+json]").firstOrNull()
         if (jsonLdScript != null) {
             val jsonLd = jsonLdScript.data()
