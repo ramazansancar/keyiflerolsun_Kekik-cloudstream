@@ -54,10 +54,6 @@ class CloseLoad : ExtractorApi() {
                             source = this.name,
                             name = this.name,
                             url = videoUrl,
-                            referer = mainUrl,
-                            quality = Qualities.Unknown.value,
-                            headers = headers,
-                            url = videoUrl, 
                             type = ExtractorLinkType.M3U8
                         )
                         ) {
