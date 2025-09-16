@@ -44,7 +44,7 @@ class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Int
 }
 
 class Dizilla : MainAPI() {
-    override var mainUrl = "https://dizilla.club"
+    override var mainUrl = "https://dizilla40.com"
     override var name = "Dizilla"
     override val hasMainPage = true
     override var lang = "tr"
