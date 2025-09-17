@@ -77,9 +77,9 @@ class Dizilla : MainAPI() {
                 headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                     "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Alt-Used" to "dizilla.club",
+                    
                     "Connection" to "keep-alive",
-                    "Host" to "dizilla.club",
+                    "Referer" to "${mainUrl}/arsiv"
                 ),
                 interceptor = interceptor
             ).document.text()
@@ -90,9 +90,9 @@ class Dizilla : MainAPI() {
                 headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                     "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Alt-Used" to "dizilla.club",
+                    "Referer" to "${mainUrl}/arsiv",
                     "Connection" to "keep-alive",
-                    "Host" to "dizilla.club",
+                    
                 ),
                 interceptor = interceptor
             ).document.text()
@@ -104,9 +104,9 @@ class Dizilla : MainAPI() {
                 headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                     "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Alt-Used" to "dizilla.club",
+                    "Referer" to "${mainUrl}/arsiv",
                     "Connection" to "keep-alive",
-                    "Host" to "dizilla.club",
+                    
                 ),
                 interceptor = interceptor
             ).document.text()
@@ -118,9 +118,9 @@ class Dizilla : MainAPI() {
                 headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                     "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Alt-Used" to "dizilla.club",
+                    "Referer" to "${mainUrl}/arsiv",
                     "Connection" to "keep-alive",
-                    "Host" to "dizilla.club",
+                    
                 ),
                 interceptor = interceptor
             ).document.text()
@@ -131,9 +131,9 @@ class Dizilla : MainAPI() {
                 headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                     "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Alt-Used" to "dizilla.club",
+                    "Referer" to "${mainUrl}/arsiv",
                     "Connection" to "keep-alive",
-                    "Host" to "dizilla.club",
+                   
                 ),
                 interceptor = interceptor
             ).document.text()
