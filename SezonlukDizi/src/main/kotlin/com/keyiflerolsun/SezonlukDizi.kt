@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 
 class SezonlukDizi : MainAPI() {
-    override var mainUrl              = "https://sezonlukdizi6.com"
+    override var mainUrl              = "https://sezonlukdizi7.com"
     override var name                 = "SezonlukDizi"
     override val hasMainPage          = true
     override var lang                 = "tr"
