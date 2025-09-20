@@ -13,7 +13,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class SezonlukDizi : MainAPI() {
-    override var mainUrl              = "https://sezonlukdizi6.com"
+    override var mainUrl              = "https://sezonlukdizi7.com"
     override var name                 = "SezonlukDizi"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -222,7 +222,7 @@ class SezonlukDizi : MainAPI() {
         /*val generateM3u8 = M3u8Helper.generateM3u8(
             "StreamRuby",
             sonFile.file,
-            "https://sezonlukdizi6.com/"
+            "https://sezonlukdizi7.com/"
         )*/
         callback.invoke(
             newExtractorLink(
