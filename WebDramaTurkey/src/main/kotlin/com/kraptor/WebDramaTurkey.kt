@@ -12,7 +12,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class WebDramaTurkey : MainAPI() {
-    override var mainUrl              = "https://webdramaturkey.org"
+    override var mainUrl              = "https://webdramaturkey.co"
     override var name                 = "WebDramaTurkey"
     override val hasMainPage          = true
     override var lang                 = "tr"
