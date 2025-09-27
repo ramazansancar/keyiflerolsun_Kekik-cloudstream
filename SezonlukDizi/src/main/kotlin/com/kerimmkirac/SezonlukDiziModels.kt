@@ -1,6 +1,4 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
-
-package com.keyiflerolsun
+package com.kerimmkirac
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

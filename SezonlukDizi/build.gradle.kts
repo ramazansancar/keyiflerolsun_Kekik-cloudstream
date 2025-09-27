@@ -1,4 +1,4 @@
-version = 5
+version = 6
 
 cloudstream {
     authors     = listOf("kraptor","kerimmkirac")
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("TvSeries")
-    iconUrl = "https://www.google.com/s2/favicons?domain=sezonlukdizi6.com&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=sezonlukdizi8.com&sz=%size%"
 }
