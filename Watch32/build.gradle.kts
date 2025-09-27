@@ -1,5 +1,4 @@
-// use an integer for version numbers
-version = 3
+version = 4
 
 android {
     buildFeatures {
@@ -9,9 +8,9 @@ android {
 
 
 cloudstream {
-    // All of these properties are optional, you can safely remove them
+    
 
-    description = "Watch32 is a Free Movies streaming site with over 10000 movies and TV-Series."
+    description = "Watch Your Favorite Movies TV Shows Online - Streaming For Free. With Movies TV Shows Full HD. Find Your Movies Watch NOW!"
     language = "en"
     authors = listOf("kerimmkirac")
 
@@ -27,6 +26,6 @@ cloudstream {
     tvTypes = listOf("Movie","TvSeries")
 
 
-    // random cc logo i found
-    iconUrl = "https://editorialge.com/wp-content/uploads/2023/07/Watch32..jpg"
+    
+    iconUrl = "https://img.watch32.sx/xxrz/400x400/100/a9/5e/a95e15a880a9df3c045f6a5224daf576/a95e15a880a9df3c045f6a5224daf576.png"
 }
