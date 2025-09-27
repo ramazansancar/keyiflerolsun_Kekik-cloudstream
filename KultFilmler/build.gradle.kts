@@ -1,4 +1,4 @@
-version = 3
+version = 4
 
 cloudstream {
     authors     = listOf("kerimmkirac")
@@ -14,5 +14,5 @@ cloudstream {
     **/
     status  = 1 // will be 3 if unspecified
     tvTypes = listOf("Movie", "TvSeries")
-    iconUrl = "https://www.google.com/s2/favicons?domain=kultfilmler.com&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=kultfilmler.net&sz=%size%"
 }

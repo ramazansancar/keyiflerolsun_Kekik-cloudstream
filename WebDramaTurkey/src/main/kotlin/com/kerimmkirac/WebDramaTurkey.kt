@@ -1,6 +1,5 @@
-// ! Bu araç @Kraptor123 tarafından | @kekikanime için yazılmıştır.
 
-package com.kraptor
+package com.kerimmkirac
 
 import com.lagradost.api.Log
 import org.jsoup.nodes.Element
@@ -605,7 +604,7 @@ class WebDramaTurkey : MainAPI() {
         Log.d("kraptor_$name", "iframeSon = $iframeSon")
         
         
-        if (iframeSon.contains("webdrama.sbs/video/")) {
+        if (iframeSon.contains("dtpasn.asia/video/")) {
             handleWebDrama(iframeSon, data, callback)
         } else {
             loadExtractor(iframeSon, "$mainUrl/", subtitleCallback, callback)
@@ -617,7 +616,7 @@ class WebDramaTurkey : MainAPI() {
 private suspend fun handleWebDrama(iframeSon: String, referer: String, callback: (ExtractorLink) -> Unit) {
     try {
         
-        val videoId = iframeSon.substringAfter("webdrama.sbs/video/")
+        val videoId = iframeSon.substringAfter("dtpasn.asia/video/")
         Log.d("kerimmkirac", "WebDrama videoId = $videoId")
         
         
@@ -634,7 +633,7 @@ private suspend fun handleWebDrama(iframeSon: String, referer: String, callback:
         
         
         val response = app.post(
-            url = "https://webdrama.sbs/player/index.php?data=$videoId&do=getVideo",
+            url = "https://dtpasn.asia/player/index.php?data=$videoId&do=getVideo",
             referer = iframeSon,
             headers = mapOf(
                 "X-Requested-With" to "XMLHttpRequest",
@@ -661,7 +660,7 @@ private suspend fun handleWebDrama(iframeSon: String, referer: String, callback:
                         videoSource,
                         type = if (videoSource.contains(".m3u8") || videoSource.contains(".txt")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                     ) {
-                        this.referer = "https://webdrama.sbs/"
+                        this.referer = "https://dtpasn.asia/"
                         this.headers = mapOf(
                             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
                             "Accept" to "*/*",
@@ -688,7 +687,7 @@ private suspend fun handleWebDrama(iframeSon: String, referer: String, callback:
                         securedLink,
                         type = ExtractorLinkType.M3U8
                     ) {
-                        this.referer = "https://webdrama.sbs/"
+                        this.referer = "https://dtpasn.asia/"
                         this.headers = mapOf(
                             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
                             "Accept" to "*/*",

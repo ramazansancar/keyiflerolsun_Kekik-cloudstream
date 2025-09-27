@@ -1,11 +1,11 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+package com.kerimmkirac
 
-package com.keyiflerolsun
-
-import android.util.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.api.Log
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.ErrorLoadingException
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.utils.*
 
 open class YildizKisaFilm : ExtractorApi() {
     override val name            = "YildizKisaFilm"
@@ -14,18 +14,34 @@ open class YildizKisaFilm : ExtractorApi() {
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef  = referer ?: ""
-        val subDoc = app.get(url, referer = mainUrl).document
-        val script = subDoc.select("script").find { it.data().contains("var playerjsSubtitle") }?.data() ?: ""
-        val lang = script.substringAfter("[").substringBefore("]")
-        val subUrl = script.substringAfter("]").substringBefore("\";")
-        subtitleCallback.invoke(SubtitleFile(lang, fixUrl(subUrl)))
+//        Log.d("kraptor_${this.name}", "url » $url")
+
+        val videoSite = app.get(url, referer = extRef).text
+
+        val subRegex = Regex(pattern = "playerjsSubtitle = \"([^\"]*)\"", options = setOf(RegexOption.IGNORE_CASE))
+
+        val subMatch = subRegex.find(videoSite)?.groupValues[1].toString()
+
+        val keywords = listOf("tur", "tr", "türkçe", "turkce")
+        val language = if (keywords.any { subMatch.substringBefore("]").substringAfter("[").contains(it, ignoreCase = true) }) {
+            "Turkish"
+        } else {
+            subMatch.substringBefore("]").substringAfter("[")
+        }
+
+        subtitleCallback.invoke(
+            SubtitleFile(
+                lang = language,
+                url = fixUrl(subMatch.substringAfter("]"))
+            )
+        )
+
         val vidId   = if (url.contains("video/")) {
             url.substringAfter("video/")
         } else {
             url.substringAfter("?data=")
         }
         val postUrl = "${mainUrl}/player/index.php?data=${vidId}&do=getVideo"
-        Log.d("Kekik_${this.name}", "postUrl » $postUrl")
 
         val response = app.post(
             postUrl,
@@ -40,6 +56,8 @@ open class YildizKisaFilm : ExtractorApi() {
             )
         )
 
+//        Log.d("kraptor_${this.name}", "response » $response")
+
         val videoResponse = response.parsedSafe<SystemResponse>() ?: throw ErrorLoadingException("failed to parse response")
         val m3uLink       = videoResponse.securedLink
 
@@ -50,8 +68,8 @@ open class YildizKisaFilm : ExtractorApi() {
                 url     = m3uLink,
                 type    = INFER_TYPE
             ) {
-                this.referer = extRef
-                this.quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to extRef) // "Referer" ayarı burada yapılabilir
+                quality = getQualityFromName(Qualities.Unknown.value.toString())
             }
         )
     }

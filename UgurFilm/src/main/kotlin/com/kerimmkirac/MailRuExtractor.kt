@@ -1,6 +1,5 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
-package com.keyiflerolsun
+package com.kerimmkirac
 
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*

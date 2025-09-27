@@ -1,17 +1,15 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+package com.kerimmkirac
 
-package com.keyiflerolsun
-
-import android.util.Log
-import org.jsoup.nodes.Element
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import android.util.Base64
+import com.lagradost.api.Log
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 class KultFilmler : MainAPI() {
-    override var mainUrl              = "https://kultfilmler.pro"
+    override var mainUrl              = "https://kultfilmler.net"
     override var name                 = "KultFilmler"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -57,11 +55,18 @@ class KultFilmler : MainAPI() {
         val title     = this.selectFirst("div.name a")?.text() ?: return null
         val href      = fixUrlNull(this.selectFirst("div.name a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("div.img img")?.attr("src"))
+        val puan      = this.selectFirst("div.rating")?.text()?.trim()
 
         return if (href.contains("/dizi/")) {
-            newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+            newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                this.posterUrl = posterUrl
+                this.score     = Score.from10(puan)
+            }
         } else {
-            newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+            newMovieSearchResponse(title, href, TvType.Movie) {
+                this.posterUrl = posterUrl
+                this.score     = Score.from10(puan)
+            }
         }
     }
 
@@ -80,7 +85,7 @@ class KultFilmler : MainAPI() {
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description     = document.selectFirst("div.description")?.text()?.trim()
         var tags            = document.select("ul.post-categories a").map { it.text() }
-        val rating          = document.selectFirst("div.imdb-count")?.text()?.trim()?.split(" ")?.first()?.toRatingInt()
+        val rating          = document.selectFirst("div.imdb-count")?.text()?.trim()?.split(" ")?.first()
         val year            = Regex("""(\d+)""").find(document.selectFirst("li.release")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
         val duration        = Regex("""(\d+)""").find(document.selectFirst("li.time")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
         val recommendations = document.select("div.movie-box").mapNotNull { it.toSearchResult() }
@@ -111,7 +116,7 @@ class KultFilmler : MainAPI() {
                 this.year            = year
                 this.plot            = description
                 this.tags            = tags
-                this.rating          = rating
+                this.score = Score.from10(rating)
                 this.duration        = duration
                 this.recommendations = recommendations
                 addActors(actors)
@@ -123,7 +128,7 @@ class KultFilmler : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
+            this.score = Score.from10(rating)
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
@@ -146,11 +151,12 @@ class KultFilmler : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("KLT", "data » $data")
+        Log.d("kraptor_${this.name}", "data » $data")
         val document = app.get(data).document
         val iframes  = mutableSetOf<String>()
 
         val mainFrame = getIframe(document.html())
+        Log.d("kraptor_${this.name}", "mainFrame » $mainFrame")
         iframes.add(mainFrame)
 
         document.select("div.parts-middle").forEach {
@@ -158,38 +164,14 @@ class KultFilmler : MainAPI() {
             if (alternatif != null) {
                 val alternatifDocument = app.get(alternatif).document
                 val alternatifFrame    = getIframe(alternatifDocument.html())
+                Log.d("kraptor_${this.name}", "alternatifFrame » $alternatifFrame")
                 iframes.add(alternatifFrame)
             }
         }
 
         for (iframe in iframes) {
-            Log.d("KLT", "iframe » $iframe")
-            if (iframe.contains("vidmoly")) {
-                val headers  = mapOf(
-                    "User-Agent"     to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
-                    "Sec-Fetch-Dest" to "iframe"
-                )
-                val iSource = app.get(iframe, headers=headers, referer="${mainUrl}/").text
-                val m3uLink = Regex("""file:"([^"]+)""").find(iSource)?.groupValues?.get(1) ?: throw ErrorLoadingException("m3u link not found")
-
-                Log.d("Kekik_VidMoly", "m3uLink » $m3uLink")
-
-                callback.invoke(
-                    newExtractorLink(
-                        source  = "VidMoly",
-                        name    = "VidMoly",
-                        url     = m3uLink,
-                        type    = INFER_TYPE
-                    ) {
-                        this.referer = "https://vidmoly.to/"
-                        this.quality = Qualities.Unknown.value
-                    }
-                )
-            } else {
-                loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
+            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
             }
-        }
-
         return true
     }
 }

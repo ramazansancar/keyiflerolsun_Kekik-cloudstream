@@ -1,6 +1,5 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
-package com.keyiflerolsun
+package com.kerimmkirac
 
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
@@ -11,7 +10,7 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 
 class UgurFilm : MainAPI() {
-    override var mainUrl              = "https://ugurfilm10.com"
+    override var mainUrl              = "https://ugurfilm2.xyz"
     override var name                 = "UgurFilm"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -27,8 +26,8 @@ class UgurFilm : MainAPI() {
         "${mainUrl}/category/bilim-kurgu/page/"     to "Bilim Kurgu",
         "${mainUrl}/category/belgesel/page/"        to "Belgesel",
         "${mainUrl}/category/komedi/page/"          to "Komedi",
-        "${mainUrl}/category/kara-film/page/"       to "Kara Film",
-        "${mainUrl}/category/erotik/page/"          to "Erotik",
+       
+        
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
