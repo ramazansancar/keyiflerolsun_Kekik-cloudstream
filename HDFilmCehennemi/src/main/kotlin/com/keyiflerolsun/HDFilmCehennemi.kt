@@ -207,24 +207,34 @@ class HDFilmCehennemi : MainAPI() {
         return searchResults
     }
 
+
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url, interceptor = interceptor).document
 
-        val title       = document.selectFirst("h1.section-title")?.text()?.substringBefore(" izle") ?: return null
-        val poster      = fixUrlNull(document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src"))
-        val tags        = document.select("div.post-info-genres a").map { it.text() }
-        val year        = document.selectFirst("div.post-info-year-country a")?.text()?.trim()?.toIntOrNull()
-        val tvType      = if (document.select("div.seasons").isEmpty()) TvType.Movie else TvType.TvSeries
+        val title = document.selectFirst("h1.section-title")?.text()?.substringBefore(" izle")
+            ?: return null
+        val poster = fixUrlNull(
+            document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src")
+        )
+        val tags = document.select("div.post-info-genres a").map { it.text() }
+        val year =
+            document.selectFirst("div.post-info-year-country a")?.text()?.trim()?.toIntOrNull()
+        val tvType = if (document.select("div.seasons").isEmpty()) TvType.Movie else TvType.TvSeries
         val description = document.selectFirst("article.post-info-content > p")?.text()?.trim()
-        val rating      = document.selectFirst("div.post-info-imdb-rating span")?.text()?.substringBefore("(")?.trim()?.toRatingInt()
-        val actors      = document.select("div.post-info-cast a").map {
+        val rating =
+            document.selectFirst("div.post-info-imdb-rating span")?.text()?.substringBefore("(")
+                ?.trim()
+        val actors = document.select("div.post-info-cast a").map {
             Actor(it.selectFirst("strong")!!.text(), it.select("img").attr("data-src"))
         }
 
-        val recommendations = document.select("div.section-slider-container div.slider-slide").mapNotNull {
-                val recName      = it.selectFirst("a")?.attr("title") ?: return@mapNotNull null
-                val recHref      = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
-                val recPosterUrl = fixUrlNull(it.selectFirst("img")?.attr("data-src")) ?: fixUrlNull(it.selectFirst("img")?.attr("src"))
+        val recommendations =
+            document.select("div.section-slider-container div.slider-slide").mapNotNull {
+                val recName = it.selectFirst("a")?.attr("title") ?: return@mapNotNull null
+                val recHref =
+                    fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
+                val recPosterUrl = fixUrlNull(it.selectFirst("img")?.attr("data-src"))
+                    ?: fixUrlNull(it.selectFirst("img")?.attr("src"))
 
                 newTvSeriesSearchResponse(recName, recHref, TvType.TvSeries) {
                     this.posterUrl = recPosterUrl
@@ -263,14 +273,16 @@ class HDFilmCehennemi : MainAPI() {
                 addTrailer(trailer)
             }
         } else {
-            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/")?.let { "https://www.youtube.com/embed/$it" }
-
+            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")
+                ?.substringAfter("trailer/", "")
+                ?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
+            Log.d("HDCH", "Trailer: $trailer")
             newMovieLoadResponse(title, url, TvType.Movie, url) {
-                this.posterUrl       = poster
-                this.year            = year
-                this.plot            = description
-                this.tags            = tags
-                this.score           = Score.from10(rating)
+                this.posterUrl = poster
+                this.year = year
+                this.plot = description
+                this.tags = tags
+                this.score = Score.from10(rating)
                 this.recommendations = recommendations
                 addActors(actors)
                 addTrailer(trailer)
@@ -278,7 +290,7 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
-    private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
+    /*private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
         val script    = app.get(
                 url,
                 interceptor = interceptor,
@@ -304,7 +316,7 @@ class HDFilmCehennemi : MainAPI() {
                 SubtitleFile(it.label.toString(), fixUrl(it.file.toString()))
             )
         }
-    }
+    }*/
 
     private fun dcHello(base64Input: String): String {
         val decodedOnce = base64Decode(base64Input)
