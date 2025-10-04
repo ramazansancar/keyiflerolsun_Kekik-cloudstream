@@ -3,17 +3,47 @@
 package com.keyiflerolsun
 
 import android.util.Log
-import org.jsoup.nodes.Element
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.Score
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.base64Decode
+import com.lagradost.cloudstream3.base64DecodeArray
+import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.network.CloudflareKiller
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.newEpisode
+import com.lagradost.cloudstream3.newHomePageResponse
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newTvSeriesLoadResponse
+import com.lagradost.cloudstream3.newTvSeriesSearchResponse
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.getAndUnpack
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
-import org.jsoup.Jsoup
 import okhttp3.Interceptor
 import okhttp3.Response
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+
+import java.lang.Math.floorMod
 
 class HDFilmCehennemi : MainAPI() {
     override var mainUrl              = "https://www.hdfilmcehennemi.la"
@@ -38,7 +68,10 @@ class HDFilmCehennemi : MainAPI() {
             val response = chain.proceed(request)
             val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
 
-            if (doc.select("title").text() == "Just a moment..." || doc.select("title").text() == "Bir dakika lütfen...") {
+            if (
+                doc.select("title").text() == "Just a moment..." ||
+                doc.select("title").text() == "Bir dakika lütfen..."
+            ) {
                 return cloudflareKiller.intercept(chain)
             }
  
@@ -46,7 +79,8 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
-    override val mainPage = mainPageOf(
+    
+    /*override val mainPage = mainPageOf(
         mainUrl                                           to "Yeni Eklenen Filmler",
         "${mainUrl}/yabancidiziizle-2"                    to "Yeni Eklenen Diziler",
         "${mainUrl}/category/tavsiye-filmler-izle2"       to "Tavsiye Filmler",
@@ -86,24 +120,64 @@ class HDFilmCehennemi : MainAPI() {
         "${mainUrl}/tur/tarih-filmleri-izle-1"            to "Tarih Filmleri",
         // "${mainUrl}/tur/tv-movie"                         to "TV Movie Filmleri",
         "${mainUrl}/tur/western-filmleri-izle-2"          to "Western Filmleri",
+    )*/
+
+    override val mainPage = mainPageOf(
+        "${mainUrl}/load/page/sayfano/home/"                                    to "Yeni Eklenen Filmler",
+        "${mainUrl}/load/page/sayfano/categories/nette-ilk-filmler/"            to "Nette İlk Filmler",
+        "${mainUrl}/load/page/sayfano/home-series/"                             to "Yeni Eklenen Diziler",
+        "${mainUrl}/load/page/sayfano/categories/tavsiye-filmler-izle2/"        to "Tavsiye Filmler",
+        "${mainUrl}/load/page/sayfano/imdb7/"                                   to "IMDB 7+ Filmler",
+        "${mainUrl}/load/page/sayfano/mostCommented/"                           to "En Çok Yorumlananlar",
+        "${mainUrl}/load/page/sayfano/mostLiked/"                               to "En Çok Beğenilenler",
+        "${mainUrl}/load/page/sayfano/genres/aile-filmleri-izleyin-6/"          to "Aile Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/aksiyon-filmleri-izleyin-5/"       to "Aksiyon Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/animasyon-filmlerini-izleyin-5/"   to "Animasyon Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/belgesel-filmlerini-izle-1/"       to "Belgesel Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/bilim-kurgu-filmlerini-izleyin-3/" to "Bilim Kurgu Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/komedi-filmlerini-izleyin-1/"      to "Komedi Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/korku-filmlerini-izle-4/"          to "Korku Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/romantik-filmleri-izle-2/"         to "Romantik Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/suc-filmleri-izle-3/"              to "Suç Filmleri",
+        "${mainUrl}/load/page/sayfano/genres/tarih-filmleri-izle-4/"            to "Tarih Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data, interceptor = interceptor).document
-
+        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        val url = request.data.replace("sayfano", page.toString())
+        val headers = mapOf(
+            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+            "Accept" to "*/*",
+            "X-Requested-With" to "fetch"
+        )
+        val doc = app.get(
+            url,
+            headers = headers,
+            referer = mainUrl,
+            interceptor = interceptor
+        )
         val home: List<SearchResponse>?
+        if (!doc.toString().contains("Sayfa Bulunamadı")) {
+            val aa: HDFC = objectMapper.readValue(doc.toString())
+            val document = Jsoup.parse(aa.html)
 
-        home = document.select("div.section-content a.poster").mapNotNull { it.toSearchResult() }
-
-        return newHomePageResponse(request.name, home)
+            home = document.select("a").mapNotNull { it.toSearchResult() }
+            return newHomePageResponse(request.name, home)
+        }
+        return newHomePageResponse(request.name, emptyList())
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("strong.poster-title")?.text() ?: return null
+        val title     = this.attr("title")
         val href      = fixUrlNull(this.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val score     = this.selectFirst("span.imdb")?.text()?.trim()
 
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+        return newMovieSearchResponse(title, href, TvType.Movie) {
+            this.posterUrl = posterUrl
+            this.score = Score.from10(score)
+        }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
@@ -124,7 +198,9 @@ class HDFilmCehennemi : MainAPI() {
             val posterUrl = fixUrlNull(document.selectFirst("img")?.attr("src")) ?: fixUrlNull(document.selectFirst("img")?.attr("data-src"))
 
             searchResults.add(
-                newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl?.replace("/thumb/", "/list/") }
+                newMovieSearchResponse(title, href, TvType.Movie) {
+                    this.posterUrl = posterUrl?.replace("/thumb/", "/list/")
+                }
             )
         }
 
@@ -156,12 +232,18 @@ class HDFilmCehennemi : MainAPI() {
             }
 
         return if (tvType == TvType.TvSeries) {
-            val trailer  = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/")?.let { "https://www.youtube.com/embed/$it" }
+            val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")
+                ?.substringAfter("trailer/", "")
+                ?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
+            Log.d("HDCH", "Trailer: $trailer")
             val episodes = document.select("div.seasons-tab-content a").mapNotNull {
-                val epName    = it.selectFirst("h4")?.text()?.trim() ?: return@mapNotNull null
-                val epHref    = fixUrlNull(it.attr("href")) ?: return@mapNotNull null
-                val epEpisode = Regex("""(\d+)\. ?Bölüm""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
-                val epSeason  = Regex("""(\d+)\. ?Sezon""").find(epName)?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                val epName = it.selectFirst("h4")?.text()?.trim() ?: return@mapNotNull null
+                val epHref = fixUrlNull(it.attr("href")) ?: return@mapNotNull null
+                val epEpisode =
+                    Regex("""(\d+)\. ?Bölüm""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
+                val epSeason =
+                    Regex("""(\d+)\. ?Sezon""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
+                        ?: 1
 
                 newEpisode(epHref) {
                     this.name = epName
@@ -171,11 +253,11 @@ class HDFilmCehennemi : MainAPI() {
             }
 
             newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-                this.posterUrl       = poster
-                this.year            = year
-                this.plot            = description
-                this.tags            = tags
-                this.rating          = rating
+                this.posterUrl = poster
+                this.year = year
+                this.plot = description
+                this.tags = tags
+                this.score = Score.from10(rating)
                 this.recommendations = recommendations
                 addActors(actors)
                 addTrailer(trailer)
@@ -188,7 +270,7 @@ class HDFilmCehennemi : MainAPI() {
                 this.year            = year
                 this.plot            = description
                 this.tags            = tags
-                this.rating          = rating
+                this.score           = Score.from10(rating)
                 this.recommendations = recommendations
                 addActors(actors)
                 addTrailer(trailer)
@@ -224,7 +306,60 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
-    override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ): Boolean {
+    private fun dcHello(base64Input: String): String {
+        val decodedOnce = base64Decode(base64Input)
+        val reversedString = decodedOnce.reversed()
+        val decodedTwice = base64Decode(reversedString)
+        val link = if (decodedTwice.contains("+")) {
+            decodedTwice.substringAfterLast("+")
+        } else if (decodedTwice.contains(" ")) {
+            decodedTwice.substringAfterLast(" ")
+        } else if (decodedTwice.contains("|")) {
+            decodedTwice.substringAfterLast("|")
+        } else {
+            decodedTwice
+        }
+        return link
+    }
+
+    fun dcNew(parts: List<String>): String {
+        val value = parts.joinToString("")
+        val decodedBytes = base64DecodeArray(value)
+        val rot13Bytes = decodedBytes.map { byte ->
+            val c = byte.toInt()
+            when (c) {
+                in 'a'.code..'z'.code -> {
+                    val base = 'a'.code
+                    (((c - base + 13) % 26) + base).toByte()
+                }
+
+                in 'A'.code..'Z'.code -> {
+                    val base = 'A'.code
+                    (((c - base + 13) % 26) + base).toByte()
+                }
+
+                else -> {
+                    byte
+                }
+            }
+        }.toByteArray()
+        val reversedBytes = rot13Bytes.reversedArray()
+        val unmixedBytes = ByteArray(reversedBytes.size)
+        for (i in reversedBytes.indices) {
+            val charCode = reversedBytes[i].toInt() and 0xFF
+            val offset = 399756995 % (i + 5)
+            val newCharCode = floorMod(charCode - offset, 256)
+            unmixedBytes[i] = newCharCode.toByte()
+        }
+        return String(unmixedBytes, Charsets.ISO_8859_1)
+    }
+
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
         Log.d("HDCH", "data » $data")
         val document = app.get(
                 data,
@@ -246,14 +381,27 @@ class HDFilmCehennemi : MainAPI() {
                     ),
                     referer = data
                 ).text
-
+                Log.d("HDCH", "Found videoID: $videoID")
+                var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!
+                    .replace("\\", "")
+                Log.d("HDCH", "iframe » $iframe")
+                iframe = iframe.replace("{rapidrame_id}", "")
+                Log.d("HDCH", "iframe » $iframe")
+                /*if (iframe.contains("hdfilmcehennemi.mobi")){
+                    loadExtractor(iframe, data, subtitleCallback, callback)
+                } else {
+                    invokeLocalSource(source, iframe, subtitleCallback, callback)
+                }*/
+                loadExtractor(iframe, data, subtitleCallback, callback)
+                Log.d("HDCH", "$source » $videoID » $iframe")
+                /*
                 var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
                 if (iframe.contains("?rapidrame_id=")) {
                     iframe = "${mainUrl}/playerr/" + iframe.substringAfter("?rapidrame_id=")
                 }
 
                 Log.d("HDCH", "$source » $videoID » $iframe")
-                invokeLocalSource(source, iframe, subtitleCallback, callback)
+                invokeLocalSource(source, iframe, subtitleCallback, callback)*/
             }
         }
 
@@ -261,12 +409,24 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private data class SubSource(
-        @JsonProperty("file")  val file: String?  = null,
-        @JsonProperty("label") val label: String? = null,
-        @JsonProperty("kind")  val kind: String?  = null
+        @JsonProperty("file")     val file: String? = null,
+        @JsonProperty("label")    val label: String? = null,
+        @JsonProperty("language") val language: String? = null,
+        @JsonProperty("kind")     val kind: String? = null
     )
 
     data class Results(
         @JsonProperty("results") val results: List<String> = arrayListOf()
+    )
+
+    data class HDFC(
+        @JsonProperty("html") val html: String,
+        @JsonProperty("meta") val meta: Meta
+    )
+
+    data class Meta(
+        @JsonProperty("title") val title: String,
+        @JsonProperty("canonical") val canonical: Boolean,
+        @JsonProperty("keywords") val keywords: Boolean
     )
 }
