@@ -19,7 +19,7 @@ import okio.BufferedSource
 
 class InatBox : MainAPI() {
     private val contentUrl  = "https://diziboxs.cfd"
-    //private val categoryUrl = "https://dizibox.icu"
+    private val categoryUrl = "https://dizibox.icu"
 
     override var name                 = "InatBox"
     override val hasMainPage          = true
@@ -35,29 +35,27 @@ class InatBox : MainAPI() {
         "https://boxbc.icu/CDN/001_STR/boxyz.cfd/spor_v2.php"  to "Spor Kanalları",
         
 
-        "${contentUrl}/tv/list1.php"                           to "Kanallar Liste 1 ",
-        "${contentUrl}/tv/list2.php"                           to "Kanallar Liste 2",
-        "${contentUrl}/tv/list3.php"                           to "Kanallar Liste 3 ",
-        "${contentUrl}/tv/sinema.php"                          to "Sinema Kanalları",
-        "${contentUrl}/tv/belgesel.php"                        to "Belgesel Kanalları",
-        "${contentUrl}/tv/ulusal.php"                          to "Ulusal Kanallar",
-        "${contentUrl}/tv/haber.php"                           to "Haber Kanalları",
-        "${contentUrl}/tv/eba.php"                             to "Eba Kanalları",
-        "${contentUrl}/tv/cocuk.php"                           to "Çocuk Kanalları",
-        "${contentUrl}/tv/dini.php"                            to "Dini Kanallar",
-        "${contentUrl}/ex/index.php"                           to "EXXEN",
-        "${contentUrl}/ga/index.php"                           to "Gain",
-        "${contentUrl}/nf/index.php"                           to "Netflix", // Burası şu an çalışmıyor.
-        "${contentUrl}/dsny/index.php"                         to "Disney+",
-        "${contentUrl}/amz/index.php"                          to "Amazon Prime",
-        "${contentUrl}/hb/index.php"                           to "HBO Max",
-        "${contentUrl}/tbi/index.php"                          to "Tabii",
-        "${contentUrl}/film/mubi.php"                          to "Mubi",
-        "${contentUrl}/ccc/index.php"                          to "TOD",
-        "${contentUrl}/yabanci-dizi/index.php"                 to "Yabancı Diziler",
-        "${contentUrl}/yerli-dizi/index.php"                   to "Yerli Diziler",
-        "${contentUrl}/film/yerli-filmler.php"                 to "Yerli Filmler",
-        "${contentUrl}/film/4k-film-exo.php"                   to "4K Film İzle",
+        "${categoryUrl}/tv/list1.php"                           to "Kanallar Liste 1 ",
+        "${categoryUrl}/tv/list2.php"                           to "Kanallar Liste 2",
+        "${categoryUrl}/tv/list3.php"                           to "Kanallar Liste 3 ",
+        "${categoryUrl}/tv/sinema.php"                          to "Sinema Kanalları",
+        "${categoryUrl}/tv/belgesel.php"                        to "Belgesel Kanalları",
+        "${categoryUrl}/tv/ulusal.php"                          to "Ulusal Kanallar",
+        "${categoryUrl}/tv/haber.php"                           to "Haber Kanalları",
+        "${categoryUrl}/tv/eba.php"                             to "Eba Kanalları",
+        "${categoryUrl}/tv/cocuk.php"                           to "Çocuk Kanalları",
+        "${categoryUrl}/tv/dini.php"                            to "Dini Kanallar",
+        "${categoryUrl}/ex/index.php"                           to "EXXEN",
+        "${categoryUrl}/ga/index.php"                           to "Gain",
+        
+        "${categoryUrl}/dsny/index.php"                         to "Disney+",
+        "${categoryUrl}/amz/index.php"                          to "Amazon Prime",
+        "${categoryUrl}/hb/index.php"                           to "HBO Max",
+        "${categoryUrl}/tbi/index.php"                          to "Tabii",
+        "${categoryUrl}/film/mubi.php"                          to "Mubi",
+        "${categoryUrl}/ccc/index.php"                          to "TOD",
+        
+        
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
