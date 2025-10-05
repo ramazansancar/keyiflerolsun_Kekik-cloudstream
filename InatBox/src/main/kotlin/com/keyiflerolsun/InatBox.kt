@@ -18,7 +18,7 @@ import org.json.JSONObject
 import okio.BufferedSource
 
 class InatBox : MainAPI() {
-    private val contentUrl  = "https://dizibox.icu
+    private val contentUrl  = "https://dizibox.icu"
     private val categoryUrl = "https://diziboxs.cfd"
 
     override var name                 = "InatBox"
