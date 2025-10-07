@@ -18,7 +18,7 @@ import org.json.JSONObject
 import okio.BufferedSource
 
 class InatBox : MainAPI() {
-    private val contentUrl  = "https://dizibox.icu"
+    private val contentUrl  = "https://diziboox.sbs/CDN/001/dizibox"
 //    private val categoryUrl = "https://diziboxs.cfd"
 
     override var name                 = "InatBox"
@@ -32,7 +32,7 @@ class InatBox : MainAPI() {
     private val aesKey = "ywevqtjrurkwtqgz" //Master secret and iv key (This is used for both secret key and iv. This is the embedded master key for loading categories like sport channels.)
 
     override val mainPage = mainPageOf(
-        "https://boxbc.icu/CDN/001_STR/boxyz.cfd/spor_v2.php"  to "Spor Kanalları",
+        "https://boxbc.icu/CDN/001_STR/boxbc.icu/spor_v2.php"  to "Spor Kanalları",
         
 
         "${contentUrl}/tv/list1.php"                           to "Kanallar Liste 1 ",
@@ -53,7 +53,7 @@ class InatBox : MainAPI() {
         "${contentUrl}/hb/index.php"                           to "HBO Max",
         "${contentUrl}/tbi/index.php"                          to "Tabii",
         "${contentUrl}/film/mubi.php"                          to "Mubi",
-        "${contentUrl}/ccc/index.php"                          to "TOD",
+        "https://boxbc.icu/CDN/001_STR/boxbc.icu/ccc/index.php"                          to "TOD",
         
         
     )
