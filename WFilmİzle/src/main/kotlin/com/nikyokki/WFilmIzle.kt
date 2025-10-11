@@ -11,7 +11,7 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class WFilmIzle : MainAPI() {
-    override var mainUrl = "https://www.wfilmizle.art"
+    override var mainUrl = "https://www.wfilmizle.ws"
     override var name = "WFilmİzle"
     override val hasMainPage = true
     override var lang = "tr"

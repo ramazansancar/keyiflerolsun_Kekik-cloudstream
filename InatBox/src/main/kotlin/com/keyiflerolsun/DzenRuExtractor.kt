@@ -4,7 +4,6 @@ import android.util.Log
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.app
-import org.mozilla.javascript.ast.Name
 
 class DzenRu : ExtractorApi(){
     override val name            = "Dzen"
