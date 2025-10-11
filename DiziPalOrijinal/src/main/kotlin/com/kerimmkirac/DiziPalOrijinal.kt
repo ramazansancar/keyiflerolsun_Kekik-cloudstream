@@ -317,11 +317,15 @@ class DiziPalOrijinal : MainAPI() {
             rating
         }
         val trailer = document.selectFirst("a[target=_blank][href*=youtube.com]")?.attr("href")
-        val actors = document.select("div.movie-actors ul.hide-more-actors li").mapNotNull { li ->
-    val name = li.selectFirst("a span.name")?.text()?.trim()
-    val role = li.selectFirst("a span.role")?.text()?.trim()
-    if (!name.isNullOrBlank()) Actor(name, role ?: "") else null
-}
+        val actors = document
+            .select("div.movie-actors ul.hide-more-actors li")
+            .mapNotNull { li ->
+                val name = li.selectFirst("a span.name")?.text()?.trim()
+                if (name.isNullOrBlank()) return@mapNotNull null
+                val poster = li.selectFirst("a img")?.attr("src") ?: ""
+                val role = li.selectFirst("a span.role")?.text()?.trim()
+                Pair(Actor(name, poster), role?.takeIf { it.isNotBlank() })
+            }
 
         val duration = document.selectFirst("ul.rigth-content > li:nth-child(8) > div.value")?.text()?.split(" ")?.first()?.trim()?.toIntOrNull()
         val movieDuration = document.selectFirst("div.popup-content > ul:nth-child(2) > li:nth-child(4) > div:nth-child(2)")?.text()?.split(" ")?.first()?.trim()?.toIntOrNull()
