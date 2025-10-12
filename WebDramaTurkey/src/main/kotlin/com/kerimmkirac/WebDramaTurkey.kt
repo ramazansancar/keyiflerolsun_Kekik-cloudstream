@@ -593,13 +593,14 @@ class WebDramaTurkey : MainAPI() {
             headers = mapOf(
                 "X-Requested-With" to "XMLHttpRequest",
                 "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0"
             ),
             data = mapOf("id" to id)
         ).document
         
         val iframe = response.selectFirst("iframe")?.attr("src").toString()
         val iframeGet = app.get(iframe, referer = data).document
-        val iframeSon = iframeGet.selectFirst("iframe")?.attr("src").toString()
+        val iframeSon = iframeGet.selectFirst("iframe")?.attr("src")?.substringBeforeLast("#").toString()
         
         Log.d("kraptor_$name", "iframeSon = $iframeSon")
         
@@ -640,7 +641,7 @@ private suspend fun handleWebDrama(iframeSon: String, referer: String, callback:
                 "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
                 "Accept" to "*/*",
-                "Origin" to "https://webdrama.sbs",
+                "Origin" to "https://dtpasn.asia",
                 "Sec-Fetch-Site" to "same-origin",
                 "Sec-Fetch-Mode" to "cors",
                 "Sec-Fetch-Dest" to "empty",
