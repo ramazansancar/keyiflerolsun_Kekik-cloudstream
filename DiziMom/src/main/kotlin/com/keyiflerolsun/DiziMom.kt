@@ -1,12 +1,13 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
 
 package com.keyiflerolsun
 
-import android.util.Log
-import org.jsoup.nodes.Element
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
+import org.jsoup.nodes.Element
 
 class DiziMom : MainAPI() {
     override var mainUrl              = "https://www.dizimom.ws"
@@ -59,13 +60,19 @@ class DiziMom : MainAPI() {
         return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
 
-    override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("${mainUrl}/?s=${query}").document
+    override suspend fun search(query: String, page: Int): SearchResponseList {
+        val document = if (page == 1){
+            app.get("${mainUrl}/?s=${query}").document
+        } else {
+            app.get("${mainUrl}/page/$page/?s=${query}").document
+        }
 
-        return document.select("div.single-item").mapNotNull { it.diziler() }
+        val aramaCevap = document.select("div.single-item").mapNotNull { it.diziler() }
+
+        return newSearchResponseList(aramaCevap, hasNext = true)
     }
 
-    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
+    override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
@@ -75,7 +82,7 @@ class DiziMom : MainAPI() {
         val year        = document.selectXpath("//div[span[contains(text(), 'Yapım Yılı')]]").text().substringAfter("Yapım Yılı : ").trim().toIntOrNull()
         val description = document.selectFirst("div.category_desc")?.text()?.trim()
         val tags        = document.select("div.genres a").mapNotNull { it.text().trim() }
-        val rating      = document.selectXpath("//div[span[contains(text(), 'IMDB')]]").text().substringAfter("IMDB : ").trim().toRatingInt()
+        val rating      = document.selectXpath("//div[span[contains(text(), 'IMDB')]]").text().substringAfter("IMDB : ").trim()
         val actors      = document.selectXpath("//div[span[contains(text(), 'Oyuncular')]]").text().substringAfter("Oyuncular : ").split(", ").map {
             Actor(it.trim())
         }
@@ -98,15 +105,20 @@ class DiziMom : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.rating    = rating
+            this.score = Score.from10(rating)
             addActors(actors)
         }
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        Log.d("DZM", "data » $data")
+        Log.d("kraptor_DZM", "data » $data")
 
-        val ua = mapOf("User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36")
+        val ua = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            "sec-ch-ua" to "Not/A)Brand\";v=\"8\", \"Chromium\";v=\"137\", \"Google Chrome\";v=\"137",
+            "sec-ch-ua-mobile" to "?1",
+            "sec-ch-ua-platform" to "Android"
+        )
 
         app.post(
             "${mainUrl}/wp-login.php",
@@ -122,8 +134,11 @@ class DiziMom : MainAPI() {
 
         val document = app.get(data, headers=ua).document
 
+
+
         val iframes     = mutableListOf<String>()
-        val mainIframe = document.selectFirst("div.video p iframe")?.attr("src") ?: return false
+        val mainIframe = document.selectFirst("iframe[src]")?.attr("src") ?: return false
+        Log.d("kraptor_DZM", "mainIframe » $mainIframe")
         iframes.add(mainIframe)
 
         document.select("div.sources a").forEach {
@@ -134,25 +149,8 @@ class DiziMom : MainAPI() {
         }
 
         for (iframe in iframes) {
-            Log.d("DZM", "iframe » $iframe")
-            if (iframe.contains("youtube.com")) {
-                val id = iframe.substringAfter("/embed/").substringBefore("?")
-                callback(
-                    newExtractorLink(
-                        "Youtube",
-                        "Youtube",
-                        "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
-                        ExtractorLinkType.DASH
-                    ) {
-                        this.referer = ""
-                        this.headers = mapOf()
-                        this.quality = Qualities.Unknown.value
-                        this.extractorData = null
-                    }
-                )
-            } else {
-                loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
-            }
+            Log.d("kraptor_DZM", "iframe » $iframe")
+            loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)
         }
 
         return true

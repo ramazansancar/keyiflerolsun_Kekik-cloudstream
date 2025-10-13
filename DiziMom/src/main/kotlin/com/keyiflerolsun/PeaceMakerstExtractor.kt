@@ -1,11 +1,13 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
 
 package com.keyiflerolsun
 
-import android.util.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.api.Log
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.ErrorLoadingException
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.utils.*
 
 open class PeaceMakerst : ExtractorApi() {
     override val name            = "PeaceMakerst"
@@ -16,7 +18,8 @@ open class PeaceMakerst : ExtractorApi() {
         val m3uLink:String?
         val extRef  = referer ?: ""
         val postUrl = "${url}?do=getVideo"
-        Log.d("Kekik_${this.name}", "postUrl » $postUrl")
+        Log.d("kraptor_${this.name}", "postUrl » $postUrl")
+        val ua = mapOf("User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36")
 
         val response = app.post(
             postUrl,
@@ -28,9 +31,15 @@ open class PeaceMakerst : ExtractorApi() {
             referer = extRef,
             headers = mapOf(
                 "Content-Type"     to "application/x-www-form-urlencoded; charset=UTF-8",
-                "X-Requested-With" to "XMLHttpRequest"
+                "X-Requested-With" to "XMLHttpRequest",
+                "User-Agent" to "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+                "sec-ch-ua" to "Not/A)Brand\";v=\"8\", \"Chromium\";v=\"137\", \"Google Chrome\";v=\"137",
+                "sec-ch-ua-mobile" to "?1",
+                "sec-ch-ua-platform" to "Android"
             )
         )
+
+        Log.d("kraptor_${this.name}", "response » $response")
         if (response.text.contains("teve2.com.tr\\/embed\\/")) {
             val teve2Id       = response.text.substringAfter("teve2.com.tr\\/embed\\/").substringBefore("\"")
             val teve2Response = app.get(
@@ -51,13 +60,13 @@ open class PeaceMakerst : ExtractorApi() {
 
         callback.invoke(
             newExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                type    = INFER_TYPE
+                source = this.name,
+                name = this.name,
+                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                type = ExtractorLinkType.M3U8 // isM3u8 artık bu şekilde belirtiliyor
             ) {
-                this.referer = extRef
-                this.quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to url) // Eski "referer" artık headers içinde
+                quality = Qualities.Unknown.value // Kalite ayarlandı
             }
         )
     }

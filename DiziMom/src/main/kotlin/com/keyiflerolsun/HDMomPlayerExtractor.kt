@@ -1,14 +1,16 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
 
 package com.keyiflerolsun
 
-import android.util.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.extractors.helper.AesHelper
+import com.lagradost.api.Log
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.cloudstream3.ErrorLoadingException
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.extractors.helper.AesHelper
+import com.lagradost.cloudstream3.utils.*
 
 open class HDMomPlayer : ExtractorApi() {
     override val name            = "HDMomPlayer"
@@ -24,14 +26,47 @@ open class HDMomPlayer : ExtractorApi() {
         if (bePlayer != null) {
             val bePlayerPass = bePlayer[1]
             val bePlayerData = bePlayer[2]
-            val encrypted    = AesHelper.cryptoAESHandler(bePlayerData, bePlayerPass.toByteArray(), false)?.replace("\\", "") ?: throw ErrorLoadingException("failed to decrypt")
-            Log.d("Kekik_${this.name}", "encrypted » $encrypted")
 
-            m3uLink = Regex("""video_location":"([^"]+)""").find(encrypted)?.groupValues?.get(1)
+            // Ters slash'ları silme işlemi KALDIRILDI
+            val encrypted = AesHelper.cryptoAESHandler(bePlayerData, bePlayerPass.toByteArray(), false)
+                ?: throw ErrorLoadingException("failed to decrypt")
+
+            // JSON'ı parse et
+            val json = jacksonObjectMapper().readTree(encrypted)
+            m3uLink = json["video_location"].asText()
+
+            // Altyazıları işle (tüm diller dahil)
+            val subtitles = json["strSubtitles"]
+            if (subtitles != null && subtitles.isArray) {
+                for (sub in subtitles) {
+                    val label = sub["label"]?.asText() ?: continue // Unicode otomatik çözülecek (ör: "Tu00fcrkçe" → "Türkçe")
+                    val file = sub["file"]?.asText() ?: continue
+                    val lang = sub["language"]?.asText()?.lowercase() ?: continue
+
+                    // Forced altyazıları hariç tut (opsiyonel, isterseniz bu satırı kaldırın)
+                    if (label.contains("Forced", true)) continue
+
+                    val keywords = listOf("tur", "tr", "türkçe", "turkce", "tür")
+                    val language = if (keywords.any { label.contains(it, ignoreCase = true) }) {
+                        "Turkish"
+                    } else {
+                        label
+                    }
+
+                    subtitleCallback.invoke(
+                        SubtitleFile(
+                            lang = language, // Orijinal etiket ("Türkçe Altyazı", "English Subtitle" vb.)
+                            url = fixUrl(mainUrl + file)
+                        )
+                    )
+                }
+            }
         } else {
+
             m3uLink = Regex("""file:"([^"]+)""").find(iSource)?.groupValues?.get(1)
 
             val trackStr = Regex("""tracks:\[([^]]+)""").find(iSource)?.groupValues?.get(1)
+            Log.d("kraptor_Dizimom", "trackstr » $trackStr")
             if (trackStr != null) {
                 val tracks:List<Track> = jacksonObjectMapper().readValue("[${trackStr}]")
 
@@ -48,16 +83,17 @@ open class HDMomPlayer : ExtractorApi() {
                 }
             }
         }
+        Log.d("kraptor_Dizimom", "subtitlecall » $subtitleCallback")
 
         callback.invoke(
             newExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                ExtractorLinkType.M3U8
+                source = this.name,
+                name = this.name,
+                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                type = ExtractorLinkType.M3U8 // isM3u8 artık bu şekilde belirtiliyor
             ) {
-                this.referer = url
-                this.quality = Qualities.Unknown.value
+                headers = mapOf("Referer" to url) // Eski "referer" artık headers içinde
+                quality = Qualities.Unknown.value // Kalite ayarlandı
             }
         )
     }
