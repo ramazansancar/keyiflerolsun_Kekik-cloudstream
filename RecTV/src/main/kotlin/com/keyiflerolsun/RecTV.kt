@@ -40,7 +40,7 @@ class RecTV : MainAPI() {
         @Suppress("NAME_SHADOWING") val page = page - 1
 
         val url  = request.data.replace("SAYFA", "$page")
-        val home = app.get(url, headers = mapOf("User-Agent" to "googleusercontent", "Referer" to "https://twitter.com/" ))
+        val home = app.get(url, headers = mapOf("User-Agent" to "googleusercontent", "Referer" to "https://twitter.com/", "authorization" to "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhcHAiLCJwa2ciOiJjb20ucmVjdHYuc2hvdCIsImF0dF9ub25jZSI6ImFPMDRmS1R6aEhFUVh5RU5ubFNFYXJfaHRIXzA4RkpoNzJGSzR1ei1lSHR3YkJLcl9QczMzWmdVbmlfQ1FRSmRJdlVsU2ciLCJpc3MiOiJyZWN0di1hcGkiLCJhdWQiOiJyZWN0di1jbGllbnQiLCJpYXQiOjE3NjAzNzY5NTYsImV4cCI6MTc2MDM3NzA3Nn0.7Lm-hfubFb5O2bg-cRBOZM_u4yzds4iAnSCeh9riX6g" ))
 
         val movies = AppUtils.tryParseJson<List<RecItem>>(home.text)!!.map { item ->
             val toDict = jacksonObjectMapper().writeValueAsString(item)
