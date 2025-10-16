@@ -87,7 +87,7 @@ jobs:
               "language": "tr",
               "authors": ["kerimmkirac"],
               "tvTypes": ["Tv","Movie"],
-              "version": 3,
+              "version": 4,
               "internalName": "FilmMakinesi",
               "description": "Film Makinesi, en yeni ve en güncel filmleri sitemizde full HD kalite farkı ile izleyebilirsiniz. HD film izle denildiğinde akla gelen en kaliteli film izleme sitesi.",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/FilmMakinesi.cs3",
