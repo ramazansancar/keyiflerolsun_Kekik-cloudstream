@@ -14,6 +14,8 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import okhttp3.Interceptor
+import okhttp3.Response
 import org.jsoup.Jsoup
 import java.util.Calendar
 
@@ -23,7 +25,28 @@ class SelcukFlix : MainAPI() {
     override val hasMainPage = true
     override var lang = "tr"
     override val hasQuickSearch = true
-   override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
+    override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
+    override var sequentialMainPage = true
+    override var sequentialMainPageDelay       = 50L  // ? 0.05 saniye
+    override var sequentialMainPageScrollDelay = 50L  // ? 0.05 saniye
+
+    private val cloudflareKiller by lazy { CloudflareKiller() }
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+
+    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller): Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request  = chain.request()
+            val response = chain.proceed(request)
+            val doc      = Jsoup.parse(response.peekBody(1024 * 1024).string())
+
+            if (doc.html().contains("Just a moment") || doc.html().contains("verifying")) {
+                com.lagradost.api.Log.d("SelcukFlix", "!!cloudflare geldi!!")
+                return cloudflareKiller.intercept(chain)
+            }
+
+            return response
+        }
+    }
 
    override val mainPage = mainPageOf(
     "${mainUrl}/tum-bolumler" to "Yeni Eklenen Bölümler",
@@ -46,16 +69,16 @@ class SelcukFlix : MainAPI() {
 override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
     
     if (request.data.contains("tum-bolumler")) {
-        val document = app.get(request.data).document
+        val document = app.get(request.data, interceptor = interceptor).document
         val home = document.select("div.col-span-3 a").mapNotNull { it.sonBolumler() }
         return newHomePageResponse(request.name, home)
     }
     
     
-    val urll = if (request.name.contains("Yerli")) {
+    val urll = if (request.name.contains("Yerli Diziler")) {
         "$mainUrl/api/bg/findSeries?releaseYearStart=1900&releaseYearEnd=2024&imdbPointMin=5&imdbPointMax=10&categoryIdsComma=&countryIdsComma=29&orderType=date_desc&languageId=-1&currentPage=${page}&currentPageCount=24&queryStr=&categorySlugsComma=&countryCodesComma="
     }
-    else if (request.name.contains("Kore")) {
+    else if (request.name.contains("Kore Dizileri")) {
         "$mainUrl/api/bg/findSeries?releaseYearStart=1900&releaseYearEnd=2026&imdbPointMin=1&imdbPointMax=10&categoryIdsComma=&countryIdsComma=21&orderType=date_desc&languageId=-1&currentPage=${page}&currentPageCount=24&queryStr=&categorySlugsComma=&countryCodesComma=KR"
     }
      else {
@@ -77,7 +100,8 @@ override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageR
             "Sec-Fetch-Dest" to "empty",
             "Referer" to "${mainUrl}/"
         ),
-        referer = "${mainUrl}/"
+        referer = "${mainUrl}/",
+        interceptor = interceptor
     )
     
     val searchResult: ApiResponse = objectMapper.readValue(catDocument.toString())
@@ -119,7 +143,7 @@ private suspend fun Element.sonBolumler(): SearchResponse? {
     val title = "$name - $epName"
 
     val epDoc = fixUrlNull(this.attr("href"))?.let { 
-        Jsoup.parse(app.get(it).body.string()) 
+        Jsoup.parse(app.get(it, interceptor = interceptor).body.string())
     }
 
     val href = epDoc?.selectFirst("div.poster a")?.attr("href")?.let { fixUrlNull(it) }
@@ -158,7 +182,8 @@ private suspend fun Element.sonBolumler(): SearchResponse? {
             "Sec-Fetch-Dest" to "empty",
             "Referer" to "${mainUrl}/"
         ),
-        referer = "${mainUrl}/"
+        referer = "${mainUrl}/",
+        interceptor = interceptor
     )
     
     val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
@@ -208,7 +233,7 @@ private fun Any.toSearchResponse(title: String, href: String, posterUrl: String,
     override suspend fun load(url: String): LoadResponse {
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        val encodedDoc = app.get(url).document
+        val encodedDoc = app.get(url, interceptor = interceptor).document
         val script = encodedDoc.selectFirst("script#__NEXT_DATA__")?.data()
         val secureData =
             objectMapper.readTree(script).get("props").get("pageProps").get("secureData")
@@ -298,7 +323,7 @@ private fun Any.toSearchResponse(title: String, href: String, posterUrl: String,
     Log.d("kerim", "data » $data")
     val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    val encodedDoc = app.get(data).document
+    val encodedDoc = app.get(data, interceptor = interceptor).document
     val script = encodedDoc.selectFirst("script#__NEXT_DATA__")?.data()
     val secureData =
         objectMapper.readTree(script).get("props").get("pageProps").get("secureData")
