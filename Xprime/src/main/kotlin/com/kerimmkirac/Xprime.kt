@@ -37,7 +37,7 @@ class Xprime : MainAPI() {
             val response = app.get(url).text
             
             val json = JSONObject(response)
-            val results = json.optJSONArray("results") ?: return HomePageResponse(emptyList()).also {
+            val results = json.optJSONArray("results") ?: return newHomePageResponse(emptyList()).also {
                 
             }
 
@@ -100,7 +100,7 @@ class Xprime : MainAPI() {
             return newHomePageResponse(request.name, items)
         } catch (e: Exception) {
             
-            return HomePageResponse(emptyList())
+            return newHomePageResponse(emptyList())
         }
     }
 
