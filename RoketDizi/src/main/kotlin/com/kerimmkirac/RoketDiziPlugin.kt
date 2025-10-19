@@ -16,6 +16,7 @@ class RoketDiziPlugin: Plugin() {
         registerExtractorAPI(VidMoxy())
         registerExtractorAPI(Sobreatsesuyp())
         registerExtractorAPI(TurboImgz())
+        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(TurkeyPlayer())
         registerExtractorAPI(Hotlinger())
         registerExtractorAPI(FourCX())

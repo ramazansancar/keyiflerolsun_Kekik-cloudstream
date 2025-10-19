@@ -14,7 +14,13 @@ class PlayRu : ContentX() {
     override var name    = "PlayRu"
     override var mainUrl = "https://playru.net"
 }
+class FourPichiveOnline : ContentX() {
 
+    override var name = "FourPichiveOnline"
+
+    override var mainUrl = "https://four.pichive.online"
+
+}
 class FourPlayRu : ContentX() {
     override var name    = "FourPlayRu"
     override var mainUrl = "https://four.playru.net"

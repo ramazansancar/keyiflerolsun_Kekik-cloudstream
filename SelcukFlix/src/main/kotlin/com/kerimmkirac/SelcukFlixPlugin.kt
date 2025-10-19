@@ -15,6 +15,7 @@ class SelcukFlixPlugin: BasePlugin() {
         registerExtractorAPI(Sobreatsesuyp())
         registerExtractorAPI(TurboImgz())
         registerExtractorAPI(TurkeyPlayer())
+        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(Hotlinger())
         registerExtractorAPI(FourCX())
         registerExtractorAPI(PlayRu())

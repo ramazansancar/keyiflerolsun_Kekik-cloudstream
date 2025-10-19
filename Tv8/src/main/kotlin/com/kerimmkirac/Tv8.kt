@@ -24,7 +24,7 @@ class Tv8 : MainAPI() {
 
     private var allContentCache: List<SearchResponse> = emptyList()
     private var cacheTime: Long = 0
-    private val cacheValidityDuration = 30 * 60 * 1000 // 30 dakika
+    private val cacheValidityDuration = 30 * 60 * 1000 
 
     override val mainPage = mainPageOf(
         "${mainUrl}"      to "Yarışmalar",
@@ -39,7 +39,8 @@ class Tv8 : MainAPI() {
 
         val categoryElement = document.select("li.dropdown")
             .firstOrNull { it.selectFirst("a[title]")?.attr("title")?.equals(request.name, ignoreCase = true) == true }
-            ?: return HomePageResponse(emptyList())
+            ?: return newHomePageResponse(emptyList())
+
 
         val items = categoryElement.select("ul.clearfix li")
         val results = items.mapNotNull { it.toMainPageResult() }
@@ -48,7 +49,7 @@ class Tv8 : MainAPI() {
             sections.add(HomePageList(request.name, results))
         }
 
-        return HomePageResponse(sections)
+        return newHomePageResponse(sections)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {

@@ -26,6 +26,7 @@ class `4KFilmIzlemePlugin`: Plugin() {
         registerExtractorAPI(Pichive())
         registerExtractorAPI(FourDplayer())
         registerExtractorAPI(SNDplayer())
+        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(ORGDplayer())
         registerExtractorAPI(GoogleDriveExtractor())
         registerExtractorAPI(VidMolyExtractor())

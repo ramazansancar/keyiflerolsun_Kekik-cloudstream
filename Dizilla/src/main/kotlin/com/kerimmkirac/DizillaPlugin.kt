@@ -16,6 +16,7 @@ class DizillaPlugin: Plugin() {
         registerExtractorAPI(TurboImgz())
         registerExtractorAPI(TurkeyPlayer())
         registerExtractorAPI(Hotlinger())
+        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(FourCX())
         registerExtractorAPI(PlayRu())
         registerExtractorAPI(FourPlayRu())

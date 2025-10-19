@@ -27,6 +27,7 @@ class DiziPalOrijinalPlugin: Plugin() {
         registerExtractorAPI(FourDplayer())
         registerExtractorAPI(SNDplayer())
         registerExtractorAPI(ORGDplayer())
+        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(Dplayer())
         registerExtractorAPI(VidMolyExtractor())
         registerExtractorAPI(VidMolyTo())
