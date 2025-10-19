@@ -98,6 +98,31 @@ jobs:
             echo "FilmMakinesi zaten plugins.json'da mevcut, eklenmedi."
           fi
 
+
+
+
+      - name: RecTV Eklentisini plugins.json'a Elle Ekle
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          if ! jq -e '.[] | select(.internalName == "RecTV")' plugins.json > /dev/null; then
+            cat plugins.json | jq '. += [{
+              "repositoryUrl": "https://github.com/kerimmkirac/cs-kerim",
+              "apiVersion": 1,
+              "status": 1,
+              "language": "tr",
+              "authors": ["kerimmkirac"],
+              "tvTypes": ["Tv","Movie","Live"],
+              "version": 1,
+              "internalName": "RecTV",
+              "description": "RecTv APK, Türkiye’deki en popüler Çevrimiçi Medya Akış platformlarından biridir. Filmlerin, Canlı Sporların, Web Dizilerinin ve çok daha fazlasının keyfini ücretsiz çıkarın.",
+              "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/RecTV.cs3",
+              "name": "RecTV",
+              "iconUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://rectvapk.cc&size=128"
+            }]' > plugins-new.json && mv plugins-new.json plugins.json
+          else
+            echo "RecTV zaten plugins.json'da mevcut, eklenmedi."
+          fi
+
       - name: HDFilmCehennemi Eklentisini plugins.json'a Elle Ekle
         run: |
           cd $GITHUB_WORKSPACE/builds
