@@ -48,30 +48,16 @@ class DiziBox : MainAPI() {
         "${mainUrl}/tum-bolumler/page/SAYFA/" to "Son Bölümler",
         "${mainUrl}/tum-bolumler/page/SAYFA/?tip=populer" to "Popüler Dizilerden Son Bölümler",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?ulke[]=turkiye&yil=&imdb" to "Yerli",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=aile&yil&imdb" to "Aile",
+        
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=aksiyon&yil&imdb" to "Aksiyon",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=animasyon&yil&imdb" to "Animasyon",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=belgesel&yil&imdb" to "Belgesel",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=bilimkurgu&yil&imdb" to "Bilimkurgu",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=biyografi&yil&imdb" to "Biyografi",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=dram&yil&imdb" to "Dram",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=drama&yil&imdb" to "Drama",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=fantastik&yil&imdb" to "Fantastik",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=gerilim&yil&imdb" to "Gerilim",
         "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=gizem&yil&imdb" to "Gizem",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=komedi&yil&imdb" to "Komedi",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=korku&yil&imdb" to "Korku",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=macera&yil&imdb" to "Macera",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=muzik&yil&imdb" to "Müzik",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=muzikal&yil&imdb" to "Müzikal",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=reality-tv&yil&imdb" to "Reality TV",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=romantik&yil&imdb" to "Romantik",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=savas&yil&imdb" to "Savaş",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=spor&yil&imdb" to "Spor",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=suc&yil&imdb" to "Suç",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=tarih&yil&imdb" to "Tarih",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=western&yil&imdb" to "Western",
-        "${mainUrl}/dizi-arsivi/page/SAYFA/?tur[0]=yarisma&yil&imdb" to "Yarışma"
+        
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
