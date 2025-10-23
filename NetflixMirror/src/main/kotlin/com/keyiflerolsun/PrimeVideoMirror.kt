@@ -113,7 +113,7 @@ class PrimeVideoMirror : MainAPI() {
             ?.map { it.trim() }
             ?.filter { it.isNotEmpty() }
             ?: emptyList())
-        val rating = data.match?.replace("IMDb ", "")?.toRatingInt()
+        val rating = data.match?.replace("IMDb ", "")?.toIntOrNull()
         val runTime = convertRuntimeToMinutes(data.runtime.toString())
 
         if (data.episodes.first() == null) {
@@ -145,11 +145,11 @@ class PrimeVideoMirror : MainAPI() {
         return newTvSeriesLoadResponse(title, url, type, episodes) {
             posterUrl = "https://img.nfmirrorcdn.top/pv/900/$id.jpg"
             posterHeaders = mapOf("Referer" to "$mainUrl/")
-            plot = data.desc
-            year = data.year.toIntOrNull()
-            tags = genre
-            actors = cast
-            this.rating = rating
+            plot          = data.desc
+            year          = data.year.toIntOrNull()
+            tags          = genre
+            actors        = cast
+            this.score    = rating
             this.duration = runTime
         }
     }

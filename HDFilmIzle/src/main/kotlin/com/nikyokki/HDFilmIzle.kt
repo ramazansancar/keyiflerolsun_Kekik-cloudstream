@@ -105,7 +105,7 @@ class HDFilmIzle : MainAPI() {
         val year        = document.selectFirst("div.page-title")?.selectFirst("small.text-muted")?.text()
             ?.replace("(","")?.replace(")","")?.toIntOrNull()
         val description = document.selectFirst("article.text-white > p")?.text()?.trim()
-        val rating      = document.selectFirst("div.rate.mb-2 span")?.text()?.toRatingInt()
+        val rating      = document.selectFirst("div.rate.mb-2 span")?.text()?.toIntOrNull()
         val actors      = document.select("div.stories-wrapper a").map {
             Actor(it.selectFirst("div.story-item-title")!!.text(), fixUrlNull(it.select("img").attr("data-src")))
         }
@@ -126,7 +126,7 @@ class HDFilmIzle : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
+            this.score           = rating
             this.recommendations = recommendations
             addActors(actors)
             addTrailer(trailer)

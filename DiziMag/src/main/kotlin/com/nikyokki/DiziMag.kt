@@ -25,7 +25,7 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
@@ -188,7 +188,7 @@ class DiziMag : MainAPI() {
         val year =
             document.selectFirst("h1 span")?.text()?.substringAfter("(")?.substringBefore(")")
                 ?.toIntOrNull()
-        val rating = document.selectFirst("span.color-imdb")?.text()?.trim()?.toRatingInt()
+        val rating = document.selectFirst("span.color-imdb")?.text()?.trim()?.toIntOrNull()
         val duration =
             document.selectXpath("//span[text()='Süre']//following-sibling::p").text().trim()
                 .split(" ").first().toIntOrNull()
@@ -225,21 +225,21 @@ class DiziMag : MainAPI() {
 
             return newTvSeriesLoadResponse(tit, url, TvType.TvSeries, episodeses) {
                 this.posterUrl = poster
-                this.year = year
-                this.plot = description
-                this.tags = tags
-                this.rating = rating
+                this.year      = year
+                this.plot      = description
+                this.tags      = tags
+                this.score     = rating
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
         } else {
             return newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
-                this.year = year
-                this.plot = description
-                this.tags = tags
-                this.rating = rating
-                this.duration = duration
+                this.year      = year
+                this.plot      = description
+                this.tags      = tags
+                this.score     = rating
+                this.duration  = duration
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }

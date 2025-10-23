@@ -63,7 +63,7 @@ class Temel : MainAPI() {
         val description     = document.selectFirst("div.wp-content p")?.text()?.trim()
         val year            = document.selectFirst("div.extra span.C a")?.text()?.trim()?.toIntOrNull()
         val tags            = document.select("div.sgeneros a").map { it.text() }
-        val rating          = document.selectFirst("span.dt_rating_vgs")?.text()?.trim()?.toRatingInt()
+        val rating          = document.selectFirst("span.dt_rating_vgs")?.text()?.trim()?.toIntOrNull()
         val duration        = document.selectFirst("span.runtime")?.text()?.split(" ")?.first()?.trim()?.toIntOrNull()
         val recommendations = document.select("div.srelacionados article").mapNotNull { it.toRecommendationResult() }
         val actors          = document.select("span.valor a").map { Actor(it.text()) }
@@ -74,7 +74,7 @@ class Temel : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.rating          = rating
+            this.score           = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)

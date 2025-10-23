@@ -182,7 +182,7 @@ class TvDiziler : MainAPI() {
                 ?.toIntOrNull()
         Log.d("TVD", "year -> $year")
 
-        val rating = document.selectXpath("//span[text()='IMDb Puanı']//following-sibling::p").text().trim().toRatingInt()
+        val rating = document.selectXpath("//span[text()='IMDb Puanı']//following-sibling::p").text().trim().toIntOrNull()
         Log.d("TVD", "rating -> $rating")
 
         val duration =
@@ -228,7 +228,7 @@ class TvDiziler : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
@@ -238,7 +238,7 @@ class TvDiziler : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 this.duration = duration
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")

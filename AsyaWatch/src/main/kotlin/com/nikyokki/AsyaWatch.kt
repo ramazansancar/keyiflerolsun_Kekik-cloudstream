@@ -266,10 +266,10 @@ class AsyaWatch : MainAPI() {
             }
             return newTvSeriesLoadResponse(title!!, url, TvType.TvSeries, eps) {
                 this.posterUrl = poster
-                this.year = year
-                this.plot = description
-                this.tags = tags
-                this.rating = rating
+                this.year      = year
+                this.plot      = description
+                this.tags      = tags
+                this.score     = rating
                 addActors(actors)
                 addTrailer(trailer)
             }
@@ -277,10 +277,10 @@ class AsyaWatch : MainAPI() {
 
         return newMovieLoadResponse(title!!, url, TvType.Movie, url) {
             this.posterUrl = poster
-            this.plot = description
-            this.year = year
-            this.tags = tags
-            this.rating = rating
+            this.plot      = description
+            this.year      = year
+            this.tags      = tags
+            this.score     = rating
             this.duration = duration
             addActors(actors)
             addTrailer(trailer)

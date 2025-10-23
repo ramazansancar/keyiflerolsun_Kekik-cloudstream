@@ -66,7 +66,7 @@ class JetFilmizle : MainAPI() {
         val year        = Regex("""(\d{4})""").find(yearDiv)?.groupValues?.get(1)?.toIntOrNull()
         val description = document.selectFirst("section.movie-exp p.aciklama")?.text()?.trim()
         val tags        = document.select("section.movie-exp div.catss a").map { it.text() }
-        val rating      = document.selectFirst("section.movie-exp div.imdb_puan span")?.text()?.split(" ")?.last()?.toRatingInt()
+        val rating      = document.selectFirst("section.movie-exp div.imdb_puan span")?.text()?.split(" ")?.last()?.toIntOrNull()?.times(1000)
         val actors      = document.select("section.movie-exp div.oyuncu").map {
             Actor(it.selectFirst("div.name")!!.text(), fixUrlNull(it.selectFirst("img")!!.attr("data-src")))
         }
@@ -88,7 +88,7 @@ class JetFilmizle : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
+            this.score           = rating
             this.recommendations = recommendations
             addActors(actors)
         }

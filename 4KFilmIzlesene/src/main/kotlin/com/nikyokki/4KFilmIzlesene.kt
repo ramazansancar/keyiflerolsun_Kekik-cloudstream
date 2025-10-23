@@ -18,7 +18,7 @@ import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
@@ -106,7 +106,7 @@ class `4KFilmIzlesene` : MainAPI() {
         val tags = document.select("div.category a[href*='-filmleri/']").map { it.text() }
         val rating =
             document.selectFirst("div.imdb-count")?.text()?.split(" ")?.first()?.trim()
-                ?.toRatingInt()
+                ?.toIntOrNull()
         val actors = document.select("div.actors").map { it.text() }
         val trailer = document.selectFirst("div.container iframe")?.attr("src")
 

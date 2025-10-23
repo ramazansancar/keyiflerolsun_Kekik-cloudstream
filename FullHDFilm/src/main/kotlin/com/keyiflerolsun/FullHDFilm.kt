@@ -73,7 +73,7 @@ class FullHDFilm : MainAPI() {
         val description = document.selectFirst("div[itemprop='description']")?.text()?.substringAfter("⭐")?.substringAfter("izleyin.")?.substringAfter("konusu:")?.trim()
         val year        = document.selectFirst("span[itemprop='dateCreated'] a")?.text()?.trim()?.toIntOrNull()
         val tags        = document.select("div.detail ul.bottom li:nth-child(5) span a").map { it.text() }
-        val rating      = document.selectFirst("ul.right li:nth-child(2) span")?.text()?.trim()?.toRatingInt()
+        val score       = document.selectFirst("ul.right li:nth-child(2) span")?.text()?.trim()?.toRatingInt()
         val duration    = document.selectFirst("span[itemprop='duration']")?.text()?.split(" ")?.first()?.trim()?.toIntOrNull()
         val actors      = document.select("sc[itemprop='actor'] span").map { Actor(it.text()) }
         val trailer     = fixUrlNull(document.selectFirst("[property='og:video']")?.attr("content"))
@@ -115,7 +115,7 @@ class FullHDFilm : MainAPI() {
                 this.plot      = description
                 this.year      = year
                 this.tags      = tags
-                this.rating    = rating
+                this.score     = score
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)
@@ -126,7 +126,7 @@ class FullHDFilm : MainAPI() {
                 this.plot      = description
                 this.year      = year
                 this.tags      = tags
-                this.rating    = rating
+                this.score     = score
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)

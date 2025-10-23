@@ -136,10 +136,10 @@ class SinemaCX : MainAPI() {
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    ExtractorLinkType.M3U8
+                    type    = ExtractorLinkType.M3U8
                 ) {
-                    this.referer = iframe
-                    this.quality = Qualities.Unknown.value
+                    headers = mapOf("Referer" to iframe)
+                    quality = Qualities.Unknown.value
                 }
             )
         } else if (iframe.contains("player.filmizle.in")) {
@@ -154,10 +154,10 @@ class SinemaCX : MainAPI() {
                     source  = this.name,
                     name    = this.name,
                     url     = vidUrl,
-                    ExtractorLinkType.M3U8
+                    type    = ExtractorLinkType.M3U8
                 ) {
-                    this.referer = iframe
-                    this.quality = Qualities.Unknown.value
+                    headers = mapOf("Referer" to iframe)
+                    quality = Qualities.Unknown.value
                 }
             )
         } else {

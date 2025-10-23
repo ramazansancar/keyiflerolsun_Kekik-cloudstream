@@ -26,7 +26,7 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 
@@ -137,7 +137,7 @@ class FilmMakinesi : MainAPI() {
         val description = document.select("div.info-description p").last()?.text()?.trim()
         val tags = document.selectFirst("dt:contains(Tür:) + dd")?.text()?.split(", ")
         val rating =
-            document.selectFirst("dt:contains(IMDB Puanı:) + dd")?.text()?.trim()?.toRatingInt()
+            document.selectFirst("dt:contains(IMDB Puanı:) + dd")?.text()?.trim()?.toIntOrNull()
         val year =
             document.selectFirst("dt:contains(Yapım Yılı:) + dd")?.text()?.trim()?.toIntOrNull()
 
@@ -170,28 +170,28 @@ class FilmMakinesi : MainAPI() {
                 val epEpisode = epTitle[1].replace(". Bölüm", "").trim().toIntOrNull()
                 eps.add(
                     newEpisode(epHref) {
-                        this.name = epName
-                        this.season = epSeason
+                        this.name    = epName
+                        this.season  = epSeason
                         this.episode = epEpisode
                     })
             }
             return newTvSeriesLoadResponse(title, url, TvType.TvSeries, eps) {
                 this.posterUrl = poster
-                this.year = year
-                this.plot = description
-                this.tags = tags
-                this.rating = rating
+                this.year      = year
+                this.plot      = description
+                this.tags      = tags
+                this.score     = rating
                 addActors(actors)
                 addTrailer(trailer)
             }
         }
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
-            this.posterUrl = poster
-            this.year = year
-            this.plot = description
-            this.tags = tags
-            this.rating = rating
-            this.duration = duration
+            this.posterUrl       = poster
+            this.year            = year
+            this.plot            = description
+            this.tags            = tags
+            this.score           = rating
+            this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
             addTrailer(trailer)

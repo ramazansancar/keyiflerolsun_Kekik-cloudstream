@@ -18,7 +18,7 @@ import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
@@ -87,7 +87,7 @@ class FilmIzlesene : MainAPI() {
         var year = document.selectFirst("div.release a")?.text()?.trim()?.toIntOrNull()
         val tags = document.select("div#listelements a").map { it.text() }
         var rating = document.selectFirst("div.imdb")?.text()?.replace("IMDb Puanı:", "")
-                ?.split("/")?.first()?.trim()?.toRatingInt()
+                ?.split("/")?.first()?.trim()?.toIntOrNull()
         var actors = document.select("div.actor a").map { it.text() }
         val trailer = document.selectFirst("div.container iframe")?.attr("src")
         val listItems = document.select("div.list-item")
@@ -101,16 +101,16 @@ class FilmIzlesene : MainAPI() {
         }
         document.select("div#listelements div").forEach {
             if (it.text().contains("IMDb:")) {
-                rating = it.text().trim().split(" ").last().toRatingInt()
+                rating = it.text().trim().split(" ").last().toIntOrNull()
             }
         }
 
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-            this.plot = description
-            this.year = year
-            this.tags = tags
-            this.rating = rating
+            this.plot      = description
+            this.year      = year
+            this.tags      = tags
+            this.score     = rating
             addActors(actors)
             addTrailer(trailer)
         }

@@ -74,7 +74,7 @@ class HDFilmSitesi : MainAPI() {
             document.select("a[rel='category']").map { it.text().substringBefore(" Filmleri") }
         val rating =
             document.selectFirst("div.puanlar span")?.text()?.trim()?.substringAfter("IMDb")
-                .toRatingInt()
+                ?.toIntOrNull()
         val duration =
             document.selectFirst("span[itemprop='duration']")?.text()?.split(" ")?.first()?.trim()
                 ?.toIntOrNull()
@@ -121,22 +121,22 @@ class HDFilmSitesi : MainAPI() {
 
             return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
-                this.plot = description
-                this.year = year
-                this.tags = tags
-                this.rating = rating
-                this.duration = duration
+                this.plot      = description
+                this.year      = year
+                this.tags      = tags
+                this.score     = rating
+                this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)
             }
         } else {
             return newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
-                this.plot = description
-                this.year = year
-                this.tags = tags
-                this.rating = rating
-                this.duration = duration
+                this.plot      = description
+                this.year      = year
+                this.tags      = tags
+                this.score     = rating
+                this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)
             }

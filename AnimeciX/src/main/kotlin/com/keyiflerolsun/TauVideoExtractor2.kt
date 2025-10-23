@@ -22,15 +22,14 @@ open class TauVideo2 : ExtractorApi() {
 
         for (video in file.urls) {
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = video.url,
-                    type    = ExtractorLinkType.VIDEO // Varsayılan olarak INFER_TYPE ayarlanıyor
-                ) {
-                    headers = mapOf("Referer" to extRef)
-                    quality = getQualityFromName(video.label)
-                }
+                    referer = extRef,
+                    quality = getQualityFromName(video.label),
+                    type    = INFER_TYPE
+                )
             )
         }
     }

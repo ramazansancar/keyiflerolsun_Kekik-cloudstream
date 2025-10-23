@@ -25,7 +25,7 @@ import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
@@ -131,7 +131,7 @@ class WebteIzle : MainAPI() {
         val year        = document.selectXpath("//td[contains(text(), 'Vizyon')]/following-sibling::td").text().trim().split(" ").last().toIntOrNull()
         val description = document.selectFirst("blockquote")?.text()?.trim()
         val tags        = document.selectXpath("//a[@itemgroup='genre']").map { it.text() }
-        val rating      = document.selectFirst("div.detail")?.text()?.trim()?.replace(",", ".").toRatingInt()
+        val rating      = document.selectFirst("div.detail")?.text()?.trim()?.replace(",", ".")?.toIntOrNull()
         val duration    = document.selectXpath("//td[contains(text(), 'Süre')]/following-sibling::td").text().trim().split(" ").first().toIntOrNull()
         val trailer     = document.selectFirst("button#fragman")?.attr("data-ytid")
         val actors      = document.selectXpath("//div[@data-tab='oyuncular']//a").map {
@@ -143,7 +143,7 @@ class WebteIzle : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.rating    = rating
+            this.score     = rating
             this.duration  = duration
             addTrailer("https://www.youtube.com/embed/${trailer}")
             addActors(actors)

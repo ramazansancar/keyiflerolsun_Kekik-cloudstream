@@ -65,7 +65,7 @@ class PornHub : MainAPI() {
         val poster          = fixUrlNull(document.selectFirst("div.mainPlayerDiv img")?.attr("src"))
         val year            = Regex("""uploadDate": "(\d+)""").find(document.html())?.groupValues?.get(1)?.toIntOrNull()
         val tags            = document.select("div.categoriesWrapper a[data-label='Category']").map { it.text().trim().replace(", ","") }
-        val rating          = document.selectFirst("span.percent")?.text()?.first()?.toString()?.toRatingInt()
+        val rating          = document.selectFirst("span.percent")?.text()?.first()?.toString()?.toIntOrNull()
         val duration        = Regex("duration' : '(.*)',").find(document.html())?.groupValues?.get(1)?.toIntOrNull()
         val actors          = document.select("div.pornstarsWrapper a[data-label='Pornstar']").mapNotNull {
             Actor(it.text().trim(), it.select("img").attr("src"))

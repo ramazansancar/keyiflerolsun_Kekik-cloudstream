@@ -98,7 +98,7 @@ class SineWix : MainAPI() {
             val description     = media.overview
             val year            = media.releaseDate.split("-").first().toIntOrNull()
             val tags            = media.genres?.map { it.name }
-            val rating          = "${media.voteAverage}".toRatingInt()
+            val rating          = "${media.voteAverage}".toIntOrNull()
             val recommendations = media.relateds?.map { newMovieSearchResponse(it.title, "?type=${it.type}&id=${it.id}", TvType.Movie) { this.posterUrl = it.posterPath } }
             val actors          = media.casterslist?.map { Actor(it.name, it.profilePath) }
 
@@ -123,7 +123,7 @@ class SineWix : MainAPI() {
             val description     = media.overview
             val year            = media.firstAirDate.split("-").first().toIntOrNull()
             val tags            = media.genres?.map { it.name }
-            val rating          = "${media.voteAverage}".toRatingInt()
+            val rating          = "${media.voteAverage}".toIntOrNull()
             val recommendations = media.relateds?.map { newMovieSearchResponse(it.name, "?type=${it.type}&id=${it.id}", TvType.Movie) { this.posterUrl = it.posterPath } }
             val actors          = media.casterslist?.map { Actor(it.name, it.profilePath) }
 
@@ -161,42 +161,10 @@ class SineWix : MainAPI() {
 
             media.videos.forEach { video ->
                 Log.d("SNWX", "video » $video")
-
-                if (video.link.contains("mediafire.com")) {
-                    loadExtractor(video.link, twitter, subtitleCallback, callback)
-                } else {
-                    callback.invoke(
-                        newExtractorLink(
-                            source  = this.name,
-                            name    = this.name,
-                            url     = video.link,
-                            type    = INFER_TYPE
-                        ) {
-                            this.referer = video.link
-                            this.quality = Qualities.Unknown.value
-                        }
-                    )
-                }
-
+                loadExtractor(video.link, twitter, subtitleCallback, callback)
             }
         } else {
-
-            if (data.substringAfter("&source=").contains("mediafire.com")) {
-                loadExtractor(data.substringAfter("&source="), twitter, subtitleCallback, callback)
-            } else {
-                callback.invoke(
-                    newExtractorLink(
-                        source  = this.name,
-                        name    = this.name,
-                        url     = data.substringAfter("&source="),
-                        type    = INFER_TYPE
-                    ) {
-                        this.referer = twitter
-                        this.quality = Qualities.Unknown.value
-                    }
-                )
-            }
-
+            loadExtractor(data.substringAfter("&source="), twitter, subtitleCallback, callback)
         }
 
         return true

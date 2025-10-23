@@ -181,7 +181,7 @@ class RoketDizi : MainAPI() {
             val tags = document.selectFirst("div.poster.hidden h3")?.text()?.split(",")?.map { it }
             val rating =
                 document.selectFirst("div.flex.items-center")?.selectFirst("span.text-white.text-sm")
-                    ?.text()?.trim().toRatingInt()
+                    ?.text()?.trim()?.toIntOrNull()
             val actors = document.select("div.global-box h5").map {
                 Actor(it.text())
             }
@@ -224,7 +224,7 @@ class RoketDizi : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 addActors(actors)
             }
         } else {
@@ -240,7 +240,7 @@ class RoketDizi : MainAPI() {
             val tags = document.select("div.text-white.text-md.opacity-90.flex.items-center.gap-2.overflow-auto.mt-1 a").map { it.text() }
             val rating =
                 document.selectFirst("div.flex.items-center")?.selectFirst("span.text-white.text-sm")
-                    ?.text()?.trim().toRatingInt()
+                    ?.text()?.trim()?.toIntOrNull()
             val actors = mutableListOf<Actor>()
             document.select("div.w-fit.min-w-fit.rounded-lg") .forEach { a ->
                 if (a.selectFirst("span")?.text()?.contains("Aktör") == true) {
@@ -251,7 +251,7 @@ class RoketDizi : MainAPI() {
                 this.posterUrl       = poster
                 this.year            = yil
                 this.plot            = description
-                this.rating          = rating
+                this.score          = rating
                 this.tags            = tags
                 addActors(actors)
             }

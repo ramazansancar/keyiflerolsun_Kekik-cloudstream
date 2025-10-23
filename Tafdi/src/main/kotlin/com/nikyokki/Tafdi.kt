@@ -86,7 +86,7 @@ class Tafdi : MainAPI() {
         var year = document.selectFirst("div.release a")?.text()?.trim()?.toIntOrNull()
         val tags = document.select("div#listelements a").map { it.text() }
         var rating = document.selectFirst("div.imdb")?.text()?.replace("IMDb Puanı:", "")
-            ?.split("/")?.first()?.trim()?.toRatingInt()
+            ?.split("/")?.first()?.trim()?.toIntOrNull()
         var actors = document.select("div.actor a").map { it.text() }
         val trailer = document.selectFirst("div.container iframe")?.attr("src")
         val listItems = document.select("div.list-item")
@@ -100,7 +100,7 @@ class Tafdi : MainAPI() {
         }
         document.select("div#listelements div").forEach {
             if (it.text().contains("IMDb:")) {
-                rating = it.text().trim().split(" ").last().toRatingInt()
+                rating = it.text().trim().split(" ").last().toIntOrNull()
             }
         }
 
@@ -109,7 +109,6 @@ class Tafdi : MainAPI() {
             this.plot = description
             this.year = year
             this.tags = tags
-            this.rating = rating
             addActors(actors)
             addTrailer(trailer)
         }

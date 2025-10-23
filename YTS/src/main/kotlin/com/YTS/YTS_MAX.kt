@@ -17,7 +17,7 @@ import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.INFER_TYPE
@@ -83,13 +83,13 @@ class YTSMX : YTS(){
             ?.split(" / ")
             ?.map { it.trim() }
         val description= document.selectFirst("#synopsis p")?.text()?.trim()
-        val rating= document.select("#movie-info > div.bottom-info > div:nth-child(2) > span:nth-child(2)").text().toRatingInt()
+        val rating= document.select("#movie-info > div.bottom-info > div:nth-child(2) > span:nth-child(2)").text().toIntOrNull()
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-            this.plot = description
-            this.year = year
-            this.rating=rating
-            this.tags = tags
+            this.plot      = description
+            this.year      = year
+            this.rating    = rating
+            this.tags      = tags
         }
     }
 

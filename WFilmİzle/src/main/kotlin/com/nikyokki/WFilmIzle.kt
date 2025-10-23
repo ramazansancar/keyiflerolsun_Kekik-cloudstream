@@ -19,7 +19,7 @@ import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -108,7 +108,7 @@ class WFilmIzle : MainAPI() {
         val tags = document.select("div.categories a").map { it.text() }
         Log.d("WFI", "tags: $tags")
         val rating = document.select("div.imdb").last()?.text()?.replace("IMDb Puanı:","")?.split("/")
-            ?.first()?.trim()?.toRatingInt()
+            ?.first()?.trim()?.toIntOrNull()
         Log.d("WFI", "rating: " + document.selectFirst("div.imdb").toString())
         val actors = document.select("div.actor a").map { it.text() }
         Log.d("WFI", "actors: $actors")
@@ -116,10 +116,10 @@ class WFilmIzle : MainAPI() {
         Log.d("WFI", "trailer: $trailer")
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
-            this.plot = description
-            this.year = year
-            this.tags = tags
-            this.rating = rating
+            this.plot      = description
+            this.year      = year
+            this.tags      = tags
+            this.score     = rating
             addActors(actors)
             addTrailer(trailer)
         }

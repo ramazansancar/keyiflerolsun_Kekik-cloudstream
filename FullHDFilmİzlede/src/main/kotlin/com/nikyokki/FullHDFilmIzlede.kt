@@ -84,7 +84,7 @@ class FullHDFilmIzlede : MainAPI() {
         val description     = document.selectFirst("div.movieDescription h2")?.text()?.trim()
         val year            = document.selectXpath("//span[text()='Yapım Yılı: ']//following-sibling::span").text().split(" ").first().toIntOrNull()
         val tags            = document.selectXpath("//span[text()='Kategori: ']//following-sibling::span").select("a").map { it.text().replace(" izle", "") }
-        val rating          = document.selectFirst("span.imdb")?.text()?.trim()?.toRatingInt()
+        val rating          = document.selectFirst("span.imdb")?.text()?.trim()?.toIntOrNull()
         val duration        =
             document.selectXpath("//span[text()='Film Süresi: ']//following-sibling::span").text().split(" ").first().trim().toIntOrNull()
                 ?.times(60)
@@ -96,7 +96,7 @@ class FullHDFilmIzlede : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.rating          = rating
+            this.score           = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)

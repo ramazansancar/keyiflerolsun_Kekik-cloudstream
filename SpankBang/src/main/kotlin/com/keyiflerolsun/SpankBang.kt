@@ -6,6 +6,9 @@ import android.util.Log
 import org.jsoup.nodes.*
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class SpankBang : MainAPI() {
@@ -95,7 +98,7 @@ class SpankBang : MainAPI() {
         val description     = document.selectFirst("a[href*='join']")?.text()?.trim() ?: title
         val year            = Regex(""""uploadDate":\s*"(\d{4})""").find(document.html())?.groupValues?.get(1)?.toIntOrNull()
         val tags            = document.select("div.searches a").map { it.text() }
-        val rating          = document.selectFirst("span.rate")?.text()?.trim()?.substringBefore("%")?.toRatingInt()?.div(10)
+        val rating          = document.selectFirst("span.rate")?.text()?.trim()?.substringBefore("%")?.toIntOrNull()?.div(10)
         val duration        = document.selectFirst("meta[property=og:duration]")?.attr("content")?.toIntOrNull()?.div(60)
         val recommendations = document.select("section.user_uploads div.video-item").mapNotNull { it.toSearchResult() }
         val actors          = document.select("li.primary_actions_container").map {
@@ -107,7 +110,7 @@ class SpankBang : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.rating          = rating
+            this.score           = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
@@ -125,7 +128,7 @@ class SpankBang : MainAPI() {
                 source  = this.name,
                 name    = this.name,
                 url     = fixUrl(videoUrl),
-                type    = INFER_TYPE
+                type    = ExtractorLinkType.M3U8
             ) {
                 this.referer = data
                 this.quality = Qualities.Unknown.value

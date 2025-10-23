@@ -86,7 +86,7 @@ class Watch2Movies : MainAPI() {
             ?.toIntOrNull()
 
         val tags            = document.select("div.row-line a[href*='/genre/']").map { it.text() }
-        val rating          = document.selectFirst("button.btn-imdb")?.text()?.trim()?.split(" ")?.last()?.toRatingInt()
+        val rating          = document.selectFirst("button.btn-imdb")?.text()?.trim()?.split(" ")?.last()?.toIntOrNull()
         val duration = document.select("div.row-line")
             .firstOrNull { it.text().contains("Duration:") }
             ?.text()
@@ -103,7 +103,7 @@ class Watch2Movies : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.rating          = rating
+            this.score          = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)

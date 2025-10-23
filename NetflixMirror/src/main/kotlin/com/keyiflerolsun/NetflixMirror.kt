@@ -108,7 +108,7 @@ class NetflixMirror : MainAPI() {
             ?.map { it.trim() }
             ?.filter { it.isNotEmpty() }
             ?: emptyList())
-        val rating = data.match?.replace("IMDb ", "")?.toRatingInt()
+        val rating = data.match?.replace("IMDb ", "")?.toIntOrNull()
         val runTime = convertRuntimeToMinutes(data.runtime.toString())
 
         if (data.episodes.first() == null) {
@@ -141,11 +141,11 @@ class NetflixMirror : MainAPI() {
             posterUrl = "https://img.nfmirrorcdn.top/poster/v/$id.jpg"
             backgroundPosterUrl ="https://img.nfmirrorcdn.top/poster/h/$id.jpg"
             posterHeaders = mapOf("Referer" to "$mainUrl/")
-            plot = data.desc
-            year = data.year.toIntOrNull()
-            tags = genre
-            actors = cast
-            this.rating = rating
+            plot          = data.desc
+            year          = data.year.toIntOrNull()
+            tags          = genre
+            actors        = cast
+            this.score    = rating
             this.duration = runTime
         }
     }

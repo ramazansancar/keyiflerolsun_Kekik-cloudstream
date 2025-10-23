@@ -23,7 +23,7 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
+
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
@@ -163,7 +163,7 @@ class YabanciDizi : MainAPI() {
                 tags.add(it.text().trim())
             }
         }
-        val rating = document.selectFirst("div.color-imdb")?.text()?.trim()?.toRatingInt()
+        val rating = document.selectFirst("div.color-imdb")?.text()?.trim()?.toIntOrNull()
         val duration =
             document.selectXpath("//div[text()='Süre']//following-sibling::div").text().trim()
                 .split(" ").first().toIntOrNull()
