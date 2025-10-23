@@ -178,7 +178,7 @@ class DiziAsya : MainAPI() {
                     this.posterUrl = posterUrl
                     this.plot = plot
                     this.year = year
-                    this.rating = rating
+                    this.score = Score.from10(rating)
                     this.tags = tags
                     this.recommendations = recommendations
                 }
@@ -269,7 +269,7 @@ class DiziAsya : MainAPI() {
             this.posterUrl = posterUrl
             this.plot = plot
             this.year = year
-            this.rating = rating
+            this.score = Score.from10(rating)
             this.tags = tags
             this.recommendations = recommendations
         }
