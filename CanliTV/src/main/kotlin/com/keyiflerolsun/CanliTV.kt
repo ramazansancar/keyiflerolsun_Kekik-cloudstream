@@ -218,6 +218,7 @@ class IptvPlaylistParser {
                     val item      = playlistItems[currentIndex]
                     val userAgent = item.userAgent ?: line.getTagValue("http-user-agent")
                     val referrer  = line.getTagValue("http-referrer")
+                    val xreferer  = line.getTagValue("http-x-referer")
 
                     val headers = mutableMapOf<String, String>()
 
@@ -227,6 +228,10 @@ class IptvPlaylistParser {
 
                     if (referrer != null) {
                         headers["referrer"] = referrer
+                    }
+
+                    if (xreferer != null) {
+                        headers["x-referer"] = xreferer
                     }
 
                     playlistItems[currentIndex] = item.copy(
@@ -239,7 +244,18 @@ class IptvPlaylistParser {
                         val url        = line.getUrl()
                         val userAgent  = line.getUrlParameter("user-agent")
                         val referrer   = line.getUrlParameter("referer")
-                        val urlHeaders = if (referrer != null) {item.headers + mapOf("referrer" to referrer)} else item.headers
+                        val xreferer   = line.getUrlParameter("x-referer")
+                        
+                        val urlHeaders = mutableMapOf<String, String>()
+                        if (referrer != null) {
+                            urlHeaders["referrer"] = referrer
+                        }
+                        if (xreferer != null) {
+                            urlHeaders["x-referer"] = xreferer
+                        }
+                        if (userAgent != null) {
+                            urlHeaders["user-agent"] = userAgent
+                        }
 
                         playlistItems[currentIndex] = item.copy(
                             url       = url,
