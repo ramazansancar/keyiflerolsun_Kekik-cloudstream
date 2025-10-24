@@ -11,7 +11,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import com.lagradost.cloudstream3.utils.StringUtils.decodeUri
 
 open class Drive : ExtractorApi() {
@@ -31,17 +31,14 @@ open class Drive : ExtractorApi() {
         val m3uLink = decoded.split("|").last()
         Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
-        callback.invoke(
-            newExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = m3uLink,
-                type    = INFER_TYPE
-            ) {
-                this.headers = mapOf("Referer" to url)
-                /* this.referer = url */
-                this.quality = Qualities.Unknown.value
-            }
-        )
+        callback.invoke(ExtractorLink(
+            source = this.name,
+            name = this.name,
+            url = m3uLink,
+            referer = url,
+            quality = Qualities.Unknown.value,
+            type = INFER_TYPE,
+            headers = mapOf("Referer" to url)
+        ))
     }
 }

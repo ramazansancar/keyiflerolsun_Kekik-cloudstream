@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import com.fasterxml.jackson.annotation.JsonProperty
 
 open class Odnoklassniki : ExtractorApi() {
@@ -45,19 +45,15 @@ open class Odnoklassniki : ExtractorApi() {
                 .replace("ULTRA",  "4k")
 
             callback.invoke(
-                newExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = videoUrl,
-                    type    = INFER_TYPE
-                ) {
-                    this.headers = userAgent
-                    this.quality = getQualityFromName(quality) // `Int` olarak ayarlandı
-                    /**
-                    * varsayılan olarak false olması gerekiyor şimdilik böyle kalsın ve ellemeyelim 
-                    * isM3u8  = false
-                    */
-                }
+                ExtractorLink(
+                    source = this.name,
+                    name = this.name,
+                    url = videoUrl,
+                    referer = "",
+                    quality = getQualityFromName(quality),
+                    type = INFER_TYPE,
+                    headers = userAgent
+                )
             )
         }
     }

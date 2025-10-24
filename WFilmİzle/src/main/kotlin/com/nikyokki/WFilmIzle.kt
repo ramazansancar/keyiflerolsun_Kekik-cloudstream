@@ -27,7 +27,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import org.jsoup.nodes.Element
 
 class WFilmIzle : MainAPI() {
@@ -119,7 +119,6 @@ class WFilmIzle : MainAPI() {
             this.plot      = description
             this.year      = year
             this.tags      = tags
-            this.score     = rating
             addActors(actors)
             addTrailer(trailer)
         }
@@ -167,20 +166,19 @@ class WFilmIzle : MainAPI() {
             val master = updatedVideoData.videoSource ?: ""
             Log.d("WFI", "Master: $master")
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = name,
                     name = name,
                     url = master,
-                    type = ExtractorLinkType.M3U8
-                ) {
-                    this.referer = mainUrl
-                    this.headers = mapOf(
+                    referer = mainUrl,
+                    quality = Qualities.Unknown.value,
+                    type = ExtractorLinkType.M3U8,
+                    headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox",
                         "Accept" to "*/*", "X-Requested-With" to "XMLHttpRequest",
                         "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8"
                     )
-                    this.quality = Qualities.Unknown.value
-                }
+                )
             )
         }
         //loadExtractor(iframe.toS, "${mainUrl}/", subtitleCallback, callback)

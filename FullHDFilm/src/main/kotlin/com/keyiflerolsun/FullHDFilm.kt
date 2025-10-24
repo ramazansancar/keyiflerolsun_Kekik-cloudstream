@@ -115,7 +115,7 @@ class FullHDFilm : MainAPI() {
                 this.plot      = description
                 this.year      = year
                 this.tags      = tags
-                this.score     = score
+                this.rating    = score
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)
@@ -126,7 +126,7 @@ class FullHDFilm : MainAPI() {
                 this.plot      = description
                 this.year      = year
                 this.tags      = tags
-                this.score     = score
+                this.rating    = score
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)
@@ -146,15 +146,14 @@ class FullHDFilm : MainAPI() {
             ).parsedSafe<VidLop>()?.securedLink ?: return false
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = vidUrl,
-                    ExtractorLinkType.M3U8
-                ) {
-                    this.referer = data
-                    this.quality = Qualities.Unknown.value
-                }
+                    referer = data,
+                    quality = Qualities.Unknown.value,
+                    type = ExtractorLinkType.M3U8
+                )
             )
             
             loadExtractor(data, subtitleCallback, callback)

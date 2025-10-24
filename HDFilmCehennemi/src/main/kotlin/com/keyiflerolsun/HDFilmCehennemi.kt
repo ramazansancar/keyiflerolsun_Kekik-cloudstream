@@ -15,7 +15,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
-import com.lagradost.cloudstream3.Score
+
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
@@ -36,7 +36,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -172,11 +172,8 @@ class HDFilmCehennemi : MainAPI() {
         val title     = this.attr("title")
         val href      = fixUrlNull(this.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
-        val score     = this.selectFirst("span.imdb")?.text()?.trim()
-
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
-            this.score = Score.from10(score)
         }
     }
 
@@ -223,7 +220,7 @@ class HDFilmCehennemi : MainAPI() {
         val description = document.selectFirst("article.post-info-content > p")?.text()?.trim()
         val rating =
             document.selectFirst("div.post-info-imdb-rating span")?.text()?.substringBefore("(")
-                ?.trim()
+                ?.trim()?.toFloatOrNull()?.times(10)?.toInt()
         val actors = document.select("div.post-info-cast a").map {
             Actor(it.selectFirst("strong")!!.text(), it.select("img").attr("data-src"))
         }
@@ -267,7 +264,6 @@ class HDFilmCehennemi : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = Score.from10(rating)
                 this.recommendations = recommendations
                 addActors(actors)
                 addTrailer(trailer)
@@ -282,7 +278,6 @@ class HDFilmCehennemi : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = Score.from10(rating)
                 this.recommendations = recommendations
                 addActors(actors)
                 addTrailer(trailer)
@@ -290,33 +285,7 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
-    /*private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
-        val script    = app.get(
-                url,
-                interceptor = interceptor,
-                referer = "${mainUrl}/"
-            ).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
-        val videoData = getAndUnpack(script).substringAfter("file_link=\"").substringBefore("\";")
-        val subData   = script.substringAfter("tracks: [").substringBefore("]")
 
-        callback.invoke(
-            newExtractorLink(
-                source  = source,
-                name    = source,
-                url     = base64Decode(videoData),
-                type    = INFER_TYPE
-            ) {
-                this.referer = "${mainUrl}/"
-                this.quality = Qualities.Unknown.value
-            }
-        )
-
-        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" }?.map {
-            subtitleCallback.invoke(
-                SubtitleFile(it.label.toString(), fixUrl(it.file.toString()))
-            )
-        }
-    }*/
 
     private fun dcHello(base64Input: String): String {
         val decodedOnce = base64Decode(base64Input)

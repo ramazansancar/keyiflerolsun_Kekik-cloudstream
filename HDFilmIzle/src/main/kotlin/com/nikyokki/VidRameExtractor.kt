@@ -15,7 +15,7 @@ import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.fixUrl
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 
 
 open class VidRameExtractor : ExtractorApi() {
@@ -106,15 +106,14 @@ open class VidRameExtractor : ExtractorApi() {
             val sonm3uLink = rs(b)
             Log.d("VidEx", "SonM3u : $sonm3uLink")
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = sonm3uLink,
-                    ExtractorLinkType.M3U8
-                ) {
-                    this.referer = "$mainUrl/"
-                    this.quality = Qualities.Unknown.value
-                }
+                    referer = "$mainUrl/",
+                    quality = Qualities.Unknown.value,
+                    type = ExtractorLinkType.M3U8
+                )
             )
         }
     }

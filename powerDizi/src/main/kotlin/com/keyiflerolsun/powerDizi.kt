@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
@@ -127,16 +127,15 @@ class powerDizi : MainAPI() {
         Log.d("IPTV", "kanal » $kanal")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = loadData.url,
-                type    = ExtractorLinkType.M3U8
-            ){
-                this.referer = kanal.headers["referrer"] ?: ""
-                this.headers = kanal.headers
-                this.quality = Qualities.Unknown.value
-            }
+                referer = kanal.headers["referrer"] ?: "",
+                quality = Qualities.Unknown.value,
+                type    = ExtractorLinkType.M3U8,
+                headers = kanal.headers
+            )
         )
 
         return true

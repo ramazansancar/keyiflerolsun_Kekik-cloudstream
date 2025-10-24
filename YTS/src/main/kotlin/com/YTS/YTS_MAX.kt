@@ -106,15 +106,14 @@ class YTSMX : YTS(){
                 val quality = it.ownText().substringBefore(".").replace("p", "").toInt()
                 val magnet = generateMagnetLink(TRACKER_LIST_URL, infoHash)
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source    = "$name $quality",
                         name      = name,
                         url       = magnet,
+                        referer   = "",
+                        quality   = quality,
                         type      = ExtractorLinkType.MAGNET
-                    ) {
-                        this.quality = quality
-                        this.referer = ""
-                    }
+                    )
                 )
             }
         }

@@ -17,15 +17,14 @@ open class PixelDrain : ExtractorApi() {
         Log.d("Kekik_${this.name}", "downloadLink » $downloadLink")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = "pixeldrain - $pixelId",
                 name    = "pixeldrain - $pixelId",
                 url     = downloadLink,
+                referer = "${mainUrl}/u/${pixelId}?download",
+                quality = Qualities.Unknown.value,
                 type    = INFER_TYPE
-            ) {
-                this.referer = "${mainUrl}/u/${pixelId}?download"
-                this.quality = Qualities.Unknown.value
-            }
+            )
         )
     }
 }

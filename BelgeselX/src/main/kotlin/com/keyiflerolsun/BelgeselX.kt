@@ -149,10 +149,14 @@ class BelgeselX : MainAPI() {
                     Log.d("BLX", "quality » $quality")
                     Log.d("BLX", "videoUrl » $videoUrl")
 
-                    callback.invoke(newExtractorLink(source = thisName, name= thisName, url = videoUrl, type = ExtractorLinkType.VIDEO ) {
-                        this.referer = data
-                        this.quality = getQualityFromName(quality)
-                    })
+                    callback.invoke(ExtractorLink(
+                        source = thisName,
+                        name = thisName,
+                        url = videoUrl,
+                        referer = data,
+                        quality = getQualityFromName(quality),
+                        type = ExtractorLinkType.VIDEO
+                    ))
                 }
             } else {
                 val iframe = fixUrlNull(resp.document.selectFirst("iframe")?.attr("src")) ?: continue

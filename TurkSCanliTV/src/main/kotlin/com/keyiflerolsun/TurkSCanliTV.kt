@@ -24,7 +24,7 @@ import com.lagradost.cloudstream3.newLiveStreamLoadResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import okhttp3.ResponseBody
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -193,23 +193,23 @@ class TurkSCanliTV : MainAPI() {
         kanallar.forEach { it ->
             if (data == it.streamData!!.hlsStreamUrl.toString()) {
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = it.name.toString() + " - HLS",
                         name = it.name.toString() + " - HLS",
                         url = it.streamData.hlsStreamUrl.toString(),
-                        ExtractorLinkType.M3U8
-                    ) {
-                        this.quality = Qualities.Unknown.value
-                    })
+                        referer = "",
+                        quality = Qualities.Unknown.value,
+                        type = ExtractorLinkType.M3U8
+                    ))
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = it.name.toString() + " - DASH",
                         name = it.name.toString() + " - DASH",
                         url = it.streamData.dashStreamUrl.toString(),
-                        ExtractorLinkType.DASH
-                    ) {
-                        this.quality = Qualities.Unknown.value
-                    })
+                        referer = "",
+                        quality = Qualities.Unknown.value,
+                        type = ExtractorLinkType.DASH
+                    ))
             }
         }
         return true

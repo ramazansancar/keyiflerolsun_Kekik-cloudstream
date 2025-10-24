@@ -32,7 +32,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -143,7 +143,6 @@ class WebteIzle : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.score     = rating
             this.duration  = duration
             addTrailer("https://www.youtube.com/embed/${trailer}")
             addActors(actors)
@@ -237,15 +236,14 @@ class WebteIzle : MainAPI() {
                     }
 
                     callback.invoke(
-                        newExtractorLink(
+                        ExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = m3uLink,
-                            type    = ExtractorLinkType.M3U8,
-                        ) {
-                            this.referer = "${mainUrl}/"
-                            this.quality = getQualityFromName("1440p")
-                        }
+                            referer = "${mainUrl}/",
+                            quality = getQualityFromName("1440p"),
+                            type    = ExtractorLinkType.M3U8
+                        )
                     )
 
                     continue
@@ -275,15 +273,14 @@ class WebteIzle : MainAPI() {
                     }
 
                     callback.invoke(
-                        newExtractorLink(
+                        ExtractorLink(
                             source  = "$dilAd - ${this.name}",
                             name    = "$dilAd - ${this.name}",
                             url     = fixUrl(decoded),
-                            type    = ExtractorLinkType.M3U8,
-                        ) {
-                            this.referer = "${mainUrl}/"
-                            this.quality = Qualities.Unknown.value
-                        }
+                            referer = "${mainUrl}/",
+                            quality = Qualities.Unknown.value,
+                            type    = ExtractorLinkType.M3U8
+                        )
                     )
                 }
 

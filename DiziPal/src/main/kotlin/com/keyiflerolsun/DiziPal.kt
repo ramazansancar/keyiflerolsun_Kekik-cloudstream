@@ -191,7 +191,7 @@ class DiziPal : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.score     = rating
+                this.rating    = rating
                 this.duration  = duration
             }
         } else { 
@@ -202,7 +202,7 @@ class DiziPal : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.score     = rating
+                this.rating    = rating
                 this.duration  = duration
             }
         }
@@ -249,15 +249,14 @@ class DiziPal : MainAPI() {
         }
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = "${mainUrl}/"
-                this.quality = Qualities.Unknown.value
-            }
+                referer = "${mainUrl}/",
+                quality = Qualities.Unknown.value,
+                type    = ExtractorLinkType.M3U8
+            )
         )
 
         // M3u8Helper.generateM3u8(

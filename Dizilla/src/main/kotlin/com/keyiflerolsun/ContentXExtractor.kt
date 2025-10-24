@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.getQualityFromName
-import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.Qualities
 
 open class ContentX : ExtractorApi() {
     override val name            = "ContentX"
@@ -47,15 +47,15 @@ open class ContentX : ExtractorApi() {
     val m3uLink = vidExtract.replace("\\", "")
 
     callback.invoke(
-        newExtractorLink(
+        ExtractorLink(
             source = this.name,
             name = this.name,
             url = m3uLink,
-            type = ExtractorLinkType.M3U8
-        ) {
-            this.headers = mapOf("Referer" to url)
-            this.quality = Qualities.Unknown.value
-        }
+            referer = "",
+            quality = Qualities.Unknown.value,
+            type = ExtractorLinkType.M3U8,
+            headers = mapOf("Referer" to url)
+        )
     )
 
     val iDublaj = Regex(""","([^']+)","Türkçe""").find(iSource)!!.groups[1]?.value
@@ -65,15 +65,15 @@ open class ContentX : ExtractorApi() {
         val dublajLink = dublajExtract.replace("\\", "")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = "${this.name} Türkçe Dublaj",
                 name = "${this.name} Türkçe Dublaj",
                 url = dublajLink,
-                type = ExtractorLinkType.M3U8
-            ) {
-                this.headers = mapOf("Referer" to url)
-                this.quality = Qualities.Unknown.value
-            }
+                referer = "",
+                quality = Qualities.Unknown.value,
+                type = ExtractorLinkType.M3U8,
+                headers = mapOf("Referer" to url)
+            )
         )
     }
  }

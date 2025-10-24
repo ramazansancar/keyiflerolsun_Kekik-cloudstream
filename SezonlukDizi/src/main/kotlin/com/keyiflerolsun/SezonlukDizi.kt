@@ -99,7 +99,7 @@ class SezonlukDizi : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.score     = rating
+            this.rating    = rating
             this.duration  = duration
             addActors(actors)
         }
@@ -225,15 +225,14 @@ class SezonlukDizi : MainAPI() {
             "https://sezonlukdizi8.com/"
         )*/
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = "$dil - ${veri.baslik}",
                 name = "$dil - ${veri.baslik}",
                 url = sonFile.file,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = "$mainUrl/"
-                this.quality = Qualities.Unknown.value
-            }
+                referer = "$mainUrl/",
+                quality = Qualities.Unknown.value,
+                type = ExtractorLinkType.M3U8
+            )
         )
     }
 

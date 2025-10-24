@@ -29,7 +29,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -343,19 +343,18 @@ class YabanciDizi : MainAPI() {
                 ?: ""
         Log.d("YBD", vidUrl)
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = "$dilAd - $name",
                 name = "$dilAd - $name",
                 url = vidUrl,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = mainUrl
-                this.headers = mapOf(
+                referer = mainUrl,
+                quality = Qualities.Unknown.value,
+                type = ExtractorLinkType.M3U8,
+                headers = mapOf(
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
                     "Referer" to mainUrl
                 )
-                this.quality = Qualities.Unknown.value
-            }
+            )
         )
         val aa = app.get(
             vidUrl, referer = "$mainUrl/", headers =
@@ -365,19 +364,18 @@ class YabanciDizi : MainAPI() {
         for (sonUrl in urlList) {
             Log.d("YBD", "sonUrl: ${sonUrl.link} -- ${sonUrl.resolution}")
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = "$dilAd - $name -- ${sonUrl.resolution}",
                     name = "$dilAd -$name -- ${sonUrl.resolution}",
                     url = sonUrl.link,
-                    ExtractorLinkType.M3U8
-                ) {
-                    this.referer = vidUrl
-                    this.headers = mapOf(
+                    referer = vidUrl,
+                    quality = getQualityFromName(sonUrl.resolution),
+                    type = ExtractorLinkType.M3U8,
+                    headers = mapOf(
                         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
                         "Referer" to vidUrl
                     )
-                    this.quality = getQualityFromName(sonUrl.resolution)
-                }
+                )
             )
         }
 

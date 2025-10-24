@@ -40,16 +40,15 @@ open class Odnoklassniki : ExtractorApi() {
                 .replace("ULTRA",  "4k")
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = videoUrl,
+                    referer = url,
+                    quality = getQualityFromName(quality) ?: Qualities.Unknown.value,
                     type    = INFER_TYPE,
-                ) {
-                    this.referer = url
-                    this.quality = getQualityFromName(quality) ?: Qualities.Unknown.value
-                    this.headers = userAgent
-                }
+                    headers = userAgent
+                )
             )
         }
     }

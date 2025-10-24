@@ -228,7 +228,7 @@ class TvDiziler : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
+                this.rating = rating
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
@@ -238,7 +238,7 @@ class TvDiziler : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
+                this.rating = rating
                 this.duration = duration
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
@@ -267,17 +267,16 @@ class TvDiziler : MainAPI() {
                 callback
             )
             callback(
-                newExtractorLink(
-                    "Youtube",
-                    "Youtube",
-                    "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
-                    ExtractorLinkType.DASH
-                ) {
-                    this.referer = ""
-                    //this.headers = mapOf()
-                    this.quality = Qualities.Unknown.value
-                    this.extractorData = null
-                }
+                ExtractorLink(
+                    source = "Youtube",
+                    name = "Youtube",
+                    url = "https://nyc1.ivc.ggtyler.dev/api/manifest/dash/id/$id",
+                    referer = "",
+                    quality = Qualities.Unknown.value,
+                    type = ExtractorLinkType.DASH,
+                    headers = mapOf(),
+                    extractorData = null
+                )
             )
         } else {
             val ifDoc = app.get(
@@ -296,27 +295,25 @@ class TvDiziler : MainAPI() {
             val source: TvDiziFile = objectMapper.readValue(videoData)
             if (source.type == "hls") {
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = source.file,
-                        ExtractorLinkType.M3U8
-                    ) {
-                        this.referer = "$mainUrl/"
-                        this.quality = getQualityFromName(source.label)
-                    }
+                        referer = "$mainUrl/",
+                        quality = getQualityFromName(source.label),
+                        type = ExtractorLinkType.M3U8
+                    )
                 )
             } else if (source.type == "mp4") {
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = this.name,
                         name = this.name,
                         url = source.file,
-                        ExtractorLinkType.VIDEO
-                    ) {
-                        this.referer = "$mainUrl/"
-                        this.quality = getQualityFromName(source.label)
-                    }
+                        referer = "$mainUrl/",
+                        quality = getQualityFromName(source.label),
+                        type = ExtractorLinkType.VIDEO
+                    )
                 )
             }
         }

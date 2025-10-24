@@ -101,7 +101,7 @@ class SuperFilmGeldi : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.score           = rating
+            this.rating          = rating
             this.recommendations = recommendations
             addActors(actors)
         }
@@ -129,16 +129,15 @@ class SuperFilmGeldi : MainAPI() {
             Log.d("SFG", "m3uLink » $m3uLink")
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = m3uLink,
-                    type    = ExtractorLinkType.M3U8
-                ) {
-                    this.referer = iframe
-                    this.headers = mapOf("Referer" to iframe)
-                    this.quality = Qualities.Unknown.value
-                }
+                    referer = iframe,
+                    quality = Qualities.Unknown.value,
+                    type    = ExtractorLinkType.M3U8,
+                    headers = mapOf("Referer" to iframe)
+                )
             )
         } else {
             loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)

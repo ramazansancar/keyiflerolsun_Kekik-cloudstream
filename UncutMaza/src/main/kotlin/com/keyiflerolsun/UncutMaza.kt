@@ -80,15 +80,14 @@ class UncutMaza : MainAPI() {
 
         document.select("div.video-player").map { res ->
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source  = this.name,
                     name    = this.name,
                     url     = fixUrl(res.selectFirst("meta[itemprop=contentURL]")?.attr("content")?.trim().toString()),
+                    referer = data,
+                    quality = Qualities.Unknown.value,
                     type    = INFER_TYPE
-                ) {
-                    this.referer = data
-                    this.quality = Qualities.Unknown.value
-                }
+                )
             )
         }
 

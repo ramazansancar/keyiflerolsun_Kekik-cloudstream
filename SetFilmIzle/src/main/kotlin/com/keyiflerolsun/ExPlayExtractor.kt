@@ -24,15 +24,14 @@ open class ExPlay : ExtractorApi() {
         Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = "${this.name} - $title",
                 url     = m3uLink,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = url
-                this.quality = Qualities.Unknown.value
-            }
+                referer = url,
+                quality = Qualities.Unknown.value,
+                type    = ExtractorLinkType.M3U8
+            )
         )
     }
 }

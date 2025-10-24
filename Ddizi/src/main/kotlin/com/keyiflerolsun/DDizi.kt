@@ -6,7 +6,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import org.jsoup.nodes.Element
 
 class DDizi : MainAPI() {
@@ -157,18 +157,15 @@ class DDizi : MainAPI() {
             getHeaders(ogVideo)
         }
 
-        callback.invoke(
-            newExtractorLink(
-                source = name,
-                name = "$name - $quality",
-                url = fileUrl,
-                type = if (isHls) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-            ) {
-                this.referer = ogVideo
-                this.quality = getQualityFromName(quality) ?: Qualities.Unknown.value
-                this.headers = videoHeaders
-            }
-        )
+        callback.invoke(ExtractorLink(
+            source = name,
+            name = "$name - $quality",
+            url = fileUrl,
+            referer = ogVideo,
+            quality = getQualityFromName(quality) ?: Qualities.Unknown.value,
+            type = if (isHls) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO,
+            headers = videoHeaders
+        ))
 
         if (isHls) {
             M3u8Helper.generateM3u8(name, fileUrl, ogVideo, headers = videoHeaders).forEach(callback)

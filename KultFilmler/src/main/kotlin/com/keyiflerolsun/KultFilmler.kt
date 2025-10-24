@@ -111,7 +111,7 @@ class KultFilmler : MainAPI() {
                 this.year            = year
                 this.plot            = description
                 this.tags            = tags
-                this.score           = rating
+                this.rating          = rating
                 this.duration        = duration
                 this.recommendations = recommendations
                 addActors(actors)
@@ -123,7 +123,7 @@ class KultFilmler : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.score           = rating
+            this.rating          = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
@@ -175,15 +175,14 @@ class KultFilmler : MainAPI() {
                 Log.d("Kekik_VidMoly", "m3uLink » $m3uLink")
 
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source  = "VidMoly",
                         name    = "VidMoly",
                         url     = m3uLink,
+                        referer = "https://vidmoly.to/",
+                        quality = Qualities.Unknown.value,
                         type    = INFER_TYPE
-                    ) {
-                        this.referer = "https://vidmoly.to/"
-                        this.quality = Qualities.Unknown.value
-                    }
+                    )
                 )
             } else {
                 loadExtractor(iframe, "${mainUrl}/", subtitleCallback, callback)

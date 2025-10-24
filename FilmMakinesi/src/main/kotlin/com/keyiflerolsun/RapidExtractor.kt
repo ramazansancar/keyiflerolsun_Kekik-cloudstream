@@ -60,15 +60,14 @@ open class RapidExtractor : ExtractorApi() {
         val converted = String(bytes, Charsets.UTF_8)
         Log.d("Kekik_${this.name}", "converted » $converted")
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = converted,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = mainUrl
-                this.quality = Qualities.Unknown.value
-            }
+                referer = mainUrl,
+                quality = Qualities.Unknown.value,
+                type    = ExtractorLinkType.M3U8
+            )
         )
 
     }

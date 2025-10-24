@@ -224,7 +224,6 @@ class RoketDizi : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
                 addActors(actors)
             }
         } else {
@@ -251,7 +250,6 @@ class RoketDizi : MainAPI() {
                 this.posterUrl       = poster
                 this.year            = yil
                 this.plot            = description
-                this.score          = rating
                 this.tags            = tags
                 addActors(actors)
             }

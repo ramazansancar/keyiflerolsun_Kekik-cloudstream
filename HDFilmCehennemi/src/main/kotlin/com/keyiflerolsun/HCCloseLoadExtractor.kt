@@ -16,7 +16,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
-import com.lagradost.cloudstream3.utils.newExtractorLink
+
 import com.lagradost.nicehttp.NiceResponse
 import java.lang.Math.floorMod
 import kotlin.collections.forEach
@@ -91,15 +91,14 @@ open class HCCloseLoadExtractor : ExtractorApi() {
             dcUrl
         }
         callback.invoke(
-            newExtractorLink(
-                source  = this.name,
-                name    = this.name,
-                url     = lastUrl,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = mainUrl
-                this.quality = Qualities.Unknown.value
-            }
+            ExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = lastUrl,
+                referer = mainUrl,
+                quality = Qualities.Unknown.value,
+                type = ExtractorLinkType.M3U8
+            )
         )
     }
 

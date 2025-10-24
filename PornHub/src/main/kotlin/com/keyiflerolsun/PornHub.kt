@@ -102,15 +102,14 @@ class PornHub : MainAPI() {
         // ! Video Qualitys: https://www.pornhub.com/video/get_media?s=
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink,
+                referer = "${mainUrl}/",
+                quality = Qualities.Unknown.value,
                 type    = ExtractorLinkType.M3U8
-            ) {
-                this.referer = "${mainUrl}/"
-                this.quality = Qualities.Unknown.value
-            }
+            )
         )
 
         return true

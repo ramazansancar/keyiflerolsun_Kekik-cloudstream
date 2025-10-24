@@ -90,7 +90,7 @@ class FilmModu : MainAPI() {
             this.plot      = description
             this.year      = year
             this.tags      = tags
-            this.score     = score
+            this.rating    = score
             addActors(actors)
             addTrailer(trailer)
         }
@@ -122,15 +122,14 @@ class FilmModu : MainAPI() {
 
             vidReq.sources?.forEach { source ->
                 callback.invoke(
-                    newExtractorLink(
+                    ExtractorLink(
                         source  = "${this.name} - $altName",
                         name    = "${this.name} - $altName",
                         url     = fixUrl(source.src),
+                        referer = "${mainUrl}/",
+                        quality = getQualityFromName(source.label),
                         type    = INFER_TYPE
-                    ) {
-                        this.referer = "${mainUrl}/"
-                        this.quality = getQualityFromName(source.label)
-                    }
+                    )
                 )
             }
         }

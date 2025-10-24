@@ -88,7 +88,6 @@ class UgurFilm : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.score     = rating
             this.duration  = duration
             addActors(actors)
         }

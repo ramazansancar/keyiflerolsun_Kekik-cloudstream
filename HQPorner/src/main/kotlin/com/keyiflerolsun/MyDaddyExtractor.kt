@@ -38,14 +38,13 @@ open class MyDaddy : ExtractorApi() {
 
         for (quality in qualities) {
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source  = name,
                     name    = name,
                     url     = "${finalurl}/${quality}.mp4",
-                )  {
-                    this.referer = extRef
-                    this.quality = getQualityFromName(quality)
-                }
+                    referer = extRef,
+                    quality = getQualityFromName(quality)
+                )
             )
         }
     }

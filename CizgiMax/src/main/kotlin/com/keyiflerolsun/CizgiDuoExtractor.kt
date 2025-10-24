@@ -38,9 +38,13 @@ open class CizgiDuo : ExtractorApi() {
                 /-* site açılmıyor şu anda o yüzden hata vermemesi için bunu kapatıyorum isM3u8 = true *-/
             }
         )*/
-        callback.invoke(newExtractorLink(source = this.name, name = this.name, url = m3uLink ?: throw ErrorLoadingException("m3u link not found"), ExtractorLinkType.M3U8){
-            this.referer = url
-            this.quality = Qualities.Unknown.value
-        })
+        callback.invoke(ExtractorLink(
+            source = this.name,
+            name = this.name,
+            url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+            referer = url,
+            quality = Qualities.Unknown.value,
+            type = ExtractorLinkType.M3U8
+        ))
     }
 }

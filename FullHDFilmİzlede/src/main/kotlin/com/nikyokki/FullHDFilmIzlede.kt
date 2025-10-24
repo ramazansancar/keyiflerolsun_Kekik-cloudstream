@@ -96,7 +96,6 @@ class FullHDFilmIzlede : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.score           = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
@@ -132,15 +131,14 @@ class FullHDFilmIzlede : MainAPI() {
                 )
             }
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = this.name,
                 name = this.name,
                 url = file,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = "$mainUrl/"
-                this.quality = Qualities.Unknown.value
-            }
+                referer = "$mainUrl/",
+                quality = Qualities.Unknown.value,
+                type = ExtractorLinkType.M3U8
+            )
         )
         return true
     }

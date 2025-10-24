@@ -50,15 +50,14 @@ open class HDMomPlayer : ExtractorApi() {
         }
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = url
-                this.quality = Qualities.Unknown.value
-            }
+                referer = url,
+                quality = Qualities.Unknown.value,
+                type    = ExtractorLinkType.M3U8
+            )
         )
     }
 

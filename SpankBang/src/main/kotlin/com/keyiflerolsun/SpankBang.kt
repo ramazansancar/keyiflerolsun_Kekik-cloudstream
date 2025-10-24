@@ -8,7 +8,6 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class SpankBang : MainAPI() {
@@ -110,7 +109,6 @@ class SpankBang : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.score           = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
@@ -124,15 +122,14 @@ class SpankBang : MainAPI() {
         Log.d("SkBg", "videoUrl » $videoUrl")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = fixUrl(videoUrl),
+                referer = data,
+                quality = Qualities.Unknown.value,
                 type    = ExtractorLinkType.M3U8
-            ) {
-                this.referer = data
-                this.quality = Qualities.Unknown.value
-            }
+            )
         )
 
         return true

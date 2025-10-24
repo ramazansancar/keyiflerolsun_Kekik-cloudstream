@@ -105,7 +105,7 @@ class SetFilmIzle : MainAPI() {
         val description     = document.selectFirst("div.wp-content p")?.text()?.trim()
         var year            = document.selectFirst("div.extra span.C a")?.text()?.trim()?.toIntOrNull()
         val tags            = document.select("div.sgeneros a").map { it.text() }
-        val score           = document.selectFirst("span.dt_rating_vgs")?.text()?.trim()?.toIntOrNull()
+        val rating          = document.selectFirst("span.dt_rating_vgs")?.text()?.trim()?.toIntOrNull()
         var duration        = document.selectFirst("span.runtime")?.text()?.split(" ")?.first()?.trim()?.toIntOrNull()
         val recommendations = document.select("div.srelacionados article").mapNotNull { it.toRecommendationResult() }
         val actors          = document.select("span.valor a").map { Actor(it.text()) }
@@ -134,7 +134,7 @@ class SetFilmIzle : MainAPI() {
                 this.plot            = description
                 this.year            = year
                 this.tags            = tags
-                this.score           = score
+                this.rating          = rating
                 this.duration        = duration
                 this.recommendations = recommendations
                 addActors(actors)
@@ -147,7 +147,7 @@ class SetFilmIzle : MainAPI() {
             this.plot            = description
             this.year            = year
             this.tags            = tags
-            this.score           = score
+            this.rating          = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)

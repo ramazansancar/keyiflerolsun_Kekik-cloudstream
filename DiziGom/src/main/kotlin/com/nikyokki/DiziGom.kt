@@ -144,7 +144,6 @@ class DiziGom : MainAPI() {
             this.plot      = description
             this.tags      = tags
             this.duration  = duration
-            this.score     = rating
             addActors(actors)
         }
 
@@ -186,15 +185,15 @@ class DiziGom : MainAPI() {
 
         val source: Go = objectMapper.readValue(sourceJ!!)
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = this.name,
                 name = this.name,
                 url = source.file,
-                type = ExtractorLinkType.M3U8
-            ) {
+                referer = "",
+                quality = getQualityFromName(source.label),
+                type = ExtractorLinkType.M3U8,
                 headers = mapOf("Referer" to "$mainUrl/")
-                quality = getQualityFromName(source.label)
-            }
+            )
         )
 
         return true

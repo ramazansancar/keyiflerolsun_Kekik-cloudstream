@@ -140,15 +140,14 @@ class TwitchProvider : MainAPI() {
             response.urls?.forEach { (name, url) ->
                 val quality = getQualityFromName(name.substringBefore("p"))
                 callback.invoke(
-                    newExtractorLink(
-                        this.name,
-                        "${this.name} ${name.replace("${quality}p", "")}",
-                        url
-                    ) {
-                        this.type = ExtractorLinkType.M3U8
-                        this.quality = quality
-                        this.referer = ""
-                    }
+                    ExtractorLink(
+                        source = this.name,
+                        name = "${this.name} ${name.replace("${quality}p", "")}",
+                        url = url,
+                        referer = "",
+                        quality = quality,
+                        type = ExtractorLinkType.M3U8
+                    )
                 )
             }
         }

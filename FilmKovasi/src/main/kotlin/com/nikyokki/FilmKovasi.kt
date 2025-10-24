@@ -121,7 +121,6 @@ class FilmKovasi : MainAPI() {
             this.plot      = description
             this.year      = year
             this.tags      = tags
-            this.score     = rating
             addActors(actors)
             addTrailer(trailer)
         }

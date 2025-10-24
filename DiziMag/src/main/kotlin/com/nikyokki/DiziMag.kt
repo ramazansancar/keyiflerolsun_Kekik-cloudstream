@@ -30,7 +30,6 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
@@ -228,7 +227,6 @@ class DiziMag : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.score     = rating
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
             }
@@ -238,7 +236,6 @@ class DiziMag : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.score     = rating
                 this.duration  = duration
                 addActors(actors)
                 addTrailer("https://www.youtube.com/embed/${trailer}")
@@ -295,16 +292,15 @@ class DiziMag : MainAPI() {
                     }
 
                     callback.invoke(
-                        newExtractorLink(
+                        ExtractorLink(
                             source = this.name,
                             name = this.name,
                             url = jsonData.videoLocation,
-                            ExtractorLinkType.M3U8
-                        ) {
-                            this.headers = mapOf("Accept" to "*/*", "Referer" to iframe)
-                            this.referer = iframe
-                            this.quality = Qualities.Unknown.value
-                        }
+                            referer = iframe,
+                            quality = Qualities.Unknown.value,
+                            type = ExtractorLinkType.M3U8,
+                            headers = mapOf("Accept" to "*/*", "Referer" to iframe)
+                        )
                     )
                 }
             }

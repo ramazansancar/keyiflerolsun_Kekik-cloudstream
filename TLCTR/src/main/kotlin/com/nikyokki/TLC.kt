@@ -125,15 +125,14 @@ class TLC : MainAPI() {
         Log.d("TLC", "videoCode » $videoCode")
         val vidUrl = "https://dygvideo.dygdigital.com/api/redirect?PublisherId=20&ReferenceId=$videoCode&SecretKey=NtvApiSecret2014*"
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = this.name,
                 name = this.name,
                 url = vidUrl,
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = "$mainUrl/"
-                this. quality = Qualities.Unknown.value
-            }
+                referer = "$mainUrl/",
+                quality = Qualities.Unknown.value,
+                type = ExtractorLinkType.M3U8
+            )
         )
         return true
     }

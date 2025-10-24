@@ -110,7 +110,7 @@ class FullHDFilmizlesene : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.score           = score
+            this.rating          = score
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)

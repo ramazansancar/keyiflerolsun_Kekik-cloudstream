@@ -145,7 +145,7 @@ class NetflixMirror : MainAPI() {
             year          = data.year.toIntOrNull()
             tags          = genre
             actors        = cast
-            this.score    = rating
+            rating?.let { this.rating = it }
             this.duration = runTime
         }
     }
@@ -202,15 +202,14 @@ class NetflixMirror : MainAPI() {
         playlist.forEach { item ->
             item.sources.forEach {
                 callback.invoke(
-                    newExtractorLink(
-                        name,
-                        it.label,
-                        fixUrl(it.file),
+                    ExtractorLink(
+                        source = name,
+                        name = it.label,
+                        url = fixUrl(it.file),
+                        referer = "$mainUrl/",
+                        quality = getQualityFromName(it.file.substringAfter("q=", "")),
                         type = ExtractorLinkType.M3U8
-                    ) {
-                        this.referer = "$mainUrl/"
-                        this.quality = getQualityFromName(it.file.substringAfter("q=", ""))
-                    }
+                    )
                 )
             }
 

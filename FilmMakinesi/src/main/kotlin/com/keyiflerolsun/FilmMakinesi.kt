@@ -180,7 +180,7 @@ class FilmMakinesi : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.score     = rating
+                this.rating    = rating
                 addActors(actors)
                 addTrailer(trailer)
             }
@@ -190,7 +190,7 @@ class FilmMakinesi : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.score           = rating
+            this.rating          = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
