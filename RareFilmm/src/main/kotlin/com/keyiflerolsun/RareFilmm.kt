@@ -74,7 +74,7 @@ class RareFilmm : MainAPI() {
             this.posterUrl = poster
             this.plot      = description
             this.tags      = tags
-            this.rating    = rating
+            this.rating = rating
         }
     }
 

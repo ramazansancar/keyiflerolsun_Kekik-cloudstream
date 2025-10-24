@@ -1,5 +1,7 @@
 package com.nikyokki
 
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import CryptoJS
 import android.util.Log
 import com.lagradost.cloudstream3.Actor

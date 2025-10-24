@@ -120,7 +120,7 @@ class RecTV : MainAPI() {
                 this.plot      = veri.description
                 this.year      = veri.year
                 this.tags      = veri.genres?.map { it.title }
-                this.rating    = veri.rating?.toInt()
+                this.rating = veri.rating?.toInt()
             }
         }
 
@@ -130,7 +130,7 @@ class RecTV : MainAPI() {
                 this.plot      = veri.description
                 this.year      = veri.year
                 this.tags      = veri.genres?.map { it.title }
-                this.rating    = veri.rating?.toInt()
+                this.rating = veri.rating?.toInt()
             }
         } else {
             newLiveStreamLoadResponse(veri.title, url, url) {

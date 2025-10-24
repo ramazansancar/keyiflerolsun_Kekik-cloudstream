@@ -126,7 +126,7 @@ class HDFilmIzle : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
+            this.rating = rating
             this.recommendations = recommendations
             addActors(actors)
             addTrailer(trailer)

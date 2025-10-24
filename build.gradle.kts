@@ -64,8 +64,13 @@ subprojects {
                 freeCompilerArgs.addAll(
                     "-Xno-call-assertions",
                     "-Xno-param-assertions",
-                    "-Xno-receiver-assertions"
+                    "-Xno-receiver-assertions",
+                    "-Xsuppress-deprecated-jvm-target-warning",
+                    "-Xsuppress-version-warnings"
                 )
+                // Deprecated warnings'leri suppress et
+                suppressWarnings.set(true)
+                allWarningsAsErrors.set(false)
             }
         }
     }

@@ -269,7 +269,7 @@ class AsyaWatch : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.rating    = rating
+                this.rating = rating
                 addActors(actors)
                 addTrailer(trailer)
             }
@@ -280,7 +280,7 @@ class AsyaWatch : MainAPI() {
             this.plot      = description
             this.year      = year
             this.tags      = tags
-            this.rating    = rating
+            this.rating = rating
             this.duration = duration
             addActors(actors)
             addTrailer(trailer)

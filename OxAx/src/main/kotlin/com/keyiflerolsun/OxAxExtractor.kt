@@ -2,6 +2,8 @@
 
 package com.keyiflerolsun
 
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import android.util.Base64
 import android.util.Log
 import com.lagradost.cloudstream3.ErrorLoadingException

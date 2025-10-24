@@ -107,7 +107,7 @@ class SineWix : MainAPI() {
                 this.plot            = description
                 this.year            = year
                 this.tags            = tags
-                this.rating          = rating
+                this.rating = rating
                 this.recommendations = recommendations
                 addActors(actors)
             }
@@ -146,7 +146,7 @@ class SineWix : MainAPI() {
                 this.plot            = description
                 this.year            = year
                 this.tags            = tags
-                this.rating          = rating
+                this.rating = rating
                 this.recommendations = recommendations
                 addActors(actors)
             }

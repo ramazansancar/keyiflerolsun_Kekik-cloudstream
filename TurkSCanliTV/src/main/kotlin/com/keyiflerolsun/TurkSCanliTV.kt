@@ -2,6 +2,8 @@
 
 package com.keyiflerolsun
 
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
 import CanliTvResult
 import ChannelResult
 import com.fasterxml.jackson.databind.DeserializationFeature

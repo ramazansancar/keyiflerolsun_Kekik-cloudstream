@@ -115,7 +115,7 @@ class FullHDFilm : MainAPI() {
                 this.plot      = description
                 this.year      = year
                 this.tags      = tags
-                this.rating    = score
+                this.rating = score
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)
@@ -126,7 +126,7 @@ class FullHDFilm : MainAPI() {
                 this.plot      = description
                 this.year      = year
                 this.tags      = tags
-                this.rating    = score
+                this.rating = score
                 this.duration  = duration
                 addActors(actors)
                 addTrailer(trailer)

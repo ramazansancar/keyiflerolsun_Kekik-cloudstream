@@ -2,6 +2,7 @@
 
 package com.keyiflerolsun
 
+import com.lagradost.cloudstream3.*
 import android.util.Log
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app

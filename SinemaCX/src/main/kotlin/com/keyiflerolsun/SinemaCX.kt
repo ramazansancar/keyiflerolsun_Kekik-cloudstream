@@ -89,7 +89,7 @@ class SinemaCX : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.rating    = rating
+            this.rating = rating
             this.duration  = duration
             addActors(actors)
         }
