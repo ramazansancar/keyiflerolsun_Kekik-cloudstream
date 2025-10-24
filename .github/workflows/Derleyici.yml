@@ -18,7 +18,7 @@ on:
       - "**/*.py"
 
 env:
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.configureondemand=true -Xmx6g"
 
 jobs:
   CloudStreamDerleyici:
@@ -42,11 +42,15 @@ jobs:
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
         with:
-          distribution: adopt
+          distribution: temurin
           java-version: 17
 
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
+        with:
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
 
       - name: Gradle Cache
         uses: actions/cache@v4
@@ -54,6 +58,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ~/.gradle/kotlin
           key: ${{ runner.os }}-gradle-${{ hashFiles('src/**/*.gradle*', 'src/**/gradle-wrapper.properties', 'src/gradle.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -61,8 +66,10 @@ jobs:
       - name: Gradle Build Cache
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/src/.gradle
-          key: ${{ runner.os }}-gradle-build-${{ github.sha }}
+          path: |
+            ${{ github.workspace }}/src/.gradle
+            ${{ github.workspace }}/src/build
+          key: ${{ runner.os }}-gradle-build-${{ hashFiles('src/**/*.gradle*', 'src/**/*.kt') }}
           restore-keys: |
             ${{ runner.os }}-gradle-build-
 
@@ -70,7 +77,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
-          ./gradlew --q --parallel make makePluginsJson --continue --warning-mode=none
+          ./gradlew --no-daemon --parallel --build-cache --configuration-cache make makePluginsJson --continue --warning-mode=none
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
