@@ -88,7 +88,7 @@ class WFilmIzle : MainAPI() {
         val tags = document.select("div.categories a").map { it.text() }
         Log.d("WFI", "tags: $tags")
         val rating = document.select("div.imdb").last()?.text()?.replace("IMDb Puanı:","")?.split("/")
-            ?.first()?.trim()?.toRatingInt()
+            ?.first()?.trim()
         Log.d("WFI", "rating: " + document.selectFirst("div.imdb").toString())
         val actors = document.select("div.actor a").map { it.text() }
         Log.d("WFI", "actors: $actors")
@@ -99,7 +99,7 @@ class WFilmIzle : MainAPI() {
             this.plot = description
             this.year = year
             this.tags = tags
-            this.rating = rating
+            this.score = Score.from10(rating)
             addActors(actors)
             addTrailer(trailer)
         }
