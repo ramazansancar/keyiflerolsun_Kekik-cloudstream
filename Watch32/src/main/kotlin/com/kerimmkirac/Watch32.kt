@@ -72,12 +72,7 @@ class Watch32 : MainAPI() {
             return newMovieLoadResponse(name, url, TvType.Movie, "list/$contentId") {
                 this.posterUrl = details.select("div.film-poster > img").attr("src")
                 this.plot = details.select("div.description").text()
-                this.rating =
-                        details.select("button.btn-imdb")
-                                .text()
-                                .replace("N/A", "")
-                                .replace("IMDB: ", "")
-                                .toIntOrNull()
+                
                 addTrailer(res.document.select("iframe#iframe-trailer").attr("data-src"))
             }
         } else {
@@ -111,12 +106,7 @@ class Watch32 : MainAPI() {
             return newTvSeriesLoadResponse(name, url, TvType.TvSeries, episodes) {
                 this.posterUrl = details.select("div.film-poster > img").attr("src")
                 this.plot = details.select("div.description").text()
-                this.rating =
-                        details.select("button.btn-imdb")
-                                .text()
-                                .replace("N/A", "")
-                                .replace("IMDB: ", "")
-                                .toIntOrNull()
+                
                 addTrailer(res.document.select("iframe#iframe-trailer").attr("data-src"))
             }
         }
