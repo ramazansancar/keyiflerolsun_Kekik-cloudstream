@@ -28,7 +28,6 @@ import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
-import com.lagradost.cloudstream3.toRatingInt
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.syncproviders.SyncIdName
@@ -239,9 +238,6 @@ class Dizilla : MainAPI() {
                 ?.split(" ")?.last()?.toIntOrNull()
         val description = document.selectFirst("div.mt-2.text-sm")?.text()?.trim()
         val tags = document.selectFirst("div.poster.poster h3")?.text()?.split(",")?.map { it }
-        val rating =
-            document.selectFirst("div.flex.items-center")?.selectFirst("span.text-white.text-sm")
-                ?.text()?.trim().toRatingInt()
         val actors = document.select("div.global-box h5").map {
             Actor(it.text())
         }
@@ -273,7 +269,6 @@ class Dizilla : MainAPI() {
             this.year = year
             this.plot = description
             this.tags = tags
-            this.rating = rating
             addActors(actors)
         }
     }
