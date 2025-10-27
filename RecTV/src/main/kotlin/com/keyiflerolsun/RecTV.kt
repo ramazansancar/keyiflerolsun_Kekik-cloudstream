@@ -26,7 +26,7 @@ class RecTV : MainAPI() {
     private var currentToken: String? = null
     private var tokenExpirationTime: Long = 0L 
     
-    private val AUTH_URL = "$mainUrl/api/"
+    private val AUTH_URL = "${mainUrl}/api/attest/nonce"
 
     /**
      * Geçerli bir JWT döndürür. Token yoksa veya süresi dolmak üzereyse yenileme yapar.
