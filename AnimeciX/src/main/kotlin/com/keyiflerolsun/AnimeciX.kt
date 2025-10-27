@@ -127,7 +127,6 @@ class AnimeciX : MainAPI() {
             this.year      = response.title.year
             this.plot      = response.title.description
             this.tags      = response.title.tags.map { it.name }
-            this.rating    = response.title.rating.toRatingInt()
             addActors(response.title.actors.map { Actor(it.name, fixUrlNull(it.poster)) })
             addTrailer(response.title.trailer)
         }
