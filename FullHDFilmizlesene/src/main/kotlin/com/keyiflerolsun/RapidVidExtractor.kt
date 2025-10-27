@@ -18,7 +18,7 @@ open class RapidVid : ExtractorApi() {
     override val mainUrl         = "https://rapidvid.net"
     override val requiresReferer = true
 
-    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (newSubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
         val videoReq = app.get(url, referer=extRef).document
 
@@ -34,7 +34,7 @@ open class RapidVid : ExtractorApi() {
                 val url  = (track.file.replace("\\", ""))
                 if (lang != null){
                     subtitleCallback.invoke(
-                        SubtitleFile(lang, url)
+                        newSubtitleFile(lang, url)
                     )
                 }
             }

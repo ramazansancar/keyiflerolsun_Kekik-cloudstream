@@ -16,7 +16,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
 import com.lagradost.cloudstream3.SearchResponse
-import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.base64Decode
@@ -243,7 +243,7 @@ class HDFilmCehennemi : MainAPI() {
     )
     val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true, interceptor = interceptor)
                 if (subtitleResponse.isSuccessful) {
-                    subtitleCallback(SubtitleFile(it.language.toString(), subtitleUrl))
+                    subtitleCallback(newSubtitleFile(it.language.toString(), subtitleUrl))
                     Log.d("HDCH", "Subtitle added: $subtitleUrl")
                 } else {
                     Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
@@ -265,7 +265,7 @@ class HDFilmCehennemi : MainAPI() {
 override suspend fun loadLinks(
     data: String,
     isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
+    subtitleCallback: (newSubtitleFile) -> Unit,
     callback: (ExtractorLink) -> Unit
 ): Boolean {
     Log.d("HDCH", "data » $data")

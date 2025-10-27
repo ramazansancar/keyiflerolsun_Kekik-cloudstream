@@ -11,7 +11,7 @@ open class VidMoxy : ExtractorApi() {
     override val mainUrl         = "https://vidmoxy.com"
     override val requiresReferer = true
 
-    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (newSubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
         val videoReq = app.get(url, referer=extRef).text
 
@@ -23,7 +23,7 @@ open class VidMoxy : ExtractorApi() {
             subUrls.add(subUrl)
 
             subtitleCallback.invoke(
-                SubtitleFile(
+                newSubtitleFile(
                     lang = subLang.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç"),
                     url  = fixUrl(subUrl.replace("\\", ""))
                 )

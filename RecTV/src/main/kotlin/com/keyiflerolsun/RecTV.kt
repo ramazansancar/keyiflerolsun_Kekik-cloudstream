@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import okhttp3.Interceptor
 import java.util.Base64
 
-private val Int.seconds: Long
+val Int.seconds: Long
     get() = this * 1000L
 
 class RecTV : MainAPI() {
