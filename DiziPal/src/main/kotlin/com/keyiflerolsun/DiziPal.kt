@@ -15,7 +15,7 @@ import org.jsoup.Jsoup
 import java.net.URLEncoder
 
 class DiziPal : MainAPI() {
-    override var mainUrl              = "https://dizipal1213.com"
+    override var mainUrl              = "https://dizipal1214.com"
     override var name                 = "DiziPal"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -168,7 +168,6 @@ class DiziPal : MainAPI() {
         val year        = document.selectXpath("//div[text()='Yapım Yılı']//following-sibling::div").text().trim().toIntOrNull()
         val description = document.selectFirst("div.summary p")?.text()?.trim()
         val tags        = document.selectXpath("//div[text()='Türler']//following-sibling::div").text().trim().split(" ").map { it.trim() }
-        val rating      = document.selectXpath("//div[text()='IMDB Puanı']//following-sibling::div").text().trim().toRatingInt()
         val duration    = Regex("(\\d+)").find(document.selectXpath("//div[text()='Ortalama Süre']//following-sibling::div").text())?.value?.toIntOrNull()
 
         if (url.contains("/dizi/")) {
@@ -192,7 +191,6 @@ class DiziPal : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.rating    = rating
                 this.duration  = duration
             }
         } else { 
@@ -203,7 +201,6 @@ class DiziPal : MainAPI() {
                 this.year      = year
                 this.plot      = description
                 this.tags      = tags
-                this.rating    = rating
                 this.duration  = duration
             }
         }

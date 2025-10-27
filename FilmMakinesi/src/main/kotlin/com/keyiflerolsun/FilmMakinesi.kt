@@ -103,7 +103,6 @@ private fun Element.toSearchResult(): SearchResponse? {
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description     = document.select("div.info-description p").last()?.text()?.trim()
         val tags            = document.selectFirst("dt:contains(Tür:) + dd")?.text()?.split(", ")
-        val rating          = document.selectFirst("dt:contains(IMDB Puanı:) + dd")?.text()?.trim()?.toRatingInt()
         val year            = document.selectFirst("dt:contains(Yapım Yılı:) + dd")?.text()?.trim()?.toIntOrNull()
 
         val durationElement = document.select("dt:contains(Film Süresi:) + dd time").attr("datetime")
@@ -128,7 +127,6 @@ private fun Element.toSearchResult(): SearchResponse? {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)
