@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import okhttp3.Interceptor
 import java.util.Base64
 
-val Int.toMillis: Long
+val Int.toMinutes: Long
     get() = this * 1000L
 
 class RecTV : MainAPI() {
@@ -35,7 +35,7 @@ class RecTV : MainAPI() {
         val currentTime = System.currentTimeMillis()
 
         // Token'ın süresinin dolmasına 30 saniyeden az kalmışsa yenile.
-        if (currentToken == null || tokenExpirationTime < (currentTime + 30.toMillis)) {
+        if (currentToken == null || tokenExpirationTime < (currentTime + 30.toMinutes)) {
             refreshToken()
         }
         
@@ -61,7 +61,7 @@ class RecTV : MainAPI() {
             val expirationSeconds = authResponse.expiresIn
             
             if (expirationSeconds != null) {
-                tokenExpirationTime = System.currentTimeMillis() + (expirationSeconds.toInt()).toMillis
+                tokenExpirationTime = System.currentTimeMillis() + (expirationSeconds.toInt()).toMinutes
             } else {
                 try {
                     val parts = currentToken!!.split(".")
@@ -73,11 +73,11 @@ class RecTV : MainAPI() {
                         
                         tokenExpirationTime = jwtPayload.expiration * 1000L
                     } else {
-                         tokenExpirationTime = System.currentTimeMillis() + 60.toMillis 
+                         tokenExpirationTime = System.currentTimeMillis() + 60.toMinutes 
                     }
                 } catch (e: Exception) {
                     Log.e(name, "JWT expiration time could not be parsed: $e")
-                    tokenExpirationTime = System.currentTimeMillis() + 60.toMillis 
+                    tokenExpirationTime = System.currentTimeMillis() + 60.toMinutes 
                 }
             }
             Log.d(name, "Token refreshed successfully. Expires at $tokenExpirationTime")
