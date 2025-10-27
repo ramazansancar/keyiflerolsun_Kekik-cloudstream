@@ -61,7 +61,7 @@ class RecTV : MainAPI() {
             val expirationSeconds = authResponse.expiresIn
             
             if (expirationSeconds != null) {
-                tokenExpirationTime = System.currentTimeMillis() + expirationSeconds.toMillis
+                tokenExpirationTime = System.currentTimeMillis() + (expirationSeconds.toInt()).toMillis
             } else {
                 try {
                     val parts = currentToken!!.split(".")
