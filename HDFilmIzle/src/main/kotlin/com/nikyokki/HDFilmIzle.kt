@@ -15,7 +15,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.jsoup.Jsoup
 
 class HDFilmIzle : MainAPI() {
-    override var mainUrl              = "https://www.hdfilmizle.to"
+    override var mainUrl              = "https://www.hdfilmizle.life"
     override var name                 = "HDFilmİzle"
     override val hasMainPage          = true
     override var lang                 = "tr"
