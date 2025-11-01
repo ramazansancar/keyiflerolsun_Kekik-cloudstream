@@ -27,7 +27,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class TurkAnime : MainAPI() {
-    override var mainUrl = "https://www.turkanime.co"
+    override var mainUrl = "https://www.turkanime.tv"
     override var name = "TurkAnime"
     override val hasMainPage = true
     override var lang = "tr"
