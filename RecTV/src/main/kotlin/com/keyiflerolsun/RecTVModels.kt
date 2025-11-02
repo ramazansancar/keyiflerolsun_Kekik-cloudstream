@@ -4,6 +4,18 @@ package com.keyiflerolsun
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
+data class JWTPayload(
+    @JsonProperty("exp") 
+    val expiration: Long
+)
+
+data class AuthResponse(
+    @JsonProperty("token")
+    val accessToken: String,
+    @JsonProperty("expires_in") 
+    val expiresIn: Long? = null 
+)
+
 data class RecItem(
     @JsonProperty("id")          val id: Int,
     @JsonProperty("type")        val type: String?,

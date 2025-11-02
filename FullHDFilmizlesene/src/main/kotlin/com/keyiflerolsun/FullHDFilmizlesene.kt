@@ -83,7 +83,6 @@ class FullHDFilmizlesene : MainAPI() {
         val year            = document.selectFirst("div.dd a.category")?.text()?.split(" ")?.get(0)?.trim()?.toIntOrNull()
         val description     = document.selectFirst("div.ozet-ic > p")?.text()?.trim()
         val tags            = document.select("a[rel='category tag']").map { it.text() }
-        val rating          = document.selectFirst("div.puanx-puan")?.text()?.split(" ")?.last()?.toRatingInt()
         val duration        = document.selectFirst("span.sure")?.text()?.split(" ")?.get(0)?.trim()?.toIntOrNull()
         val trailer         = Regex("""embedUrl": "(.*)"""").find(document.html())?.groupValues?.get(1)
         val actors          = document.select("div.film-info ul li:nth-child(2) a > span").map {
@@ -105,7 +104,6 @@ class FullHDFilmizlesene : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
             this.duration        = duration
             this.recommendations = recommendations
             addActors(actors)

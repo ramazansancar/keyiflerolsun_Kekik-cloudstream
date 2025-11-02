@@ -121,7 +121,6 @@ class DisneyMirrorProvider : MainAPI() {
             ?.map { it.trim() }
             ?.filter { it.isNotEmpty() }
             ?: emptyList())
-        val rating = data.match?.replace("IMDb ", "")?.toRatingInt()
         val runTime = convertRuntimeToMinutes(data.runtime.toString())
 
         if (data.episodes.first() == null) {
@@ -158,7 +157,6 @@ class DisneyMirrorProvider : MainAPI() {
             year = data.year.toIntOrNull()
             tags = genre
             actors = cast
-            this.rating = rating
             this.duration = runTime
         }
     }

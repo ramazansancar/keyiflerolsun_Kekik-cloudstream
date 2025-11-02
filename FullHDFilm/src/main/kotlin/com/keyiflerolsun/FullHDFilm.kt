@@ -84,7 +84,6 @@ class FullHDFilm : MainAPI() {
         val poster      = fixUrlNull(document.selectFirst("div.poster img")?.attr("src"))
         val description = document.select("#details > div:nth-child(2) > div")?.text()?.trim()
         val tags        = document.select("h4 a").map { it.text() }
-        val rating      = document.selectFirst("div.button-custom")?.text()?.trim()?.split(" ")?.first()?.toRatingInt()
         val year        = Regex("""(\d+)""").find(document.selectFirst("div.release")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
         val actors = document.selectFirst("div.oyuncular")?.ownText() ?.split(",") ?.map { Actor(it.trim()) } ?: emptyList()
     
@@ -93,7 +92,6 @@ class FullHDFilm : MainAPI() {
             this.year = year
             this.plot = description
             this.tags = tags
-            this.rating = rating
             addActors(actors)
         }
     }

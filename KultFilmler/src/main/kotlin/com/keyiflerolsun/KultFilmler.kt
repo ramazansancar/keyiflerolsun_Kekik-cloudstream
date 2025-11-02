@@ -17,7 +17,7 @@ import org.jsoup.Jsoup
 import java.util.regex.Pattern
 
 class KultFilmler : MainAPI() {
-    override var mainUrl              = "https://kultfilmler.pro"
+    override var mainUrl              = "https://kultfilmler.net"
     override var name                 = "KultFilmler"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -113,7 +113,6 @@ class KultFilmler : MainAPI() {
         val poster          = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description     = document.selectFirst("div.description")?.text()?.trim()
         var tags            = document.select("ul.post-categories a").map { it.text() }
-        val rating          = document.selectFirst("div.imdb-count")?.text()?.trim()?.split(" ")?.first()?.toRatingInt()
         val year            = Regex("""(\d+)""").find(document.selectFirst("li.release")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
         val duration        = Regex("""(\d+)""").find(document.selectFirst("li.time")?.text()?.trim() ?: "")?.groupValues?.get(1)?.toIntOrNull()
         val actors          = document.select("div.actors a").map {
@@ -143,7 +142,6 @@ class KultFilmler : MainAPI() {
                 this.year            = year
                 this.plot            = description
                 this.tags            = tags
-                this.rating          = rating
                 this.duration        = duration
                 addActors(actors)
             }
@@ -154,7 +152,6 @@ class KultFilmler : MainAPI() {
             this.year            = year
             this.plot            = description
             this.tags            = tags
-            this.rating          = rating
             this.duration        = duration
             addActors(actors)
         }

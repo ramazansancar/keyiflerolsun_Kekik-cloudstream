@@ -1,5 +1,4 @@
 // ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
-// ! https://github.com/Amiqo09/Diziyou-Cloudstream
 
 package com.keyiflerolsun
 
@@ -7,10 +6,15 @@ import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import okhttp3.Interceptor
+import java.util.Base64
+
+val Int.toMinutes: Long
+    get() = this * 1000L
 
 class RecTV : MainAPI() {
-    override var mainUrl              = "https://m.prectv50.sbs"
+    override var mainUrl              = "https://m.prectv60.lol"
     override var name                 = "RecTV"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -18,6 +22,70 @@ class RecTV : MainAPI() {
     override val supportedTypes       = setOf(TvType.Movie, TvType.Live, TvType.TvSeries)
 
     private val swKey = "4F5A9C3D9A86FA54EACEDDD635185/c3c5bd17-e37b-4b94-a944-8a3688a30452"
+
+    private var currentToken: String? = null
+    private var tokenExpirationTime: Long = 0L 
+    
+    private val AUTH_URL = "${mainUrl}/api/attest/nonce"
+
+    /**
+     * Geçerli bir JWT döndürür. Token yoksa veya süresi dolmak üzereyse yenileme yapar.
+     */
+    private suspend fun getValidToken(): String {
+        val currentTime = System.currentTimeMillis()
+
+        // Token'ın süresinin dolmasına 30 saniyeden az kalmışsa yenile.
+        if (currentToken == null || tokenExpirationTime < (currentTime + 30.toMinutes)) {
+            refreshToken()
+        }
+        
+        return currentToken ?: throw IllegalStateException("Token yenilenemedi.")
+    }
+
+    private suspend fun refreshToken() {
+        Log.d(name, "Refreshing token...")
+
+        val response = app.get(AUTH_URL, headers = mapOf(
+            "User-Agent" to "googleusercontent"
+        ))
+
+        if (response.isSuccessful) {
+            val authResponse = try {
+                jacksonObjectMapper().readValue<AuthResponse>(response.text)
+            } catch (e: Exception) {
+                AuthResponse(accessToken = response.text.trim()) 
+            }
+
+            currentToken = authResponse.accessToken
+            
+            val expirationSeconds = authResponse.expiresIn
+            
+            if (expirationSeconds != null) {
+                tokenExpirationTime = System.currentTimeMillis() + (expirationSeconds.toInt()).toMinutes
+            } else {
+                try {
+                    val parts = currentToken!!.split(".")
+                    if (parts.size == 3) {
+                        val payloadBase64 = parts[1]
+                        // Base64Url decode işlemi
+                        val payloadJson = String(Base64.getUrlDecoder().decode(payloadBase64))
+                        val jwtPayload = jacksonObjectMapper().readValue<JWTPayload>(payloadJson)
+                        
+                        tokenExpirationTime = jwtPayload.expiration * 1000L
+                    } else {
+                         tokenExpirationTime = System.currentTimeMillis() + 60.toMinutes 
+                    }
+                } catch (e: Exception) {
+                    Log.e(name, "JWT expiration time could not be parsed: $e")
+                    tokenExpirationTime = System.currentTimeMillis() + 60.toMinutes 
+                }
+            }
+            Log.d(name, "Token refreshed successfully. Expires at $tokenExpirationTime")
+        } else {
+            Log.e(name, "Token refresh failed: ${response.text}")
+            throw Exception("Token alınamadı. Yanıt: ${response.text}")
+        }
+    }
 
     override val mainPage = mainPageOf(
         "${mainUrl}/api/channel/by/filtres/0/0/SAYFA/${swKey}/"      to "Canlı",
@@ -39,8 +107,14 @@ class RecTV : MainAPI() {
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         @Suppress("NAME_SHADOWING") val page = page - 1
 
+        val validToken = getValidToken()
+
         val url  = request.data.replace("SAYFA", "$page")
-        val home = app.get(url, headers = mapOf("User-Agent" to "googleusercontent", "Referer" to "https://twitter.com/" ))
+        val home = app.get(url, headers = mapOf(
+            "User-Agent" to "googleusercontent", 
+            "Referer" to "https://twitter.com/", 
+            "authorization" to "Bearer $validToken"
+        ))
 
         val movies = AppUtils.tryParseJson<List<RecItem>>(home.text)!!.map { item ->
             val toDict = jacksonObjectMapper().writeValueAsString(item)
@@ -60,7 +134,7 @@ class RecTV : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val home    = app.get(
             "${mainUrl}/api/search/${query}/${swKey}/",
-            headers = mapOf("user-agent" to "okhttp/4.12.0")
+            headers = mapOf("user-agent" to "okhttp/4.12.0") 
         )
         val veriler = AppUtils.tryParseJson<RecSearch>(home.text)
 
@@ -93,6 +167,7 @@ class RecTV : MainAPI() {
         if (veri.type == "serie") {
             val diziReq  = app.get(
                 "${mainUrl}/api/season/by/serie/${veri.id}/${swKey}/",
+                // load fonksiyonunda da Bearer token gerekiyorsa buraya eklenmelidir.
                 headers = mapOf("user-agent" to "okhttp/4.12.0")
             )
             val sezonlar = AppUtils.tryParseJson<List<RecDizi>>(diziReq.text) ?: return null
@@ -120,7 +195,6 @@ class RecTV : MainAPI() {
                 this.plot      = veri.description
                 this.year      = veri.year
                 this.tags      = veri.genres?.map { it.title }
-                this.rating    = "${veri.rating}".toRatingInt()
             }
         }
 
@@ -130,7 +204,6 @@ class RecTV : MainAPI() {
                 this.plot      = veri.description
                 this.year      = veri.year
                 this.tags      = veri.genres?.map { it.title }
-                this.rating    = "${veri.rating}".toRatingInt()
             }
         } else {
             newLiveStreamLoadResponse(veri.title, url, url) {
@@ -189,4 +262,3 @@ class RecTV : MainAPI() {
         return interceptor
     }
 }
-

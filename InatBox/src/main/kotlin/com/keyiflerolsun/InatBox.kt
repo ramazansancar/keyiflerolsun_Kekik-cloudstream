@@ -39,7 +39,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class InatBox : MainAPI() {
-    private val contentUrl  = "https://diziboox.sbs"
+    private val contentUrl  = "https://dizibox.cfd"
 
     override var name                 = "InatBox"
     override val hasMainPage          = true
@@ -52,29 +52,29 @@ class InatBox : MainAPI() {
     private val aesKey = "ywevqtjrurkwtqgz" //Master secret and iv key
 
     override val mainPage = mainPageOf(
-        "https://boxbc.icu/CDN/001_STR/boxbc.icu/spor_v2.php" to "Spor Kanalları",
-        "${contentUrl}/CDN/001/dizibox/tv/cable.php"                          to "Kanallar Liste 1",
-        "${contentUrl}/CDN/001/dizibox/tv/list2.php"                          to "Kanallar Liste 2",
-        "${contentUrl}/CDN/001/dizibox/tv/sinema.php"                         to "Sinema Kanalları",
-        "${contentUrl}/CDN/001/dizibox/tv/belgesel.php"                       to "Belgesel Kanalları",
-        "${contentUrl}/CDN/001/dizibox/tv/ulusal.php"                         to "Ulusal Kanallar",
-        "${contentUrl}/CDN/001/dizibox/tv/haber.php"                          to "Haber Kanalları",
-        "${contentUrl}/CDN/001/dizibox/tv/cocuk.php"                          to "Çocuk Kanalları",
-        "${contentUrl}/CDN/001/dizibox/tv/dini.php"                           to "Dini Kanallar",
-        "${contentUrl}/CDN/001/dizibox/ex/index.php"                          to "EXXEN",
-        "${contentUrl}/CDN/001/dizibox/ga/index.php"                          to "Gain",
-        "${contentUrl}/CDN/001/dizibox/max/index.php"                         to "Max-BluTV",
-        "${contentUrl}/CDN/001/dizibox/nf/index.php"                          to "Netflix",
-        "${contentUrl}/CDN/001/dizibox/dsny/index.php"                        to "Disney+",
-        "${contentUrl}/CDN/001/dizibox/amz/index.php"                         to "Amazon Prime",
-        "${contentUrl}/CDN/001/dizibox/hb/index.php"                          to "HBO Max",
-        "${contentUrl}/CDN/001/dizibox/tbi/index.php"                         to "Tabii",
-        "${contentUrl}/CDN/001/dizibox/film/mubi.php"                         to "Mubi",
-        "${contentUrl}/CDN/001/dizibox/ccc/index.php"                         to "TOD",
-        "${contentUrl}/CDN/001/dizibox/yabanci-dizi/index.php"                to "Yabancı Diziler",
-        "${contentUrl}/CDN/001/dizibox/yerli-dizi/index.php"                  to "Yerli Diziler",
-        "${contentUrl}/CDN/001/dizibox/film/yerli-filmler.php"                to "Yerli Filmler",
-        "${contentUrl}/CDN/001/dizibox/film/4k-film-exo.php"                  to "4K Film İzle | Exo"
+        "https://boxyz.cfd/CDN/001_STR/boxyz.cfd/spor_v2.php" to "Spor Kanalları",
+        "${contentUrl}/tv/cable.php"                          to "Kanallar Liste 1",
+        "${contentUrl}/tv/list2.php"                          to "Kanallar Liste 2",
+        "${contentUrl}/tv/sinema.php"                         to "Sinema Kanalları",
+        "${contentUrl}/tv/belgesel.php"                       to "Belgesel Kanalları",
+        "${contentUrl}/tv/ulusal.php"                         to "Ulusal Kanallar",
+        "${contentUrl}/tv/haber.php"                          to "Haber Kanalları",
+        "${contentUrl}/tv/cocuk.php"                          to "Çocuk Kanalları",
+        "${contentUrl}/tv/dini.php"                           to "Dini Kanallar",
+        "${contentUrl}/ex/index.php"                          to "EXXEN",
+        "${contentUrl}/ga/index.php"                          to "Gain",
+        "${contentUrl}/max/index.php"                         to "Max-BluTV",
+        "${contentUrl}/nf/index.php"                          to "Netflix",
+        "${contentUrl}/dsny/index.php"                        to "Disney+",
+        "${contentUrl}/amz/index.php"                         to "Amazon Prime",
+        "${contentUrl}/hb/index.php"                          to "HBO Max",
+        "${contentUrl}/tbi/index.php"                         to "Tabii",
+        "${contentUrl}/film/mubi.php"                         to "Mubi",
+        "${contentUrl}/ccc/index.php"                         to "TOD",
+        "${contentUrl}/yabanci-dizi/index.php"                to "Yabancı Diziler",
+        "${contentUrl}/yerli-dizi/index.php"                  to "Yerli Diziler",
+        "${contentUrl}/film/yerli-filmler.php"                to "Yerli Filmler",
+        "${contentUrl}/film/4k-film-exo.php"                  to "4K Film İzle | Exo"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

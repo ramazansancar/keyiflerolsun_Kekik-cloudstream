@@ -58,7 +58,6 @@ class SezonlukDizi : MainAPI() {
         val year        = document.selectFirst("div.extra span")?.text()?.trim()?.split("-")?.first()?.toIntOrNull()
         val description = document.selectFirst("span#tartismayorum-konu")?.text()?.trim()
         val tags        = document.select("div.labels a[href*='tur']").mapNotNull { it.text().trim() }
-        val rating      = document.selectFirst("div.dizipuani a div")?.text()?.trim()?.replace(",", ".").toRatingInt()
         val duration    = document.selectXpath("//span[contains(text(), 'Dk.')]").text().trim().substringBefore(" Dk.").toIntOrNull()
 
         val endpoint    = url.split("/").last()
@@ -95,7 +94,6 @@ class SezonlukDizi : MainAPI() {
             this.year      = year
             this.plot      = description
             this.tags      = tags
-            this.rating    = rating
             this.duration  = duration
             addActors(actors)
         }

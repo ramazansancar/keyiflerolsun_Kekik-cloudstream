@@ -34,7 +34,7 @@ open class RapidVid : ExtractorApi() {
                 val url  = (track.file.replace("\\", ""))
                 if (lang != null){
                     subtitleCallback.invoke(
-                        SubtitleFile(lang, url)
+                        newSubtitleFile(lang, url)
                     )
                 }
             }
