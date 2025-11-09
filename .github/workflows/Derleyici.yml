@@ -134,7 +134,7 @@ jobs:
               "language": "tr",
               "authors": ["kerimmkirac"],
               "tvTypes": ["Tv","Movie"],
-              "version": 3,
+              "version": 4,
               "internalName": "HDFilmCehennemi",
               "description": "Türkiye'\''nin en hızlı hd film izleme sitesi",
               "url": "https://github.com/kerimmkirac/cs-kerim/raw/refs/heads/builds/HDFilmCehennemi.cs3",
