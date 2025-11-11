@@ -11,7 +11,7 @@ import org.json.JSONObject
 import java.net.URI
 
 class DiziYo : MainAPI() {
-    override var mainUrl              = "https://www.diziyo15.net"
+    override var mainUrl              = "https://diziyo.is"
     override var name                 = "DiziYo"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -208,7 +208,7 @@ class DiziYo : MainAPI() {
         val regex = Regex("postid-(\\d+)")
         val match = regex.find(istekdata.toString())
         val id = match?.groupValues?.get(1)
-        val ajaxLink = "https://www.diziyo15.net/wp-admin/admin-ajax.php"
+        val ajaxLink = "https://diziyo.is/wp-admin/admin-ajax.php"
         val postData = mapOf(
             "action" to "doo_player_ajax",
             "post" to "$id",
@@ -225,7 +225,7 @@ class DiziYo : MainAPI() {
         val tamLink = "$linkimiz?do=getVideo"
         val postNew = mapOf(
             "hash" to hash!!,
-            "r" to "https://www.diziyo15.net/"
+            "r" to "https://diziyo.is/"
         )
         var headers = mapOf("Referer" to "$linkimiz,", "X-Requested-With" to "XMLHttpRequest")
         val m3u8 = app.post(url = tamLink, data = postNew, headers = headers, referer = linkimiz).document
