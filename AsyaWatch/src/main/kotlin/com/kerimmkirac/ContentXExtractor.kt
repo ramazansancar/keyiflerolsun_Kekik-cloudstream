@@ -1,4 +1,4 @@
-// ! Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
 
 package com.kerimmkirac
 
@@ -10,7 +10,10 @@ import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.base64DecodeArray
+import com.lagradost.cloudstream3.network.WebViewResolver
+import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.utils.*
+import okhttp3.Request
 import java.nio.charset.Charset
 
 open class ContentX : ExtractorApi() {
@@ -54,7 +57,7 @@ open class ContentX : ExtractorApi() {
             subUrls.add(subUrl)
 
             subtitleCallback.invoke(
-                SubtitleFile(
+                newSubtitleFile(
                     lang = language,
                     url = fixUrl(subUrl)
                 )
@@ -140,7 +143,7 @@ open class RapidVid : ExtractorApi() {
             }
             if (subUrls.add(subUrl)) {
                 subtitleCallback(
-                    SubtitleFile(
+                    newSubtitleFile(
                         lang = language,
                         url = fixUrl(subUrl.replace("\\", ""))
                     )
@@ -388,7 +391,7 @@ open class TurkeyPlayer : ExtractorApi() {
                     fixM3u.contains("en", ignoreCase = true) -> "English"
                     else -> "Bilinmeyen"
                 }
-                subtitleCallback.invoke(SubtitleFile(lang, fixM3u.toString()))
+                subtitleCallback.invoke(newSubtitleFile(lang, fixM3u.toString()))
             }
 
             Log.d("kraptor_unutulmaz", "normalized m3u » $fixM3u")
@@ -449,7 +452,7 @@ open class VidMoxy : ExtractorApi() {
         val decoded = decodeEE(encoded)
         Log.d("kraptor_unutulmaz", "decoded = $decoded")
         val altyRegex = Regex(pattern = """"file": "([^"]*)"""", options = setOf(RegexOption.IGNORE_CASE))
-        altyRegex.findAll(videoReq).map { match ->
+        altyRegex.findAll(videoReq).forEach { match ->
             val url = fixUrl(match.groupValues[1])
             Log.d("kraptor_unutulmaz", "url = $url")
             val subLang = url
@@ -462,11 +465,11 @@ open class VidMoxy : ExtractorApi() {
             } else {
                 subLang
             }
-            subtitleCallback.invoke(SubtitleFile(
+            subtitleCallback.invoke(newSubtitleFile(
                 lang = language,
                 url  = url
             ))
-        }.toList()
+        }
 
 
         callback.invoke(
@@ -532,9 +535,31 @@ open class VidMolyExtractor : ExtractorApi() {
             "Sec-Fetch-Dest" to "iframe",
             "Referer" to "${mainUrl}/"
         )
-        Log.d("kraptor_$name", "Vidmoly URL'si işleniyor: $url")
-        val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
-        Log.d("kraptor_$name", "Vidmoly iframe içeriği alındı, m3u8 aranıyor...")
+
+        val ilkYanit = app.get(url, headers = headers, referer = "$mainUrl/")
+        val doc = ilkYanit.document
+
+        val answer = doc.selectFirst("div.vhint b")?.text() ?:
+        doc.selectFirst("div.vhint")?.text()?.substringAfter("number ")?.substringBefore(" ")
+
+        val formData = mapOf(
+            "op" to (doc.selectFirst("input[name=op]")?.attr("value") ?: "embed"),
+            "file_code" to (doc.selectFirst("input[name=file_code]")?.attr("value") ?: ""),
+            "answer" to (answer ?: ""),
+            "ts" to (doc.selectFirst("input[name=ts]")?.attr("value") ?: ""),
+            "nonce" to (doc.selectFirst("input[name=nonce]")?.attr("value") ?: ""),
+            "ctok" to (doc.selectFirst("input[name=ctok]")?.attr("value") ?: "")
+        )
+
+        val iSource = app.post(
+            url,
+            headers = headers,
+            referer = "$mainUrl/",
+            data = formData,
+            cookies = ilkYanit.cookies
+        ).text
+
+        Log.d("kraptor_$name", "AsyaWatch Vidmoly iframe içeriği alındı, m3u8 aranıyor $iSource...")
         val matches = Regex("""file\s*:\s*"([^"]+\.m3u8[^"]*)"""").findAll(iSource).toList()
         if (matches.isEmpty()) {
             Log.w("kraptor_$name", "Vidmoly'de m3u8 link bulunamadı")
@@ -561,4 +586,3 @@ open class VidMolyExtractor : ExtractorApi() {
         }
     }
 }
-
