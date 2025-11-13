@@ -45,8 +45,8 @@ class DiziKorea : MainAPI() {
 
     override val mainPage = mainPageOf(
         "yeni-eklenenler" to "Yeni Bölümler",
-        "${mainUrl}/diziler/"   to "Kore Dizileri",
-        "${mainUrl}/filmler/" to "Kore Filmleri"
+        "${mainUrl}/sayfa/tum-kore-dizileri/"   to "Kore Dizileri",
+        "${mainUrl}/sayfa/kore-filmleri-izle1/" to "Kore Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -57,7 +57,7 @@ class DiziKorea : MainAPI() {
            
             val document = app.get("${request.data}${page}", interceptor = interceptor).document
             Log.d("DZK", "Ana sayfa HTML içeriği:\n${document.outerHtml()}")
-            document.select("div.poster-long").mapNotNull { it.toSearchResult() }
+            document.select("li.w-1\\/2 div.poster-long").mapNotNull { it.toSearchResult() }
         }
 
         return newHomePageResponse(request.name, home)
@@ -96,7 +96,7 @@ class DiziKorea : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("h2")?.text()?.trim() ?: return null
+        val title     = this.selectFirst("img")?.attr("alt")?.trim() ?: return null
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val posterUrl = fixUrlNull(this.selectFirst("div.poster-long-image img.lazy")?.attr("data-src"))
         val rating      = this.selectFirst("span.rating.flex.items-center")?.text()?.trim()
