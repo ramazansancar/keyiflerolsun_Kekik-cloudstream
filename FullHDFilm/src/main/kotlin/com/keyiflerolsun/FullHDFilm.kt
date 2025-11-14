@@ -28,21 +28,6 @@ class FullHDFilm : MainAPI() {
         "${mainUrl}/netflix-filmleri-izle/page"		    to "Netflix",
         "${mainUrl}/aile-filmleri/page"				    to "Aile",
         "${mainUrl}/aksiyon-filmleri-izle-hd1/page"	    to "Aksiyon",
-        "${mainUrl}/animasyon-filmleri-izlesene/page"	to "Animasyon",
-        "${mainUrl}/anime-izle/page"					to "Anime",
-        "${mainUrl}/belgesel/page"					    to "Belgesel",
-        "${mainUrl}/bilim-kurgu-filmleri/page"		    to "Bilim-Kurgu",
-        "${mainUrl}/biyografi-filmleri/page"			to "Biyografi",
-        "${mainUrl}/dram-filmleri/page"				    to "Dram",
-        "${mainUrl}/fantastik-filmler-izle/page"		to "Fantastik",
-        "${mainUrl}/gerilim-filmleri-izle-hd/page"		to "Gerilim",
-        "${mainUrl}/gizem-filmleri/page"				to "Gizem",
-        "${mainUrl}/komedi-filmleri/page"				to "Komedi",
-        "${mainUrl}/korku-filmleri-izle/page"			to "Korku",
-        "${mainUrl}/macera-filmleri-izle-hd/page"		to "Macera",
-        "${mainUrl}/romantik-filmler/page"			    to "Romantik",
-        "${mainUrl}/savas-filmleri-izle-hd/page"		to "Savaş",
-        "${mainUrl}/suc-filmleri-izle/page"			    to "Suç"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

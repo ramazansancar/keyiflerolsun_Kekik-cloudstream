@@ -1,12 +1,14 @@
 package com.kerimmkirac
 
-import android.content.Context
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
-import com.lagradost.cloudstream3.plugins.Plugin
+import com.lagradost.cloudstream3.plugins.BasePlugin
 
 @CloudstreamPlugin
-class YabanciDiziPlugin: Plugin() {
-    override fun load(context: Context) {
+class YabanciDiziPlugin: BasePlugin() {
+    override fun load() {
         registerMainAPI(YabanciDizi())
+        registerExtractorAPI(YdxMolyStreamExtractor())
+        registerExtractorAPI(PopcornVakti())
+        registerExtractorAPI(YDSheilaStream())
     }
 }

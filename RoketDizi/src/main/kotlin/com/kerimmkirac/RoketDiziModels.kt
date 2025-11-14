@@ -2,7 +2,6 @@
 
 package com.kerimmkirac
 
-
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class SearchResult(

@@ -24,24 +24,6 @@ class KultFilmler : MainAPI() {
         "${mainUrl}/category/belgesel-izle/page/"			    to "Belgesel",
         "${mainUrl}/category/bilim-kurgu-filmleri-izle/page/"   to "Bilim Kurgu",
         "${mainUrl}/category/biyografi-filmleri-izle/page/"	    to "Biyografi",
-        "${mainUrl}/category/dram-filmleri-izle/page/"		    to "Dram",
-        "${mainUrl}/category/fantastik-filmleri-izle/page/"	    to "Fantastik",
-        "${mainUrl}/category/gerilim-filmleri-izle/page/"	    to "Gerilim",
-        "${mainUrl}/category/gizem-filmleri-izle/page/"		    to "Gizem",
-        "${mainUrl}/category/kara-filmleri-izle/page/"		    to "Kara",
-        "${mainUrl}/category/kisa-film-izle/page/"			    to "Kısa Metrajlı",
-        "${mainUrl}/category/komedi-filmleri-izle/page/"		to "Komedi",
-        "${mainUrl}/category/korku-filmleri-izle/page/"		    to "Korku",
-        "${mainUrl}/category/macera-filmleri-izle/page/"		to "Macera",
-        "${mainUrl}/category/muzik-filmleri-izle/page/"		    to "Müzik",
-        "${mainUrl}/category/polisiye-filmleri-izle/page/"	    to "Polisiye",
-        "${mainUrl}/category/politik-filmleri-izle/page/"	    to "Politik",
-        "${mainUrl}/category/romantik-filmleri-izle/page/"	    to "Romantik",
-        "${mainUrl}/category/savas-filmleri-izle/page/"		    to "Savaş",
-        "${mainUrl}/category/spor-filmleri-izle/page/"		    to "Spor",
-        "${mainUrl}/category/suc-filmleri-izle/page/"		    to "Suç",
-        "${mainUrl}/category/tarih-filmleri-izle/page/"		    to "Tarih",
-        "${mainUrl}/category/yerli-filmleri-izle/page/"		    to "Yerli"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 
 class FilmModu : MainAPI() {
-    override var mainUrl              = "https://www.filmmodu.vip"
+    override var mainUrl              = "https://www.filmmodu.life"
     override var name                 = "FilmModu"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -24,27 +24,7 @@ class FilmModu : MainAPI() {
         "${mainUrl}/hd-film-kategori/animasyon"             to "Animasyon",
         "${mainUrl}/hd-film-kategori/belgeseller"           to "Belgesel",
         "${mainUrl}/hd-film-kategori/bilim-kurgu-filmleri"  to "Bilim-Kurgu",
-        "${mainUrl}/hd-film-kategori/dram-filmleri"         to "Dram",
-        "${mainUrl}/hd-film-kategori/fantastik-filmler"     to "Fantastik",
-        "${mainUrl}/hd-film-kategori/gerilim"               to "Gerilim",
-        "${mainUrl}/hd-film-kategori/gizem-filmleri"        to "Gizem",
-        "${mainUrl}/hd-film-kategori/kisa-film"             to "Kısa Film",
-        "${mainUrl}/hd-film-kategori/hd-komedi-filmleri"    to "Komedi",
-        "${mainUrl}/hd-film-kategori/komedi"                to "Komedi",
-        "${mainUrl}/hd-film-kategori/korku-filmleri"        to "Korku",
-        "${mainUrl}/hd-film-kategori/kult-filmler-izle"     to "Kült Filmler",
-        "${mainUrl}/hd-film-kategori/macera-filmleri"       to "Macera",
-        "${mainUrl}/hd-film-kategori/muzik"                 to "Müzik",
-        "${mainUrl}/hd-film-kategori/odullu-filmler-izle"   to "Oscar Ödüllü Filmler",
-        "${mainUrl}/hd-film-kategori/romantik-filmler"      to "Romantik",
-        "${mainUrl}/hd-film-kategori/savas"                 to "Savaş",
-        "${mainUrl}/hd-film-kategori/savas-filmleri"        to "Savaş",
-        "${mainUrl}/hd-film-kategori/stand-up"              to "Stand Up",
-        "${mainUrl}/hd-film-kategori/suc-filmleri"          to "Suç",
-        "${mainUrl}/hd-film-kategori/tarih"                 to "Tarih",
-        "${mainUrl}/hd-film-kategori/tavsiye-filmler"       to "Tavsiye Filmler",
-        "${mainUrl}/hd-film-kategori/tv-film"               to "TV film",
-        "${mainUrl}/hd-film-kategori/vahsi-bati-filmleri"   to "Vahşi Batı",
+
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

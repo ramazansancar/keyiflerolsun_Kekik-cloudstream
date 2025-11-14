@@ -2,12 +2,12 @@
 
 package com.kerimmkirac
 
-
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.json.JSONObject
@@ -16,13 +16,13 @@ import org.jsoup.nodes.Element
 import kotlin.collections.mapNotNull
 
 class RoketDizi : MainAPI() {
-    override var mainUrl = "https://www.roketdizi.live"
+    override var mainUrl = getDomain()
     override var name = "RoketDizi"
     override val hasMainPage = true
     override var lang = "tr"
     override val hasQuickSearch = false
     override val hasChromecastSupport = true
-    override val hasDownloadSupport = true
+    override val hasDownloadSupport = false
     override val supportedTypes = setOf(TvType.TvSeries, TvType.Movie)
 
     // ! CloudFlare bypass
@@ -30,6 +30,25 @@ class RoketDizi : MainAPI() {
         true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
     override var sequentialMainPageDelay = 250L  // ? 0.05 saniye
     override var sequentialMainPageScrollDelay = 250L  // ? 0.05 saniye
+
+    companion object {
+        private fun getDomain(): String {
+            return runBlocking {
+                try {
+                    val domainListesi =
+                        app.get("https://raw.githubusercontent.com/Kraptor123/domainListesi/refs/heads/main/eklenti_domainleri.txt").text
+                    val domain = domainListesi
+                        .split("|")
+                        .first { it.trim().startsWith("RoketDizi") }
+                        .substringAfter(":")
+                        .trim()
+                    domain
+                } catch (e: Exception){
+                    "https://flatscher.net"
+                }
+            }
+        }
+    }
 
     override val mainPage = mainPageOf(
         "${mainUrl}/dizi/tur/aksiyon" to "Aksiyon",

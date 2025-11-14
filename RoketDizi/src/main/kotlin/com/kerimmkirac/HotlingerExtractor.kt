@@ -1,6 +1,6 @@
 
-package com.kerimmkirac
 
+package com.kerimmkirac
 
 class Hotlinger : ContentX() {
     override var name    = "Hotlinger"
@@ -20,13 +20,6 @@ class PlayRu : ContentX() {
 class FourPlayRu : ContentX() {
     override var name    = "FourPlayRu"
     override var mainUrl = "https://four.playru.net"
-}
-class FourPichiveOnline : ContentX() {
-
-    override var name = "FourPichiveOnline"
-
-    override var mainUrl = "https://four.pichive.online"
-
 }
 
 class Pichive : ContentX() {
@@ -52,4 +45,12 @@ class SNDplayer : ContentX() {
 class ORGDplayer : ContentX() {
     override var name    = "ORGDplayer"
     override var mainUrl = "https://org.dplayer82.site"
+}
+
+class FourPichiveOnline : ContentX() {
+
+    override var name = "FourPichiveOnline"
+
+    override var mainUrl = "https://four.pichive.online"
+
 }

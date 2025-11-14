@@ -1,16 +1,22 @@
 
+
 package com.kerimmkirac
 
-
 import android.util.Base64
-import android.util.Log
+import com.lagradost.api.Log
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.cloudstream3.ErrorLoadingException
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.base64DecodeArray
+import com.lagradost.cloudstream3.extractors.helper.AesHelper
+import com.lagradost.cloudstream3.network.WebViewResolver
+import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.utils.*
+import okhttp3.Request
 import java.nio.charset.Charset
 
 open class ContentX : ExtractorApi() {
@@ -20,7 +26,7 @@ open class ContentX : ExtractorApi() {
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef   = referer ?: ""
-        Log.d("kerimmkirac_$name", "url » $url")
+        Log.d("kraptor_$name", "url » $url")
 
         val iSource = app.get(url, referer = extRef).text
         val iExtract = Regex("""window\.openPlayer\('([^']+)'""").find(iSource)!!.groups[1]?.value ?: throw ErrorLoadingException("iExtract is null")
@@ -42,7 +48,9 @@ open class ContentX : ExtractorApi() {
                 .replace("\\u015f", "ş")
 
             val keywords = listOf("tur", "tr", "türkçe", "turkce")
-            val language = if (keywords.any { subLang.contains(it, ignoreCase = true) }) {
+            val language = if (subLang.contains("Forced")) {
+                "Turkish Forced"
+            } else if (keywords.any { subLang.contains(it, ignoreCase = true) }) {
                 "Turkish"
             } else {
                 subLang
@@ -52,14 +60,14 @@ open class ContentX : ExtractorApi() {
             subUrls.add(subUrl)
 
             subtitleCallback.invoke(
-                SubtitleFile(
+                newSubtitleFile(
                     lang = language,
                     url = fixUrl(subUrl)
                 )
             )
         }
 
-        Log.d("kerimmkirac_$name", "subtitle » $subUrls -- subtitle diger $subtitleCallback")
+        Log.d("Kekik_$name", "subtitle » $subUrls -- subtitle diger $subtitleCallback")
 
         val vidSource  = app.get("${mainUrl}/source2.php?v=${iExtract}", referer=extRef).text
         val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value ?: throw ErrorLoadingException("vidExtract is null")
@@ -117,9 +125,9 @@ open class RapidVid : ExtractorApi() {
         val extRef = referer ?: ""
         val videoReq = app.get(url, referer = extRef).text
 
-//        Log.d("kerimmkirac_${this.name}", "url » $url")
+//        Log.d("kraptor_${this.name}", "url » $url")
 
-//        Log.d("kerimmkirac_${this.name}", "videoReq » $videoReq")
+//        Log.d("kraptor_${this.name}", "videoReq » $videoReq")
 
         // 1) Altyazıları çekelim
         val subUrls = mutableSetOf<String>()
@@ -138,7 +146,7 @@ open class RapidVid : ExtractorApi() {
             }
             if (subUrls.add(subUrl)) {
                 subtitleCallback(
-                    SubtitleFile(
+                    newSubtitleFile(
                         lang = language,
                         url = fixUrl(subUrl.replace("\\", ""))
                     )
@@ -218,7 +226,7 @@ open class Sobreatsesuyp : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
         val extRef = url
 
-        Log.d("kerimmkirac_${this.name}", "Sobreat url = $url")
+        Log.d("kraptor_${this.name}", "Sobreat url = $url")
 
         val videoReq = app.get(url, referer = extRef).text
 
@@ -233,7 +241,7 @@ open class Sobreatsesuyp : ExtractorApi() {
                 file  = mapItem["file"]  as? String
             )
         }
-        Log.d("kerimmkirac_${this.name}", "postJson » $postJson")
+        Log.d("kraptor_${this.name}", "postJson » $postJson")
 
         for (item in postJson) {
             if (item.file == null || item.title == null) continue
@@ -283,7 +291,7 @@ open class TRsTX : ExtractorApi() {
                 file  = mapItem["file"]  as? String
             )
         }
-        Log.d("kerimmkirac_${this.name}", "postJson » $postJson")
+        Log.d("Kekik_${this.name}", "postJson » $postJson")
 
         val vidLinks = mutableSetOf<String>()
         val vidMap   = mutableListOf<Map<String, String>>()
@@ -304,7 +312,7 @@ open class TRsTX : ExtractorApi() {
 
 
         for (mapEntry in vidMap) {
-            Log.d("kerimmkirac_${this.name}", "mapEntry » $mapEntry")
+            Log.d("Kekik_${this.name}", "mapEntry » $mapEntry")
             val title    = mapEntry["title"] ?: continue
             val m3uLink = mapEntry["videoData"] ?: continue
 
@@ -341,7 +349,7 @@ open class TurboImgz : ExtractorApi() {
         val videoReq = app.get(url.substringAfter("||"), referer=extRef).text
 
         val videoLink = Regex("""file: "(.*)",""").find(videoReq)?.groupValues?.get(1) ?: throw ErrorLoadingException("File not found")
-        Log.d("kerimmkirac_${this.name}", "videoLink » $videoLink")
+        Log.d("Kekik_${this.name}", "videoLink » $videoLink")
 
         callback.invoke(
             newExtractorLink(
@@ -386,10 +394,10 @@ open class TurkeyPlayer : ExtractorApi() {
                     fixM3u.contains("en", ignoreCase = true) -> "English"
                     else -> "Bilinmeyen"
                 }
-                subtitleCallback.invoke(SubtitleFile(lang, fixM3u.toString()))
+                subtitleCallback.invoke(newSubtitleFile(lang, fixM3u.toString()))
             }
 
-            Log.d("kerimmkirac_unutulmaz", "normalized m3u » $fixM3u")
+            Log.d("kraptor_unutulmaz", "normalized m3u » $fixM3u")
 
 
             val dil = Regex("""title\":\"([^\"]*)\"""").find(videoReq)
@@ -436,35 +444,35 @@ open class VidMoxy : ExtractorApi() {
     }
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        Log.d("kerimmkirac_unutulmaz", "url = $url")
+        Log.d("kraptor_unutulmaz", "url = $url")
         val extRef   = referer ?: ""
         val videoReq = app.get(url, referer=extRef).text
-//        Log.d("kerimmkirac_unutulmaz", "videoReq = $videoReq")
+//        Log.d("kraptor_unutulmaz", "videoReq = $videoReq")
         val regex = Regex("""file\s*:\s*EE\.dd\("([^"]+)"""")
         val match = regex.find(videoReq)
         val encoded =  match?.groupValues?.get(1).toString()
-        Log.d("kerimmkirac_unutulmaz", "encoded = $encoded")
+        Log.d("kraptor_unutulmaz", "encoded = $encoded")
         val decoded = decodeEE(encoded)
-        Log.d("kerimmkirac_unutulmaz", "decoded = $decoded")
+        Log.d("kraptor_unutulmaz", "decoded = $decoded")
         val altyRegex = Regex(pattern = """"file": "([^"]*)"""", options = setOf(RegexOption.IGNORE_CASE))
-        altyRegex.findAll(videoReq).map { match ->
+        altyRegex.findAll(videoReq).forEach { match ->
             val url = fixUrl(match.groupValues[1])
-            Log.d("kerimmkirac_unutulmaz", "url = $url")
+            Log.d("kraptor_unutulmaz", "url = $url")
             val subLang = url
                 .substringAfterLast("/")
                 .substringBefore("_")
-            Log.d("kerimmkirac_unutulmaz", "subLang = $subLang")
+            Log.d("kraptor_unutulmaz", "subLang = $subLang")
             val keywords = listOf("tur", "tr", "türkçe", "turkce")
             val language = if (keywords.any { subLang.contains(it, ignoreCase = true) }) {
                 "Turkish"
             } else {
                 subLang
             }
-            subtitleCallback.invoke(SubtitleFile(
+            subtitleCallback.invoke(newSubtitleFile(
                 lang = language,
                 url  = url
             ))
-        }.toList()
+        }
 
 
         callback.invoke(
@@ -507,6 +515,7 @@ fun decodeEE(encoded: String): String {
     // 5. Tersine çevir ve döndür
     return rot13.reversed()
 }
+
 class VidMolyTo : VidMolyExtractor() {
     override var name    = "VidMoly"
     override var mainUrl = "https://vidmoly.to"
@@ -529,9 +538,31 @@ open class VidMolyExtractor : ExtractorApi() {
             "Sec-Fetch-Dest" to "iframe",
             "Referer" to "${mainUrl}/"
         )
-        Log.d("kraptor_$name", "Vidmoly URL'si işleniyor: $url")
-        val iSource = app.get(url, headers = headers, referer = "$mainUrl/").text
-        Log.d("kraptor_$name", "Vidmoly iframe içeriği alındı, m3u8 aranıyor...")
+
+        val ilkYanit = app.get(url, headers = headers, referer = "$mainUrl/")
+        val doc = ilkYanit.document
+
+        val answer = doc.selectFirst("div.vhint b")?.text() ?:
+        doc.selectFirst("div.vhint")?.text()?.substringAfter("number ")?.substringBefore(" ")
+
+        val formData = mapOf(
+            "op" to (doc.selectFirst("input[name=op]")?.attr("value") ?: "embed"),
+            "file_code" to (doc.selectFirst("input[name=file_code]")?.attr("value") ?: ""),
+            "answer" to (answer ?: ""),
+            "ts" to (doc.selectFirst("input[name=ts]")?.attr("value") ?: ""),
+            "nonce" to (doc.selectFirst("input[name=nonce]")?.attr("value") ?: ""),
+            "ctok" to (doc.selectFirst("input[name=ctok]")?.attr("value") ?: "")
+        )
+
+        val iSource = app.post(
+            url,
+            headers = headers,
+            referer = "$mainUrl/",
+            data = formData,
+            cookies = ilkYanit.cookies
+        ).text
+
+        Log.d("kraptor_$name", "Diziyo Vidmoly iframe içeriği alındı, m3u8 aranıyor $iSource...")
         val matches = Regex("""file\s*:\s*"([^"]+\.m3u8[^"]*)"""").findAll(iSource).toList()
         if (matches.isEmpty()) {
             Log.w("kraptor_$name", "Vidmoly'de m3u8 link bulunamadı")
@@ -557,4 +588,103 @@ open class VidMolyExtractor : ExtractorApi() {
             )
         }
     }
+}
+
+open class DonilasPlay : ExtractorApi() {
+    override val name = "DonilasPlay"
+    override val mainUrl = "https://donilasplay.com"
+    override val requiresReferer = true
+
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+        val m3uLink:String?
+        val extRef  = referer ?: ""
+        val iSource = app.get(url, referer=extRef).text
+
+        val bePlayer = Regex("""bePlayer\('([^']+)',\s*'(\{[^}]+\})'\);""").find(iSource)?.groupValues
+        if (bePlayer != null) {
+            val bePlayerPass = bePlayer[1]
+            val bePlayerData = bePlayer[2]
+
+            // Ters slash'ları silme işlemi KALDIRILDI
+            val encrypted = AesHelper.cryptoAESHandler(bePlayerData, bePlayerPass.toByteArray(), false)
+                ?: throw ErrorLoadingException("failed to decrypt")
+
+            // JSON'ı parse et
+            val json = jacksonObjectMapper().readTree(encrypted)
+            m3uLink = json["video_location"].asText()
+
+            // Altyazıları işle (tüm diller dahil)
+            val subtitles = json["strSubtitles"]
+//            Log.d("dkral_ext", "subtitles » $subtitles")
+
+            if (subtitles != null && subtitles.isArray) {
+                for (sub in subtitles) {
+                    val label = sub["label"]?.asText() ?: continue // Unicode otomatik çözülecek (ör: "Tu00fcrkçe" → "Türkçe")
+                    val file = sub["file"]?.asText() ?: continue
+                    val lang = sub["language"]?.asText()?.lowercase() ?: continue
+
+                    // Forced altyazıları hariç tut (opsiyonel, isterseniz bu satırı kaldırın)
+                    if (label.contains("Forced", true)) continue
+
+                    val keywords = listOf("tur", "tr", "türkçe", "turkce")
+                    val language = if (keywords.any { label.contains(it, ignoreCase = true) }) {
+                        "Turkish"
+                    } else {
+                        label
+                    }
+
+                    subtitleCallback.invoke(
+                        newSubtitleFile(
+                            lang = language, // Orijinal etiket ("Türkçe Altyazı", "English Subtitle" vb.)
+                            url = fixUrl(mainUrl + file)
+                        )
+                    )
+                }
+            }
+        } else {
+
+            m3uLink = Regex("""file:"([^"]+)""").find(iSource)?.groupValues?.get(1)
+
+            val trackStr = Regex("""tracks:\[([^]]+)""").find(iSource)?.groupValues?.get(1)
+//            Log.d("dkral_ext", "trackstr » $trackStr")
+            if (trackStr != null) {
+                val tracks:List<Track> = jacksonObjectMapper().readValue("[${trackStr}]")
+
+                for (track in tracks) {
+                    if (track.file == null || track.label == null) continue
+                    if (track.label.contains("Forced")) continue
+
+                    subtitleCallback.invoke(
+                        newSubtitleFile(
+                            lang = track.label,
+                            url  = fixUrl(mainUrl + track.file)
+                        )
+                    )
+                }
+            }
+        }
+        Log.d("dkral_ext", "subtitlecall » $subtitleCallback")
+
+        callback.invoke(
+            newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                type = ExtractorLinkType.M3U8 // isM3u8 artık bu şekilde belirtiliyor
+            ) {
+                headers = mapOf(
+                    "Referer" to url,
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0") // Eski "referer" artık headers içinde
+                quality = Qualities.Unknown.value // Kalite ayarlandı
+            }
+        )
+    }
+
+    data class Track(
+        @JsonProperty("file")     val file: String?,
+        @JsonProperty("label")    val label: String?,
+        @JsonProperty("kind")     val kind: String?,
+        @JsonProperty("language") val language: String?,
+        @JsonProperty("default")  val default: String?
+    )
 }

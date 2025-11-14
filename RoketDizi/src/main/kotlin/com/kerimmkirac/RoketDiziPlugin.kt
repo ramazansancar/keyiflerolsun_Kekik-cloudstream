@@ -1,13 +1,11 @@
 package com.kerimmkirac
 
-
-import android.content.Context
+import com.lagradost.cloudstream3.plugins.BasePlugin
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
-import com.lagradost.cloudstream3.plugins.Plugin
 
 @CloudstreamPlugin
-class RoketDiziPlugin: Plugin() {
-    override fun load(context: Context) {
+class RoketDiziPlugin: BasePlugin() {
+    override fun load() {
         registerMainAPI(RoketDizi())
         registerExtractorAPI(ContentX())
         registerExtractorAPI(Hotlinger())
@@ -16,18 +14,19 @@ class RoketDiziPlugin: Plugin() {
         registerExtractorAPI(VidMoxy())
         registerExtractorAPI(Sobreatsesuyp())
         registerExtractorAPI(TurboImgz())
-        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(TurkeyPlayer())
         registerExtractorAPI(Hotlinger())
         registerExtractorAPI(FourCX())
         registerExtractorAPI(PlayRu())
         registerExtractorAPI(FourPlayRu())
         registerExtractorAPI(FourPichive())
+        registerExtractorAPI(FourPichiveOnline())
         registerExtractorAPI(Pichive())
         registerExtractorAPI(FourDplayer())
         registerExtractorAPI(SNDplayer())
         registerExtractorAPI(ORGDplayer())
         registerExtractorAPI(VidMolyExtractor())
         registerExtractorAPI(VidMolyTo())
+        registerExtractorAPI(DonilasPlay())
     }
 }

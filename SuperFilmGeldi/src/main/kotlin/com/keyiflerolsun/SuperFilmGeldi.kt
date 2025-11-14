@@ -28,8 +28,6 @@ class SuperFilmGeldi : MainAPI() {
         "${mainUrl}/hdizle/category/gerilim/page/"                to "Gerilim",
         "${mainUrl}/hdizle/category/suc/page/"                    to "Suç",
         "${mainUrl}/hdizle/category/karete-filmleri/page/"        to "Karete Filmleri",
-        "${mainUrl}/hdizle/category/yesilcam-erotik-izle/page/"   to "Yeşilçam Erotik",
-        "${mainUrl}/hdizle/category/hd-erotik-filmler-izle/page/" to "Erotik Filmler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
