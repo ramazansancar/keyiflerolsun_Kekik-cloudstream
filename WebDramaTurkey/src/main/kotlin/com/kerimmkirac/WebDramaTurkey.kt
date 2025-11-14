@@ -21,24 +21,6 @@ class WebDramaTurkey : MainAPI() {
         "${mainUrl}/" to "Son Bölümler",
         "${mainUrl}/diziler"             to "Diziler",
         "${mainUrl}/filmler"             to "Filmler",
-        "${mainUrl}/animeler"            to "Animeler",
-        "${mainUrl}/tur/dram"            to "Dram",
-        "${mainUrl}/tur/fantastik"       to "Fantastik",
-        "${mainUrl}/tur/gerilim"         to "Gerilim",
-        "${mainUrl}/tur/komedi"          to "Komedi",
-        "${mainUrl}/tur/korku"           to "Korku",
-        "${mainUrl}/tur/lise"            to "Lise",
-        "${mainUrl}/tur/ofis-aski"       to "Ofis Aşkı",
-        "${mainUrl}/tur/romantik"        to "Romantik",
-        
-        
-        "${mainUrl}/tur/aksiyon"         to "Aksiyon",
-       
-        "${mainUrl}/tur/bilim-kurgu"     to "Bilim Kurgu",
-       
-        "${mainUrl}/tur/eglence"         to "Eğlence",
-        "${mainUrl}/tur/genclik"         to "Gençlik",
-        "${mainUrl}/tur/gizem"           to "Gizem",
         
     )
 
