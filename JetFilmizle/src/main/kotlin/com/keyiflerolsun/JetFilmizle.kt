@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 
 class JetFilmizle : MainAPI() {
-    override var mainUrl              = "https://jetfilmizle.website"
+    override var mainUrl              = "https://jetfilmizle.website/navaronun-toplari-the-guns-of-navarone-izle.html"
     override var name                 = "JetFilmizle"
     override val hasMainPage          = true
     override var lang                 = "tr"
