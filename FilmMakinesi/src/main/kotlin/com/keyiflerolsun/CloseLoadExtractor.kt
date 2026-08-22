@@ -69,91 +69,92 @@ class CloseLoad : ExtractorApi() {
 
     private fun decryptNative(html: String): String? {
         try {
-            // JS bloğunu yakala
+            // JS script bloğunu bul: dc_ fonksiyon çağrısı içeren
             val scriptBlockMatch = """<script[^>]*>(.*?dc_[a-zA-Z0-9_]+\(.*?</script>)""".toRegex(RegexOption.DOT_MATCHES_ALL).find(html)
             val scriptContent = scriptBlockMatch?.groupValues?.get(1) ?: return null
 
-            // 1. Şifreli diziyi çıkar
+            // 1. Şifreli diziyi çıkar: dc_xxx([" ... "])
             val arrayMatch = """\(\[((?:"[^"]+",?\s*)+)\]\)""".toRegex().find(scriptContent)
-            val parts = arrayMatch?.groupValues?.get(1)?.split(",")?.map { 
-                it.trim().trim('"').replace("\\/", "/") 
+            val parts = arrayMatch?.groupValues?.get(1)?.split(",")?.map {
+                it.trim().trim('"').replace("\\/", "/")
             } ?: return null
 
-            // 2. Dinamik Modulo Çarpanlarını Çıkar
-            val moduloMatch = """(\d+)\s*%\s*\(i\s*\+\s*(\d+)\)""".toRegex().find(scriptContent)
-            val magicNum = moduloMatch?.groupValues?.get(1)?.toLongOrNull() ?: 399756995L
-            val magicOffset = moduloMatch?.groupValues?.get(2)?.toIntOrNull() ?: 5
-
-            // 3. Fonksiyon Gövdesini Regex OLMADAN İzole Et
+            // 2. Fonksiyon gövdesini izole et
             val funcStartIdx = scriptContent.indexOf("function dc_")
-            val funcEndIdx = scriptContent.indexOf("function d1x()", funcStartIdx).takeIf { it != -1 } ?: scriptContent.length
-            val functionBody = if (funcStartIdx != -1) scriptContent.substring(funcStartIdx, funcEndIdx) else scriptContent
+            val funcEndIdx = scriptContent.indexOf("function d1x()", funcStartIdx)
+                .takeIf { it != -1 } ?: scriptContent.length
+            val functionBody = if (funcStartIdx != -1)
+                scriptContent.substring(funcStartIdx, funcEndIdx)
+            else scriptContent
 
-            // 4. KRİTİK DOKUNUŞ: Dinamik ROT (Caesar) Kaydırma (Shift) Değerini Çıkar
-            var rotShift = 13
-            val rotShiftMatch = """charCodeAt\(0\)\s*\+\s*(\d+)""".toRegex().find(functionBody)
-            if (rotShiftMatch != null) {
-                rotShift = rotShiftMatch.groupValues[1].toInt()
-            } else {
-                val rotShiftMatch2 = """o\s*-\s*base\s*([+-])\s*(\d+)""".toRegex().find(functionBody)
-                if (rotShiftMatch2 != null) {
-                    val sign = rotShiftMatch2.groupValues[1]
-                    val num = rotShiftMatch2.groupValues[2].toInt()
-                    rotShift = if (sign == "-") (26 - num) % 26 else num
+            // 3. Tüm ROT shift değerlerini sırasıyla çıkar (site çift replace kullanıyor olabilir)
+            val rotShifts = mutableListOf<Int>()
+            val rotPattern = """o\s*-\s*base\s*\+\s*(\d+)""".toRegex()
+            rotPattern.findAll(functionBody).forEach { m ->
+                rotShifts.add(m.groupValues[1].toInt())
+            }
+            // Alternatif: charCodeAt(0) + N formatı
+            if (rotShifts.isEmpty()) {
+                val altPattern = """charCodeAt\(0\)\s*\+\s*(\d+)""".toRegex()
+                altPattern.findAll(functionBody).forEach { m ->
+                    rotShifts.add(m.groupValues[1].toInt())
                 }
             }
+            Log.d("Kekik_${this.name}", "ROT shifts: $rotShifts")
 
-            // --- OPERASYON SIRASINI DİNAMİK OKU --- //
-            val operations = mutableListOf<Pair<Int, String>>()
+            // 4. XOR accumulator parametrelerini çıkar
+            // Örnek: var acc = 47; ... acc = (acc + 19) % 256;
+            val xorAccStart = """var\s+acc\s*=\s*(\d+)""".toRegex().find(functionBody)
+                ?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            val xorStep = """acc\s*=\s*\(acc\s*\+\s*(\d+)\)\s*%\s*256""".toRegex().find(functionBody)
+                ?.groupValues?.get(1)?.toIntOrNull() ?: 1
+            Log.d("Kekik_${this.name}", "XOR acc_start=$xorAccStart, step=$xorStep")
 
-            var index = functionBody.indexOf("atob(")
-            while (index >= 0) {
-                operations.add(Pair(index, "atob"))
-                index = functionBody.indexOf("atob(", index + 1)
+            // 5. Operasyon sırasını belirle (atob, reverse, rot pozisyonlarına göre)
+            data class Op(val pos: Int, val type: String)
+            val operations = mutableListOf<Op>()
+
+            var idx = functionBody.indexOf("atob(")
+            while (idx >= 0) {
+                operations.add(Op(idx, "atob"))
+                idx = functionBody.indexOf("atob(", idx + 1)
             }
-
-            index = functionBody.indexOf("reverse")
-            while (index >= 0) {
-                operations.add(Pair(index, "reverse"))
-                index = functionBody.indexOf("reverse", index + 1)
+            idx = functionBody.indexOf(".reverse()")
+            while (idx >= 0) {
+                operations.add(Op(idx, "reverse"))
+                idx = functionBody.indexOf(".reverse()", idx + 1)
             }
-
-            index = functionBody.indexOf("replace")
-            while (index >= 0) {
-                operations.add(Pair(index, "rot"))
-                index = functionBody.indexOf("replace", index + 1)
+            idx = functionBody.indexOf(".replace(")
+            var rotIdx = 0
+            while (idx >= 0) {
+                operations.add(Op(idx, "rot_$rotIdx"))
+                idx = functionBody.indexOf(".replace(", idx + 1)
+                rotIdx++
             }
+            operations.sortBy { it.pos }
+            Log.d("Kekik_${this.name}", "Operations: ${operations.map { it.type }}")
 
-            operations.sortBy { it.first }
-
+            // 6. İşlemleri uygula
             var result = parts.joinToString("")
-
-            // İşlemleri sitenin belirlediği sıraya göre ateşle
             for (op in operations) {
-                when (op.second) {
-                    "reverse" -> {
+                when {
+                    op.type == "atob" -> {
+                        var padded = result
+                        while (padded.length % 4 != 0) padded += "="
+                        result = String(Base64.decode(padded, Base64.NO_WRAP), Charsets.ISO_8859_1)
+                    }
+                    op.type == "reverse" -> {
                         result = result.reversed()
                     }
-                    "atob" -> {
-                        // Base64 padding (==) eksikliklerine karşı güvenlik
-                        var paddedResult = result
-                        while (paddedResult.length % 4 != 0) {
-                            paddedResult += "="
-                        }
-                        result = String(Base64.decode(paddedResult, Base64.NO_WRAP), Charsets.ISO_8859_1)
-                    }
-                    "rot" -> {
-                        // Statik 13 yerine dinamik 'rotShift' kullanıyoruz
+                    op.type.startsWith("rot_") -> {
+                        val shiftIdx = op.type.removePrefix("rot_").toIntOrNull() ?: 0
+                        val shift = if (shiftIdx < rotShifts.size) rotShifts[shiftIdx] else 13
                         val rot = StringBuilder()
                         for (c in result) {
-                            if (c in 'a'..'z') {
-                                val shifted = c.code + rotShift
-                                rot.append(if (shifted > 'z'.code) (shifted - 26).toChar() else shifted.toChar())
-                            } else if (c in 'A'..'Z') {
-                                val shifted = c.code + rotShift
-                                rot.append(if (shifted > 'Z'.code) (shifted - 26).toChar() else shifted.toChar())
-                            } else {
-                                rot.append(c)
+                            when (c) {
+                                in 'a'..'z' -> rot.append(((c.code - 97 + shift) % 26 + 97).toChar())
+                                in 'A'..'Z' -> rot.append(((c.code - 65 + shift) % 26 + 65).toChar())
+                                else -> rot.append(c)
                             }
                         }
                         result = rot.toString()
@@ -161,15 +162,20 @@ class CloseLoad : ExtractorApi() {
                 }
             }
 
-            // --- SON ADIM: Modulo Unmix (Daima en sonda çalışır) --- //
+            // 7. Son adım: XOR accumulator unmix
+            var acc = xorAccStart
             val unmix = StringBuilder()
-            for (i in result.indices) {
-                val charCode = result[i].code.toLong()
-                val decryptedCode = (charCode - (magicNum % (i + magicOffset)) + 256) % 256
-                unmix.append(decryptedCode.toInt().toChar())
+            for (ch in result) {
+                val b = ch.code
+                acc = (acc + xorStep) % 256
+                val plain = b xor acc
+                acc = (acc + b) % 256
+                unmix.append(plain.toChar())
             }
 
-            return unmix.toString()
+            val decoded = unmix.toString()
+            Log.d("Kekik_${this.name}", "Decoded URL: $decoded")
+            return decoded
 
         } catch (e: Exception) {
             Log.e("Kekik_Extractor", "Native Çözümleme Hatası: ${e.message}")
