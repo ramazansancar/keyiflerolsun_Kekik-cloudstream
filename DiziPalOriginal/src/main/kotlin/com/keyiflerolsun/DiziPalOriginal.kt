@@ -8,7 +8,7 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class DiziPalOriginal : MainAPI() {
-    override var mainUrl              = "https://dizipal2113.com"
+    override var mainUrl              = "https://dizipal2115.com"
     override var name                 = "DiziPalOriginal"
     override val hasMainPage          = true
     override var lang                 = "tr"
@@ -273,46 +273,32 @@ class DiziPalOriginal : MainAPI() {
         Log.d("DZP", "Bulunan Token » $configToken")
         Log.d("DZP", "Yakalanan Çerezler » $cookies")
 
-        // 2. AŞAMA: Token'ı API'ye Çerezlerle (Cookies) birlikte POST et
-        val configResponseRaw = app.post(
-            url = "$mainUrl/ajax-player-config",
-            headers = mapOf(
-                "User-Agent"       to userAgent,
-                "Accept"           to "*/*",
-                "Content-Type"     to "application/x-www-form-urlencoded",
-                "X-Requested-With" to "XMLHttpRequest",
-                "Origin"           to mainUrl,
-                "Cookie"           to cookies
-            ),
-            referer = data,
-            data = mapOf("cfg" to configToken)
-        ).text
+        // 2. AŞAMA: Token'ı Base64 Decode Et
+        val paddedToken = configToken + "=".repeat((4 - configToken.length % 4) % 4)
+        val decodedToken = String(android.util.Base64.decode(paddedToken, android.util.Base64.DEFAULT))
+        Log.d("DZP", "Decoded Token » $decodedToken")
 
-        Log.d("DZP", "API Yanıtı » $configResponseRaw")
-
-        val embedUrlRaw = Regex(""""v"\s*:\s*"([^"]+)"""").find(configResponseRaw)?.groupValues?.getOrNull(1)
+        val embedUrlRaw = Regex(""""v"\s*:\s*"([^"]+)"""").find(decodedToken)?.groupValues?.getOrNull(1)
             ?.replace("\\/", "/")
 
         if (embedUrlRaw.isNullOrEmpty()) {
-            Log.e("DZP", "Embed URL config'den alınamadı! Dönen yanıt: $configResponseRaw")
+            Log.e("DZP", "Embed URL token içinden alınamadı! Dönen yanıt: $decodedToken")
             return false
         }
 
         val embedUrl = fixUrl(embedUrlRaw)
         Log.d("DZP", "Çözülen Embed URL » $embedUrl")
 
-        // ---------------------------------------------------------
-        // YENİ EKLENEN AŞAMA: İMAGESTOO SUNUCUSU KONTROLÜ
-        // ---------------------------------------------------------
+
         if (embedUrl.contains("imagestoo")) {
-            // 1. URL'nin sonundan video ID'sini çek (Örn: decff3a1f694fccd108d4ce07b2587b5)
+            
             val videoId = embedUrl.trimEnd('/').substringAfterLast("/")
 
-            // 2. İlgili API endpoint'ini oluştur
+            
             val imagestooApiUrl = "https://imagestoo.com/player/index.php?data=$videoId&do=getVideo"
             Log.d("DZP", "Imagestoo API URL » $imagestooApiUrl")
 
-            // 3. API'ye istek at (X-Requested-With header'ı bu tür AJAX isteklerinde önemlidir)
+            
             val apiResponse = app.post(
                 url = imagestooApiUrl,
                 referer = embedUrl,
@@ -325,7 +311,7 @@ class DiziPalOriginal : MainAPI() {
 
             var sessionCookie = ""
 
-// 1. Önce CloudStream'in kendi parse ettiği "cookies" map'ine bakalım (En kolayı)
+
             val playerToken = apiResponse.cookies["fireplayer_player"]
 
             if (!playerToken.isNullOrEmpty()) {
@@ -349,11 +335,11 @@ class DiziPalOriginal : MainAPI() {
 
             val responseText = apiResponse.text
 
-            // 4. JSON benzeri veriden securedLink değerini yakala
+            
             val videoSourceRaw = Regex(""""securedLink"\s*:\s*"([^"]+)"""").find(responseText)?.groupValues?.getOrNull(1)
 
             if (videoSourceRaw != null) {
-                // Kaçış karakterlerini (\/) temizle ve fixUrl ile son halini ver
+                
                 val cleanUrl = videoSourceRaw.replace("\\/", "/")
                 val finalM3u8Url = fixUrl(cleanUrl)
 
@@ -372,8 +358,7 @@ class DiziPalOriginal : MainAPI() {
                     }
                 )
 
-                // Imagestoo için altyazı çekme işlemi gerekiyorsa API yanıtından aynı Regex mantığıyla çekilebilir.
-                // Şimdilik işlemi burada sonlandırıyoruz.
+
                 return true
 
             } else {
@@ -381,18 +366,14 @@ class DiziPalOriginal : MainAPI() {
                 return false
             }
         }
-        // ---------------------------------------------------------
-        // STANDART AŞAMA: ANA SUNUCU VEYA FARKLI KAYNAK
-        // ---------------------------------------------------------
 
-        // 3. AŞAMA: Embed Sayfasına Git ve JWPlayer Verilerini Ayıkla
         val embedSource = app.get(
             url = embedUrl,
             referer = data,
             headers = mapOf("User-Agent" to userAgent)
         ).text
 
-// 1. Regex'leri ve ilk eşleşmeyi koruyoruz
+
         val m3u8Match = Regex("""sources\s*:\s*\[\s*\{\s*file\s*:\s*["']([^"']+\.m3u8.*?)["']""").find(embedSource)
             ?: Regex("""v\s*:\s*["']([^"']+\.html.*?)["']""").find(embedSource)
 
@@ -403,7 +384,7 @@ class DiziPalOriginal : MainAPI() {
             return false
         }
 
-// 2. Dönüştürülmüş nihai URL'yi tutacak değişken
+
         val finalM3u8Url = if (extractedUrl.contains(".html")) {
             // URL'den sadece ID'yi (x6sctfgmyfws) güvenli bir şekilde ayıklıyoruz
             // Örn: .../embed-x6sctfgmyfws.html -> x6sctfgmyfws
