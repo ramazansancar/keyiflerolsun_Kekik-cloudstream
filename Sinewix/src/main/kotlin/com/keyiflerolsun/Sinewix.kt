@@ -35,7 +35,7 @@ class Sinewix : MainAPI() {
         "$mainUrl/public/api/media/seriesEpisodesAll/$apiToken" to "Yeni Bölümler",
         //"$mainUrl/public/api/genres/latestmovies/all/$apiToken" to "Son Filmler",
         "$mainUrl/public/api/genres/latestseries/all/$apiToken" to "Son Diziler",
-        "$mainUrl/public/api/genres/latestanimes/all/$apiToken" to "Son Animeler",
+        //"$mainUrl/public/api/genres/latestanimes/all/$apiToken" to "Son Animeler",
         //"$mainUrl/public/api/genres/mediaLibrary/show/878/movie/$apiToken" to "Bilim Kurgu Filmleri",
         //"$mainUrl/public/api/genres/mediaLibrary/show/10770/movie/$apiToken" to "Tv Filmleri",
         "$mainUrl/public/api/genres/mediaLibrary/show/80/serie/$apiToken" to "Suç Dizileri",
@@ -50,9 +50,9 @@ class Sinewix : MainAPI() {
         val response = app.get("${request.data}?page=$page", headers = sineHeaders).text
         
         val items = if (request.name == "Yeni Bölümler") {
-            parseJson<SineWixResponseHash>(response).data?.mapNotNull { it.toSearchResponse() }
-        } else {
             parseJson<SineWixYeniBolumResponse>(response).data?.mapNotNull { it.toSearchResponse() }
+        } else {
+            parseJson<SineWixResponseHash>(response).data?.mapNotNull { it.toSearchResponse(request.data) }
         }
 
         return newHomePageResponse(request.name, items ?: emptyList())
@@ -61,7 +61,7 @@ class Sinewix : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val response = app.get("$mainUrl/public/api/search/$query/$apiToken", headers = sineHeaders).text
         val data = parseJson<SineWixResponseHash>(response)
-        return data.searchResponse?.mapNotNull { it.toSearchResponse() } ?: emptyList()
+        return data.searchResponse?.mapNotNull { it.toSearchResponse(null) } ?: emptyList()
     }
 
     override suspend fun load(url: String): LoadResponse? {
@@ -70,14 +70,14 @@ class Sinewix : MainAPI() {
         
         val title = it.name ?: it.title ?: return null
         val poster = it.posterPath ?: it.backdropPath ?: it.backdropPathTv ?: ""
-        val type = if (url.contains("serie") || it.type == "serie") TvType.TvSeries 
+        val type = if (url.contains("series/show") || url.contains("serie") || it.type == "serie") TvType.TvSeries 
                    else if (url.contains("anime") || it.type == "anime") TvType.Anime
                    else TvType.Movie
         
         return if (type == TvType.TvSeries || type == TvType.Anime) {
             val episodes = it.seasons?.flatMap { season ->
                 season.episodes?.map { episode ->
-                    val videoLink = episode.videos?.firstOrNull()?.link
+                val videoLink = episode.videos?.firstOrNull()?.link
                     newEpisode(videoLink ?: "") {
                         this.name = episode.name ?: "Bölüm ${episode.episodeNumber}"
                         this.season = season.seasonNumber
@@ -93,11 +93,14 @@ class Sinewix : MainAPI() {
                 this.year = it.releaseDate?.split("-")?.firstOrNull()?.toIntOrNull()
             }
         } else {
-            val videoLink = it.videos?.firstOrNull()?.link ?: ""
+            // Film: önce videos listesine bak, yoksa doğrudan video linki dene
+            val videoLink = it.videos?.firstOrNull()?.link
+                ?: it.directLink
+                ?: ""
             newMovieLoadResponse(title, url, type, videoLink) {
                 this.posterUrl = poster
                 this.plot = it.overview
-                this.year = it.releaseDate?.split("-")?.firstOrNull()?.toIntOrNull()
+                this.year = (it.releaseDate ?: it.firstAirDate)?.split("-")?.firstOrNull()?.toIntOrNull()
             }
         }
     }
@@ -109,30 +112,65 @@ class Sinewix : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         if (data.isBlank()) return false
+        
+        // Direkt video dosyası (mkv, mp4, m3u8, webm) ise ExtractorLink olarak ekle
+        val isDirectFile = data.contains(Regex("\\.(mkv|mp4|m3u8|webm|avi)(\\?|$)", RegexOption.IGNORE_CASE))
+        if (isDirectFile) {
+            val isM3u8 = data.contains(".m3u8", ignoreCase = true)
+            callback(
+                com.lagradost.cloudstream3.utils.newExtractorLink(
+                    source  = name,
+                    name    = name,
+                    url     = data,
+                    type    = if (isM3u8) com.lagradost.cloudstream3.utils.ExtractorLinkType.M3U8
+                              else com.lagradost.cloudstream3.utils.ExtractorLinkType.VIDEO
+                ) {
+                    this.referer = mainUrl
+                    this.quality = com.lagradost.cloudstream3.utils.Qualities.Unknown.value
+                }
+            )
+            return true
+        }
+        
         loadExtractor(data, subtitleCallback, callback)
         return true
     }
 
-    private fun SineWixIcerikler.toSearchResponse(): SearchResponse? {
+    private fun SineWixIcerikler.toSearchResponse(url: String? = null): SearchResponse? {
         val title = name ?: title ?: return null
         val poster = posterPath ?: backdropPath ?: backdropPathTv ?: ""
-        val type = if (this.type == "serie") TvType.TvSeries else if (this.type == "anime") TvType.Anime else TvType.Movie
+        val type = if (this.type == "serie" || url?.contains("serie") == true) TvType.TvSeries 
+                   else if (this.type == "anime" || url?.contains("anime") == true || url?.contains("animes") == true) TvType.Anime 
+                   else TvType.Movie
         val href = if (type == TvType.TvSeries || type == TvType.Anime) {
             "$mainUrl/public/api/series/show/$id/$apiToken"
         } else {
             "$mainUrl/public/api/media/movie/info/$id/$apiToken"
         }
         
-        return newTvSeriesSearchResponse(title, href, type) {
-            this.posterUrl = poster
+        return if (type == TvType.Movie) {
+            newMovieSearchResponse(title, href, type) {
+                this.posterUrl = poster
+            }
+        } else {
+            newTvSeriesSearchResponse(title, href, type) {
+                this.posterUrl = poster
+            }
         }
     }
 
     private fun SineWixYeniBolum.toSearchResponse(): SearchResponse? {
         val title = showName ?: return null
-        val poster = posterPath ?: ""
-        val displayTitle = "$title ${seasonNumber}x${episodeNumber.toString().padStart(2, '0')}"
-        val href = "$mainUrl/public/api/series/show/$id/$apiToken"
+        val poster = posterPath ?: stillPath ?: ""
+        val displayTitle = "$title S${seasonNumber.toString().padStart(2,'0')}E${episodeNumber.toString().padStart(2, '0')}"
+        
+        // Eğer direkt bölüm linki varsa onu kullan (yüklenince direkt izleme başlar)
+        // Yoksa dizi sayfasına yönlendir
+        val href = if (!directLink.isNullOrBlank()) {
+            directLink
+        } else {
+            "$mainUrl/public/api/series/show/$id/$apiToken"
+        }
         
         return newTvSeriesSearchResponse(displayTitle, href, TvType.TvSeries) {
             this.posterUrl = poster
@@ -160,21 +198,27 @@ class Sinewix : MainAPI() {
         @JsonProperty("backdrop_path_tv") val backdropPathTv: String? = null,
         @JsonProperty("vote_average") val voteAverage: Double? = null,
         @JsonProperty("release_date") val releaseDate: String? = null,
+        @JsonProperty("first_air_date") val firstAirDate: String? = null,
         @JsonProperty("type") val type: String? = null,
         @JsonProperty("overview") val overview: String? = null,
         @JsonProperty("seasons") val seasons: List<SineWixSeason>? = null,
-        @JsonProperty("videos") val videos: List<SineWixVideo>? = null
+        @JsonProperty("videos") val videos: List<SineWixVideo>? = null,
+        @JsonProperty("link") val directLink: String? = null
     )
 
     data class SineWixYeniBolum(
         @JsonProperty("id") val id: Int? = null,
+        @JsonProperty("episode_id") val episodeId: Int? = null,
+        @JsonProperty("serie_id") val serieId: Int? = null,
         @JsonProperty("name") val showName: String? = null,
         @JsonProperty("episode_name") val episodeName: String? = null,
         @JsonProperty("season_number") val seasonNumber: Int? = null,
         @JsonProperty("episode_number") val episodeNumber: Int? = null,
         @JsonProperty("poster_path") val posterPath: String? = null,
+        @JsonProperty("still_path") val stillPath: String? = null,
         @JsonProperty("vote_average") val voteAverage: Double? = null,
-        @JsonProperty("type") val type: String? = null
+        @JsonProperty("type") val type: String? = null,
+        @JsonProperty("link") val directLink: String? = null
     )
 
     data class SineWixSeason(
