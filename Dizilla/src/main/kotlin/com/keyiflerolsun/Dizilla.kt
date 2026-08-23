@@ -41,7 +41,7 @@ import javax.crypto.spec.SecretKeySpec
 
 
 class Dizilla : MainAPI() {
-    override var mainUrl = "https://dizillahd.com"
+    override var mainUrl = "https://dizilla.now"
     override var name = "Dizilla"
     override val hasMainPage = true
     override var lang = "tr"
@@ -112,14 +112,12 @@ class Dizilla : MainAPI() {
                     ?: return newHomePageResponse(request.name, emptyList())
 
                 val json = objectMapper.readTree(decodedData)
-                val relatedResults = json.get("RelatedResults") ?: return newHomePageResponse(request.name, emptyList())
-                val discoverArchive = relatedResults.get("getDiscoverArchive") ?: return newHomePageResponse(request.name, emptyList())
-                val resultArray = discoverArchive.get("result") ?: return newHomePageResponse(request.name, emptyList())
+                val resultArray = json.get("listItems") ?: return newHomePageResponse(request.name, emptyList())
 
                 val home = resultArray.mapNotNull {
-                    val title = it.get("title")?.asText() ?: return@mapNotNull null
-                    val slug = it.get("slug")?.asText() ?: return@mapNotNull null
-                    val poster = fixPosterUrl(fixUrlNull(it.get("poster")?.asText()))
+                    val title = it.get("original_title")?.asText() ?: it.get("used_title")?.asText() ?: return@mapNotNull null
+                    val slug = it.get("used_slug")?.asText() ?: return@mapNotNull null
+                    val poster = fixPosterUrl(fixUrlNull(it.get("poster_url")?.asText() ?: it.get("face_url")?.asText()))
 
                     newTvSeriesSearchResponse(title, fixUrl("/$slug"), TvType.TvSeries) {
                         this.posterUrl = poster

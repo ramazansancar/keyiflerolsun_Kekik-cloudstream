@@ -18,5 +18,11 @@ data class SearchData(
 data class SearchItem(
     @JsonProperty("used_slug")         val slug: String?   = null,
     @JsonProperty("object_name")       val title: String?  = null,
+    @JsonProperty("title")             val backupTitle: String? = null,
+    @JsonProperty("original_title")    val originalTitle: String? = null,
     @JsonProperty("object_poster_url") val poster: String? = null,
+    @JsonProperty("poster_url")        val posterUrl: String? = null,
+    @JsonProperty("square_url")        val squareUrl: String? = null,
+    @JsonProperty("face_url")          val faceUrl: String? = null,
+    @JsonProperty("back_url")          val backUrl: String? = null,
 )

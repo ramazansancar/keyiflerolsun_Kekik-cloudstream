@@ -6,7 +6,6 @@ import android.util.Log
 import com.lagradost.cloudstream3.ErrorLoadingException
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.utils.*
 
 open class ContentX : ExtractorApi() {
@@ -37,15 +36,10 @@ open class ContentX : ExtractorApi() {
         subUrls.add(subUrl)
 
         subtitleCallback.invoke(
-            newSubtitleFile(
+            SubtitleFile(
                 lang = subLang,
                 url = fixUrl(subUrl)
-            ) {
-                headers = mapOf(
-                    "Referer" to url,
-                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
-                )
-            }
+            )
         )
     }
 
