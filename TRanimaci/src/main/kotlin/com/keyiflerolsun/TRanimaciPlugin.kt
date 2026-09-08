@@ -6,7 +6,11 @@ import android.content.Context
 
 @CloudstreamPlugin
 class TRanimaciPlugin: Plugin() {
+    companion object {
+        var pluginContext: Context? = null
+    }
     override fun load(context: Context) {
+        pluginContext = context
         registerMainAPI(TRanimaci())
     }
 }
