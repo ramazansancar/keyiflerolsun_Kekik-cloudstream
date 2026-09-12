@@ -7,7 +7,6 @@ import android.content.Context
 @CloudstreamPlugin
 class DiziPodPlugin : Plugin() {
     override fun load(context: Context) {
-        DiziPodHelper.mContext = context
         registerMainAPI(DiziPod())
     }
 }

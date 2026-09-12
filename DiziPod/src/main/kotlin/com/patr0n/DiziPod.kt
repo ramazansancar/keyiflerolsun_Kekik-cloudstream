@@ -36,7 +36,6 @@ class DiziPod : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (!DiziPodHelper.validateApp()) return newHomePageResponse(request.name, emptyList())
         val url = if (page == 1) {
             request.data.replace("/page/SAYFA/", "/")
         } else {
@@ -86,7 +85,6 @@ class DiziPod : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        if (!DiziPodHelper.validateApp()) return emptyList()
         val searchUrl = "$mainUrl/?s=${java.net.URLEncoder.encode(query, "UTF-8")}"
         val document  = app.get(searchUrl).document
 
@@ -191,12 +189,11 @@ class DiziPod : MainAPI() {
     }
 
     override suspend fun loadLinks(
-        data             : String,
-        isCasting        : Boolean,
+        data: String,
+        isCasting: Boolean,
         subtitleCallback : (SubtitleFile) -> Unit,
         callback         : (ExtractorLink) -> Unit
     ): Boolean {
-        if (!DiziPodHelper.validateApp()) return false
         val document = app.get(data).document
         val container = document.selectFirst("#episode-player-container") ?: return false
         val postId    = container.attr("data-post-id").takeIf { it.isNotBlank() } ?: return false
