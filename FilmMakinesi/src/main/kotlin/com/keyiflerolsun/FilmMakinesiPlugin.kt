@@ -8,6 +8,8 @@ import android.content.Context
 class FilmMakinesiPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(FilmMakinesi())
-        registerExtractorAPI(CloseLoad())
+        //registerExtractorAPI(FilmMakinesiWebViewExtractor(context))
+        registerExtractorAPI(CloseLoadExtractor())
+        registerExtractorAPI(RapidExtractor())
     }
 }
