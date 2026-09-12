@@ -18,13 +18,13 @@ class TRanimaci : MainAPI() {
     override var sequentialMainPageScrollDelay = 500L
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/yeni"      to "Yeni Bölümler",
+        "${mainUrl}/en/yeni"      to "Yeni Bölümler",
         "${mainUrl}/anime"     to "Tüm Animeler",
         "${mainUrl}/populer"   to "Popüler",
         "${mainUrl}/kategori/aksiyon-anime" to "Aksiyon",
         "${mainUrl}/kategori/macera-anime"  to "Macera",
         "${mainUrl}/kategori/komedi-anime"  to "Komedi",
-        "${mainUrl}/kategori/dram-anime"    to "Dram",
+        "${mainUrl}/kategori/harem-anime"    to "Harem",
         "${mainUrl}/kategori/fantastik-anime" to "Fantastik"
     )
 
