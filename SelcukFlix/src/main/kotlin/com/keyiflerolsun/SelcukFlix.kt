@@ -50,7 +50,7 @@ class SelcukFlix : MainAPI() {
 
     override val mainPage = mainPageOf(
         "$mainUrl/film-izle"    to "Yeni Eklenen Filmler",
-        "$mainUrl/seri-filmler" to "Seri Filmler",
+        //"$mainUrl/seri-filmler" to "Seri Filmler",
         "$mainUrl/dizi-izle"    to "Yeni Diziler",
     )
 
