@@ -49,9 +49,26 @@
          run: |
            cd $GITHUB_WORKSPACE/src
            chmod +x gradlew
-           ./gradlew make makePluginsJson
+           ./gradlew make makePluginsJson -x :RecTV:make
            cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
            cp build/plugins.json $GITHUB_WORKSPACE/builds
+
+       - name: RecTV
+         run: |
+           PLUGINS=$GITHUB_WORKSPACE/builds/plugins.json
+           # url: feroxx → patr0nq/patr0n-cs
+           sed -i 's|https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/builds/RecTV.cs3|https://raw.githubusercontent.com/patr0nq/patr0n-cs/builds/RecTV.cs3|g' "$PLUGINS"
+           # repositoryUrl: feroxx → patr0nq/patr0n-cs (sadece RecTV bloğunda)
+           python3 - <<EOF
+           import json, re
+           with open("$PLUGINS", "r", encoding="utf-8") as f:
+               data = json.load(f)
+           for p in data:
+               if p.get("internalName") == "RecTV":
+                   p["repositoryUrl"] = "https://github.com/patr0nq/patr0n-cs"
+           with open("$PLUGINS", "w", encoding="utf-8") as f:
+               json.dump(data, f, indent=4, ensure_ascii=False)
+           EOF
 
        - name: '@KekikAkademi ifadesini değiştir'
          run: |
