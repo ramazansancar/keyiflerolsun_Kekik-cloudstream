@@ -53,20 +53,49 @@
            cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
            cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-       - name: RecTV
+       - name: RecTV'yi Ekle
          run: |
-           PLUGINS=$GITHUB_WORKSPACE/builds/plugins.json
-           # url: feroxx → patr0nq/patr0n-cs
-           sed -i 's|https://raw.githubusercontent.com/feroxx/Kekik-cloudstream/builds/RecTV.cs3|https://raw.githubusercontent.com/patr0nq/patr0n-cs/builds/RecTV.cs3|g' "$PLUGINS"
-           # repositoryUrl: feroxx → patr0nq/patr0n-cs (sadece RecTV bloğunda)
            python3 - <<EOF
-           import json, re
-           with open("$PLUGINS", "r", encoding="utf-8") as f:
-               data = json.load(f)
-           for p in data:
-               if p.get("internalName") == "RecTV":
-                   p["repositoryUrl"] = "https://github.com/patr0nq/patr0n-cs"
-           with open("$PLUGINS", "w", encoding="utf-8") as f:
+           import json, os
+           
+           plugins_file = os.path.join(os.environ["GITHUB_WORKSPACE"], "builds", "plugins.json")
+           
+           rectv_entry = {
+               "url": "https://raw.githubusercontent.com/patr0nq/patr0n-cs/builds/RecTV.cs3",
+               "status": 1,
+               "version": 113,
+               "name": "RecTV",
+               "internalName": "RecTV",
+               "authors": [
+                   "keyiflerolsun",
+                   "yusiqo",
+                   "inatchii",
+                   "JustRelaxable",
+                   "patr0n"
+               ],
+               "description": "RecTv APK, Türkiye'deki en popüler Çevrimiçi Medya Akış platformlarından biridir. Filmlerin, Canlı Sporların, Web Dizilerinin ve çok daha fazlasının keyfini ücretsiz çıkarın.",
+               "fileSize": 28846,
+               "repositoryUrl": "https://github.com/patr0nq/patr0n-cs",
+               "language": "tr",
+               "tvTypes": ["Movie", "Live", "TvSeries"],
+               "iconUrl": "https://rectv.org.tr/wp-content/uploads/2024/11/rectv-modified.webp",
+               "apiVersion": 1,
+               "fileHash": "sha256-677234252676dd4e313a56c8092f8b736ba1733b201f6734ddf379addb9fd536"
+           }
+           
+           try:
+               with open(plugins_file, "r", encoding="utf-8") as f:
+                   data = json.load(f)
+           except Exception:
+               data = []
+           
+           # eski RecTV girdilerini temizle
+           data = [p for p in data if p.get("internalName") != "RecTV"]
+           
+           # Yeni RecTV objesini ekle
+           data.append(rectv_entry)
+           
+           with open(plugins_file, "w", encoding="utf-8") as f:
                json.dump(data, f, indent=4, ensure_ascii=False)
            EOF
 
