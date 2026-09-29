@@ -19,6 +19,7 @@ import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.network.CloudflareKiller
@@ -693,17 +694,18 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private fun decryptLocalUrl(unpackedScript: String, rawHtml: String = ""): String? {
-        val directMatch = Regex("""["'](https?://[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(unpackedScript)
-            ?: Regex("""["'](https?://[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(rawHtml)
+        val directMatch = Regex("""["'](https?:[\\/]+[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(unpackedScript)
+            ?: Regex("""["'](https?:[\\/]+[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(rawHtml)
         if (directMatch != null) {
-            return directMatch.groupValues[1]
+            val raw = directMatch.groupValues[1].replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+            return fixUrl(raw)
         }
 
         val jsonLdMatch = Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(unpackedScript)
             ?: Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(rawHtml)
-        val jsonLdUrl = jsonLdMatch?.groupValues?.get(1)?.replace(".txt", ".m3u8")
+        val jsonLdUrl = jsonLdMatch?.groupValues?.get(1)?.replace("\\/", "/")?.replace("\\", "")?.replace(".txt", ".m3u8")?.trim()?.trim('"', '\'')
         if (!jsonLdUrl.isNullOrBlank() && jsonLdUrl.contains("http")) {
-            return jsonLdUrl
+            return fixUrl(jsonLdUrl)
         }
 
         val varPattern = Regex(
@@ -715,12 +717,12 @@ class HDFilmCehennemi : MainAPI() {
             val funcName = varMatch.groupValues[1]
             val partsStr = varMatch.groupValues[2]
             var parts = Regex(""""([^"]*)"""").findAll(partsStr).map {
-                it.groupValues[1].replace("\\/", "/").replace("\\\"", "\"")
+                it.groupValues[1].replace("\\/", "/").replace("\\\"", "\"").replace("\\", "")
             }.filter { it.isNotEmpty() }.toList()
 
             if (parts.isEmpty()) {
                 parts = partsStr.split(",").map {
-                    it.trim().trim('\'', '"').replace("\\/", "/").replace("\\\"", "\"")
+                    it.trim().trim('\'', '"').replace("\\/", "/").replace("\\\"", "\"").replace("\\", "")
                 }.filter { it.isNotEmpty() }
             }
 
@@ -729,24 +731,28 @@ class HDFilmCehennemi : MainAPI() {
                 if (funcBody != null) {
                     val dynamicUrl = parseAndExecuteJs(funcBody, parts)
                     if (!dynamicUrl.isNullOrBlank()) {
-                        return dynamicUrl
+                        val cleaned = dynamicUrl.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+                        return fixUrl(cleaned)
                     }
                 }
                 val fallbackRes = tryAllDecryptors(parts)
                 if (!fallbackRes.isNullOrBlank()) {
-                    return fallbackRes
+                    val cleaned = fallbackRes.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+                    return fixUrl(cleaned)
                 }
             }
         }
 
         val vf9qResult = decryptVf9q(unpackedScript)
         if (vf9qResult != null && (vf9qResult.contains("http") || vf9qResult.contains(".m3u8") || vf9qResult.contains(".mp4") || vf9qResult.contains("master.txt"))) {
-            return vf9qResult
+            val cleaned = vf9qResult.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+            return fixUrl(cleaned)
         }
 
         val legacyResult = decryptLegacyLocalUrl(unpackedScript)
         if (legacyResult != null && (legacyResult.contains("http") || legacyResult.contains(".m3u8") || legacyResult.contains(".mp4") || legacyResult.contains("master.txt"))) {
-            return legacyResult
+            val cleaned = legacyResult.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+            return fixUrl(cleaned)
         }
 
         return null
@@ -793,18 +799,18 @@ class HDFilmCehennemi : MainAPI() {
             return
         }
 
-        val lastUrl = if (decryptedUrl.contains("http")) {
-            decryptedUrl.substringAfter("http").let { "http$it" }
-        } else {
-            decryptedUrl
+        var cleanedUrl = decryptedUrl.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+        if (!cleanedUrl.startsWith("http") && cleanedUrl.contains("http")) {
+            cleanedUrl = "http" + cleanedUrl.substringAfter("http")
         }
+        val lastUrl = fixUrl(cleanedUrl)
         Log.d("HDCH", "Final decrypted URL » $lastUrl")
 
         val subData = (foundUnpacked ?: foundScript ?: rawHtml).substringAfter("tracks: [", "").substringBefore("]")
         if (subData.isNotBlank()) {
-            AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" || it.kind == "subtitles" || it.kind == null }?.forEach {
-                val file = it.file ?: return@forEach
-                val subtitleUrl = if (file.startsWith("http")) file else "${mainUrl}${if (file.startsWith("/")) "" else "/"}${file}"
+            AppUtils.tryParseJson<List<SubSource>>("[${subData.replace("\\/", "/")}]")?.filter { it.kind == "captions" || it.kind == "subtitles" || it.kind == null }?.forEach {
+                val file = it.file?.replace("\\/", "/")?.replace("\\", "")?.trim()?.trim('"', '\'') ?: return@forEach
+                val subtitleUrl = fixUrl(file)
 
                 val headers = mapOf(
                     "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -867,9 +873,11 @@ override suspend fun loadLinks(
             val iframeDoc = Jsoup.parse(apiGet)
             var iframe = iframeDoc.selectFirst("iframe")?.attr("data-src")?.ifBlank { null }
                 ?: iframeDoc.selectFirst("iframe")?.attr("src")?.ifBlank { null }
-                ?: Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)?.replace("\\", "")
-                ?: Regex("""src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)?.replace("\\", "")
+                ?: Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)
+                ?: Regex("""src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)
                 ?: return@forEach
+
+            iframe = iframe.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
 
             if (iframe.startsWith("//")) {
                 iframe = "https:$iframe"
@@ -878,6 +886,8 @@ override suspend fun loadLinks(
             } else if (iframe.contains("rapidrame") && !iframe.startsWith("http")) {
                 iframe = "${mainUrl}/rplayer/" + iframe.substringAfter("?rapidrame_id=")
             }
+
+            iframe = fixUrl(iframe)
 
             Log.d("HDCH", "$source » $videoID » $iframe")
             val handled = if (iframe.startsWith("http")) {
