@@ -437,22 +437,53 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private fun decryptLocalUrl(unpackedScript: String): String? {
+        val directMatch = Regex("""["'](https?://[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(unpackedScript)
+        if (directMatch != null) {
+            return directMatch.groupValues[1]
+        }
+
         val vf9qResult = decryptVf9q(unpackedScript)
         if (vf9qResult != null && (vf9qResult.contains("http") || vf9qResult.contains(".m3u8") || vf9qResult.contains(".mp4") || vf9qResult.contains("master.txt"))) {
             return vf9qResult
         }
-        return decryptLegacyLocalUrl(unpackedScript)
+
+        val legacyResult = decryptLegacyLocalUrl(unpackedScript)
+        if (legacyResult != null && (legacyResult.contains("http") || legacyResult.contains(".m3u8") || legacyResult.contains(".mp4") || legacyResult.contains("master.txt"))) {
+            return legacyResult
+        }
+
+        return null
     }
 
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
-        val script = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find {
-            it.data().contains("sources:") || it.data().contains("vf9q") || it.data().contains("eval(") || it.data().contains("function") || it.data().contains("master.txt")
-        }?.data() ?: return
-        Log.d("HDCH", "script » $script")
-        val unpackedScript = getAndUnpack(script)
-        val decryptedUrl = decryptLocalUrl(unpackedScript) ?: return
+        val document = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document
+        val scripts = document.select("script").map { it.data() }.filter { it.isNotBlank() }
+
+        var decryptedUrl: String? = null
+        var foundScript: String? = null
+        var foundUnpacked: String? = null
+
+        for (script in scripts) {
+            if (script.contains("Date.now") && !script.contains("eval(") && !script.contains("sources") && !script.contains("vf9q") && !script.contains("master.txt")) continue
+            val unpackedScript = getAndUnpack(script)
+            val res = decryptLocalUrl(unpackedScript)
+            if (res != null) {
+                decryptedUrl = res
+                foundScript = script
+                foundUnpacked = unpackedScript
+                break
+            }
+        }
+
+        if (decryptedUrl == null) {
+            Log.e("HDCH", "Could not decrypt video URL from $url")
+            return
+        }
+
         val lastUrl = decryptedUrl.substringAfter("https").let { "https$it" }
-        val subData   = script.substringAfter("tracks: [").substringBefore("]")
+        Log.d("HDCH", "Final decrypted URL » $lastUrl")
+
+        val subData = (foundUnpacked ?: foundScript ?: "").substringAfter("tracks: [", "").substringBefore("]")
         Log.d("HDCH", "subData » $subData")
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.forEach {
             val subtitleUrl = "${mainUrl}${it.file}/"
