@@ -34,6 +34,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
+import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -206,6 +207,262 @@ class HDFilmCehennemi : MainAPI() {
 
     data class DecOp(val name: String, val rotShift: Int = 0)
 
+    private fun atob(s: String): String {
+        return try {
+            var str = s.trim()
+            val padding = (4 - str.length % 4) % 4
+            if (padding != 0) str += "=".repeat(padding)
+            android.util.Base64.decode(str, android.util.Base64.DEFAULT).toString(Charsets.ISO_8859_1)
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    private fun caesarShift(text: String, shift: Int): String {
+        return text.map { c ->
+            when {
+                c in 'A'..'Z' -> ((c.code - 'A'.code + shift) % 26 + 'A'.code).toChar()
+                c in 'a'..'z' -> ((c.code - 'a'.code + shift) % 26 + 'a'.code).toChar()
+                else -> c
+            }
+        }.joinToString("")
+    }
+
+    private fun xorUnmix(text: String, accStart: Int, increment: Int): String {
+        var acc = accStart
+        val unmix = StringBuilder()
+        for (i in text.indices) {
+            val b = text[i].code
+            acc = (acc + increment) % 256
+            val plain = b xor acc
+            acc = (acc + b) % 256
+            unmix.append(plain.toChar())
+        }
+        return unmix.toString()
+    }
+
+    private fun unpackPackerJs(rawHtml: String): String? {
+        return try {
+            val startMarker = "eval(function(p,a,c,k,e,d){"
+            val endMarker = ",0,{}))"
+
+            val startIdx = rawHtml.indexOf(startMarker)
+            if (startIdx == -1) return null
+
+            val endIdx = rawHtml.indexOf(endMarker, startIdx + startMarker.length)
+            if (endIdx == -1) return null
+
+            val block = rawHtml.substring(startIdx, endIdx + endMarker.length)
+            val packedStart = block.indexOf("}('") + 3
+            val packedEnd = block.indexOf("',", packedStart)
+            if (packedStart == -1 || packedEnd == -1) return null
+            val packed = block.substring(packedStart, packedEnd)
+            val afterPacked = block.substring(packedEnd + 2)
+            val baseEnd = afterPacked.indexOf(",")
+            if (baseEnd == -1) return null
+            val base = afterPacked.substring(0, baseEnd).toInt()
+            val afterBase = afterPacked.substring(baseEnd + 1)
+            val countEnd = afterBase.indexOf(",")
+            if (countEnd == -1) return null
+            val count = afterBase.substring(0, countEnd).toInt()
+            val dictQuoteStart = afterBase.indexOf("'") + 1
+            val dictQuoteEnd = afterBase.indexOf("'.split", dictQuoteStart)
+            if (dictQuoteStart == -1 || dictQuoteEnd == -1) return null
+            val dictStr = afterBase.substring(dictQuoteStart, dictQuoteEnd)
+
+            val dictionary = dictStr.split('|')
+            val lookup = mutableMapOf<String, String>()
+
+            fun packerEncode(num: Int, base: Int): String {
+                val digits = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                if (num == 0) return "0"
+                var n = num
+                val sb = StringBuilder()
+                while (n > 0) {
+                    sb.insert(0, digits[n % base])
+                    n /= base
+                }
+                return sb.toString()
+            }
+
+            var c = count - 1
+            while (c >= 0) {
+                val key = packerEncode(c, base)
+                lookup[key] = if (c < dictionary.size && dictionary[c].isNotEmpty()) {
+                    dictionary[c]
+                } else {
+                    key
+                }
+                c--
+            }
+
+            var result = packed
+            val sortedKeys = lookup.keys.sortedByDescending { it.length }
+            for (key in sortedKeys) {
+                val value = lookup[key]!!
+                result = result.replace(Regex("\\b${Regex.escape(key)}\\b"), value)
+            }
+
+            result
+        } catch (e: Exception) {
+            Log.e("HDCH", "Unpack hatası: ${e.message}")
+            null
+        }
+    }
+
+    private fun extractFuncBody(jsCode: String, funcName: String): String? {
+        val startIdx = jsCode.indexOf("function $funcName")
+        if (startIdx == -1) return null
+        val braceIdx = jsCode.indexOf('{', startIdx)
+        if (braceIdx == -1) return null
+        var braceCount = 1
+        var i = braceIdx + 1
+        while (braceCount > 0 && i < jsCode.length) {
+            when (jsCode[i]) {
+                '{' -> braceCount++
+                '}' -> braceCount--
+            }
+            i++
+        }
+        return if (braceCount == 0) jsCode.substring(braceIdx + 1, i - 1) else null
+    }
+
+    private fun parseAndExecuteJs(funcBody: String, parts: List<String>): String? {
+        return try {
+            val seedMatch = Regex(
+                """(?:var|let|const)\s+\w+\s*=\s*["']([^"']+)["']\s*;\s*(?:var|let|const)\s+\w+\s*=\s*["']([^"']+)["']"""
+            ).find(funcBody) ?: run {
+                Log.w("HDCH", "Seed/ops string'leri bulunamadı")
+                return null
+            }
+            val seedStr = seedMatch.groupValues[1]
+            val opsStr = seedMatch.groupValues[2]
+            Log.d("HDCH", "Seed: '$seedStr', Ops: '$opsStr'")
+
+            val isSplice = funcBody.contains("splice")
+            val workingParts = parts.toMutableList()
+
+            var u3e = workingParts.joinToString("")
+
+            val multMatch = Regex("""\*\s*(\d+)\s*\+\s*[a-zA-Z0-9_]+\)\s*%\s*(\d+)""").find(funcBody)
+            val hMult = multMatch?.groupValues?.get(1)?.toIntOrNull() ?: if (isSplice) 37 else 31
+            val hMod1 = multMatch?.groupValues?.get(2)?.toIntOrNull() ?: if (isSplice) 241 else 251
+
+            var gzx1 = 0
+            var mff = 0
+            for (i in seedStr.indices) {
+                val ngm = seedStr[i].code
+                gzx1 = (gzx1 * hMult + ngm) % hMod1
+                if (isSplice) {
+                    mff = (mff + ((ngm shl 1) xor i)) and 255
+                } else {
+                    mff = (mff xor (ngm + i)) and 255
+                }
+            }
+            val ghihx = if (isSplice) ((gzx1 * 3 + mff) % 256) else ((gzx1 + mff) % 256)
+            val cv1 = if (isSplice) ((mff % 11) + 5) else ((gzx1 % 13) + 3)
+            var pzvvv = if (isSplice) (((mff * 251 + gzx1) % 65519) + 1).toLong() else (((gzx1 * 256 + mff) % 65521) + 1).toLong()
+
+            val rotBaseMatch = Regex("""charCodeAt\(0\)\s*-\s*(\d+)""").find(funcBody)
+            val rotBase = rotBaseMatch?.groupValues?.get(1)?.toIntOrNull() ?: if (isSplice) 96 else 64
+
+            for (i in opsStr.length - 1 downTo 0) {
+                val ch = opsStr[i]
+                u3e = when (ch) {
+                    'b', '7' -> atob(u3e)
+                    'v', '3' -> u3e.reversed()
+                    else -> {
+                        val oufo = (26 - ((ch.code - rotBase) % 26)) % 26
+                        caesarShift(u3e, oufo)
+                    }
+                }
+            }
+            if (opsStr.length > 4096) u3e = u3e.reversed()
+
+            val prngMatch = Regex("""\*\s*(\d+)\s*\+\s*(\d+)\)\s*%\s*(\d+)""").findAll(funcBody).lastOrNull()
+            val pMult = prngMatch?.groupValues?.get(1)?.toLongOrNull() ?: if (isSplice) 97L else 75L
+            val pAdd = prngMatch?.groupValues?.get(2)?.toLongOrNull() ?: if (isSplice) 41L else 74L
+            val pMod = prngMatch?.groupValues?.get(3)?.toLongOrNull() ?: if (isSplice) 65519L else 65537L
+
+            val imm = u3e.length
+            if (imm > 1) {
+                val irdt = IntArray(imm)
+                for (sm7 in imm - 1 downTo 1) {
+                    pzvvv = (pzvvv * pMult + pAdd) % pMod
+                    irdt[sm7] = (pzvvv % (sm7 + 1)).toInt()
+                }
+                val arr = u3e.toCharArray()
+                for (sm7 in 1 until imm) {
+                    val j = irdt[sm7]
+                    val tmp = arr[sm7]
+                    arr[sm7] = arr[j]
+                    arr[j] = tmp
+                }
+                u3e = String(arr)
+            }
+            val sb = StringBuilder(imm)
+            var to4 = ghihx
+            val multXor = if (isSplice) 5 else 1
+            for (c in u3e) {
+                val ngm = c.code
+                to4 = (to4 * multXor + cv1) % 256
+                sb.append((ngm xor to4).toChar())
+                to4 = (to4 + ngm) % 256
+            }
+
+            val result = sb.toString()
+            Log.d("HDCH", "Decrypted value: ${result.take(200)}")
+            result.trim().takeIf { it.startsWith("http") || it.contains(".m3u8") || it.contains("master.txt") }
+        } catch (e: Exception) {
+            Log.e("HDCH", "JS Parser error: ${e.message}")
+            null
+        }
+    }
+
+    private fun decryptV1(valueParts: List<String>): String? {
+        var value = valueParts.joinToString("")
+        value = caesarShift(value, 9); value = caesarShift(value, 16)
+        value = value.reversed()
+        var decoded = atob(value); decoded = atob(decoded)
+        return xorUnmix(decoded, 241, 11)
+    }
+
+    private fun decryptV2(valueParts: List<String>): String? {
+        var value = valueParts.joinToString("")
+        value = value.reversed(); value = caesarShift(value, 15)
+        var decoded = atob(value); decoded = decoded.reversed(); decoded = atob(decoded)
+        return xorUnmix(decoded, 185, 12)
+    }
+
+    private fun decryptV3(valueParts: List<String>): String? {
+        var value = valueParts.joinToString("")
+        var decoded = atob(value); decoded = atob(decoded)
+        decoded = decoded.reversed(); decoded = caesarShift(decoded, 25); decoded = atob(decoded)
+        return xorUnmix(decoded, 77, 9)
+    }
+
+    private fun decryptV4(valueParts: List<String>): String? {
+        var value = valueParts.joinToString("")
+        var decoded = atob(value); decoded = decoded.reversed(); decoded = atob(decoded)
+        return xorUnmix(decoded, 130, 10)
+    }
+
+    private fun tryAllDecryptors(parts: List<String>): String? {
+        val decryptors = listOf(::decryptV1, ::decryptV2, ::decryptV3, ::decryptV4)
+        for ((index, decryptor) in decryptors.withIndex()) {
+            try {
+                val result = decryptor(parts)
+                if (!result.isNullOrBlank() && result.contains("http")) {
+                    Log.d("HDCH", "Fallback decryptor v${index + 1} başarılı!")
+                    return result
+                }
+            } catch (e: Exception) {
+                Log.d("HDCH", "Fallback decryptor v${index + 1} başarısız: ${e.message}")
+            }
+        }
+        return null
+    }
+
     private fun decryptVf9q(script: String): String? {
         try {
             val partsMatch = Regex("""\[\s*((?:['"][^'"]+['"]\s*,?\s*)+)\]""").find(script) ?: return null
@@ -221,7 +478,7 @@ class HDFilmCehennemi : MainAPI() {
             var qm0jd: String? = null
             var ou6q: String? = null
 
-            val varMatches = Regex("""var\s+[a-zA-Z0-9_]+\s*=\s*["']([^"']+)["'];""").findAll(script).map { it.groupValues[1] }.toList()
+            val varMatches = Regex("""(?:var|let|const)\s+[a-zA-Z0-9_]+\s*=\s*["']([^"']+)["'];""").findAll(script).map { it.groupValues[1] }.toList()
 
             if (varMatches.size >= 2 && !isSplice) {
                 qm0jd = varMatches[0]
@@ -279,9 +536,7 @@ class HDFilmCehennemi : MainAPI() {
             for (uuv14 in ou6q.length - 1 downTo 0) {
                 val a6v = ou6q[uuv14]
                 if (a6v == 'b' || a6v == '7') {
-                    var padded = jc13
-                    while (padded.length % 4 != 0) padded += "="
-                    jc13 = String(android.util.Base64.decode(padded, android.util.Base64.NO_WRAP), Charsets.ISO_8859_1)
+                    jc13 = atob(jc13)
                 } else if (a6v == 'v' || a6v == '3') {
                     jc13 = jc13.reversed()
                 } else {
@@ -351,7 +606,10 @@ class HDFilmCehennemi : MainAPI() {
             val magicNum = moduloMatch?.groupValues?.get(1)?.toLongOrNull() ?: 399756995L
             val magicOffset = moduloMatch?.groupValues?.get(2)?.toIntOrNull() ?: 5
 
-            val funcBody = unpackedScript.substringAfter("function dc_").substringBefore("function d1x")
+            val funcStartIdx = unpackedScript.indexOf("function dc_")
+            if (funcStartIdx == -1) return null
+            val funcEndIdx = unpackedScript.indexOf("function d1x()", funcStartIdx).takeIf { it != -1 } ?: unpackedScript.length
+            val funcBody = unpackedScript.substring(funcStartIdx, funcEndIdx)
 
             val operations = mutableListOf<Pair<Int, DecOp>>()
 
@@ -397,11 +655,9 @@ class HDFilmCehennemi : MainAPI() {
                         result = result.reversed()
                     }
                     "atob" -> {
-                        var paddedResult = result
-                        while (paddedResult.length % 4 != 0) {
-                            paddedResult += "="
-                        }
-                        result = String(android.util.Base64.decode(paddedResult, android.util.Base64.NO_WRAP), Charsets.ISO_8859_1)
+                        val decoded = atob(result)
+                        if (decoded.isEmpty() && result.isNotEmpty()) return null
+                        result = decoded
                     }
                     "rot" -> {
                         val rotShift = action.rotShift
@@ -436,10 +692,51 @@ class HDFilmCehennemi : MainAPI() {
         }
     }
 
-    private fun decryptLocalUrl(unpackedScript: String): String? {
+    private fun decryptLocalUrl(unpackedScript: String, rawHtml: String = ""): String? {
         val directMatch = Regex("""["'](https?://[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(unpackedScript)
+            ?: Regex("""["'](https?://[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(rawHtml)
         if (directMatch != null) {
             return directMatch.groupValues[1]
+        }
+
+        val jsonLdMatch = Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(unpackedScript)
+            ?: Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(rawHtml)
+        val jsonLdUrl = jsonLdMatch?.groupValues?.get(1)?.replace(".txt", ".m3u8")
+        if (!jsonLdUrl.isNullOrBlank() && jsonLdUrl.contains("http")) {
+            return jsonLdUrl
+        }
+
+        val varPattern = Regex(
+            """(?:var|let|const)?\s*(?:\w+\s*=\s*)?(\w+)\s*\(\s*\[(.*?)\]\s*\)""",
+            RegexOption.DOT_MATCHES_ALL
+        )
+        val varMatches = varPattern.findAll(unpackedScript).toList()
+        for (varMatch in varMatches) {
+            val funcName = varMatch.groupValues[1]
+            val partsStr = varMatch.groupValues[2]
+            var parts = Regex(""""([^"]*)"""").findAll(partsStr).map {
+                it.groupValues[1].replace("\\/", "/").replace("\\\"", "\"")
+            }.filter { it.isNotEmpty() }.toList()
+
+            if (parts.isEmpty()) {
+                parts = partsStr.split(",").map {
+                    it.trim().trim('\'', '"').replace("\\/", "/").replace("\\\"", "\"")
+                }.filter { it.isNotEmpty() }
+            }
+
+            if (parts.isNotEmpty()) {
+                val funcBody = extractFuncBody(unpackedScript, funcName)
+                if (funcBody != null) {
+                    val dynamicUrl = parseAndExecuteJs(funcBody, parts)
+                    if (!dynamicUrl.isNullOrBlank()) {
+                        return dynamicUrl
+                    }
+                }
+                val fallbackRes = tryAllDecryptors(parts)
+                if (!fallbackRes.isNullOrBlank()) {
+                    return fallbackRes
+                }
+            }
         }
 
         val vf9qResult = decryptVf9q(unpackedScript)
@@ -457,22 +754,38 @@ class HDFilmCehennemi : MainAPI() {
 
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
         val document = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document
+        val rawHtml = document.html()
         val scripts = document.select("script").map { it.data() }.filter { it.isNotBlank() }
 
         var decryptedUrl: String? = null
         var foundScript: String? = null
         var foundUnpacked: String? = null
 
-        for (script in scripts) {
-            if (script.contains("Date.now") && !script.contains("eval(") && !script.contains("sources") && !script.contains("vf9q") && !script.contains("master.txt")) continue
-            val unpackedScript = getAndUnpack(script)
-            val res = decryptLocalUrl(unpackedScript)
+        val unpackedFromHtml = unpackPackerJs(rawHtml)
+        if (unpackedFromHtml != null) {
+            val res = decryptLocalUrl(unpackedFromHtml, rawHtml)
             if (res != null) {
                 decryptedUrl = res
-                foundScript = script
-                foundUnpacked = unpackedScript
-                break
+                foundUnpacked = unpackedFromHtml
             }
+        }
+
+        if (decryptedUrl == null) {
+            for (script in scripts) {
+                if (script.contains("Date.now") && !script.contains("eval(") && !script.contains("sources") && !script.contains("vf9q") && !script.contains("master.txt") && !script.contains("dc_")) continue
+                val unpackedScript = unpackPackerJs(script) ?: getAndUnpack(script)
+                val res = decryptLocalUrl(unpackedScript, rawHtml)
+                if (res != null) {
+                    decryptedUrl = res
+                    foundScript = script
+                    foundUnpacked = unpackedScript
+                    break
+                }
+            }
+        }
+
+        if (decryptedUrl == null) {
+            decryptedUrl = decryptLocalUrl(rawHtml, rawHtml)
         }
 
         if (decryptedUrl == null) {
@@ -480,27 +793,39 @@ class HDFilmCehennemi : MainAPI() {
             return
         }
 
-        val lastUrl = decryptedUrl.substringAfter("https").let { "https$it" }
+        val lastUrl = if (decryptedUrl.contains("http")) {
+            decryptedUrl.substringAfter("http").let { "http$it" }
+        } else {
+            decryptedUrl
+        }
         Log.d("HDCH", "Final decrypted URL » $lastUrl")
 
-        val subData = (foundUnpacked ?: foundScript ?: "").substringAfter("tracks: [", "").substringBefore("]")
-        Log.d("HDCH", "subData » $subData")
-        AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.forEach {
-            val subtitleUrl = "${mainUrl}${it.file}/"
+        val subData = (foundUnpacked ?: foundScript ?: rawHtml).substringAfter("tracks: [", "").substringBefore("]")
+        if (subData.isNotBlank()) {
+            AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions" || it.kind == "subtitles" || it.kind == null }?.forEach {
+                val file = it.file ?: return@forEach
+                val subtitleUrl = if (file.startsWith("http")) file else "${mainUrl}${if (file.startsWith("/")) "" else "/"}${file}"
 
-            val headers = mapOf(
-                "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-                "Referer" to "subtitleUrl"
-            )
-            val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true, interceptor = interceptor)
-            if (subtitleResponse.isSuccessful) {
-                subtitleCallback(newSubtitleFile(it.language.toString(), subtitleUrl))
-                Log.d("HDCH", "Subtitle added: $subtitleUrl")
-            } else {
-                Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
+                val headers = mapOf(
+                    "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
+                    "Referer" to url
+                )
+                try {
+                    val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true, interceptor = interceptor)
+                    if (subtitleResponse.isSuccessful) {
+                        val lang = it.label ?: it.language ?: "Türkçe"
+                        subtitleCallback(newSubtitleFile(lang, subtitleUrl))
+                        Log.d("HDCH", "Subtitle added: $subtitleUrl")
+                    } else {
+                        Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
+                    }
+                } catch (e: Exception) {
+                    Log.d("HDCH", "Subtitle fetch error: ${e.message}")
+                }
             }
         }
+
         callback.invoke(
             newExtractorLink(
                 source  = source,
@@ -529,6 +854,7 @@ override suspend fun loadLinks(
         element.select("button.alternative-link").map { button ->
             button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
         }.forEach { (source, videoID) ->
+            if (videoID.isBlank()) return@forEach
             val apiGet = app.get(
                 "${mainUrl}/video/$videoID/", interceptor = interceptor,
                 headers = mapOf(
@@ -538,16 +864,29 @@ override suspend fun loadLinks(
                 referer = data
             ).text
             Log.d("HDCH", "Found videoID: $videoID")
-            var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
-            Log.d("HDCH", "$iframe » $iframe")
-            if (iframe.contains("rapidrame")) {
+            val iframeDoc = Jsoup.parse(apiGet)
+            var iframe = iframeDoc.selectFirst("iframe")?.attr("data-src")?.ifBlank { null }
+                ?: iframeDoc.selectFirst("iframe")?.attr("src")?.ifBlank { null }
+                ?: Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)?.replace("\\", "")
+                ?: Regex("""src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)?.replace("\\", "")
+                ?: return@forEach
+
+            if (iframe.startsWith("//")) {
+                iframe = "https:$iframe"
+            } else if (iframe.startsWith("/")) {
+                iframe = "$mainUrl$iframe"
+            } else if (iframe.contains("rapidrame") && !iframe.startsWith("http")) {
                 iframe = "${mainUrl}/rplayer/" + iframe.substringAfter("?rapidrame_id=")
-            } else if (iframe.contains("mobi")) {
-                val iframeDoc = Jsoup.parse(apiGet)
-                iframe = fixUrlNull(iframeDoc.selectFirst("iframe")?.attr("data-src")) ?: return@forEach
             }
+
             Log.d("HDCH", "$source » $videoID » $iframe")
-            invokeLocalSource(source, iframe, subtitleCallback, callback)
+            val handled = if (iframe.startsWith("http")) {
+                loadExtractor(iframe, data, subtitleCallback, callback)
+            } else false
+
+            if (!handled) {
+                invokeLocalSource(source, iframe, subtitleCallback, callback)
+            }
         }
     }
     return true
