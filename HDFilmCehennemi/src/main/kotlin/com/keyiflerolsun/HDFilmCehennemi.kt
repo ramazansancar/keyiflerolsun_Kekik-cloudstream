@@ -206,23 +206,153 @@ class HDFilmCehennemi : MainAPI() {
 
     data class DecOp(val name: String, val rotShift: Int = 0)
 
-    private fun decryptLocalUrl(unpackedScript: String): String? {
+    private fun decryptVf9q(script: String): String? {
         try {
-            // 1. Extract parts array
+            val partsMatch = Regex("""\[\s*((?:['"][^'"]+['"]\s*,?\s*)+)\]""").find(script) ?: return null
+            val parts = partsMatch.groupValues[1].split(",").map {
+                it.trim().trim('\'', '"').replace("\\/", "/")
+            }.filter { it.isNotEmpty() }
+
+            if (parts.isEmpty()) return null
+
+            val isSplice = script.contains("splice")
+            val workingParts = parts.toMutableList()
+
+            var qm0jd: String? = null
+            var ou6q: String? = null
+
+            val varMatches = Regex("""var\s+[a-zA-Z0-9_]+\s*=\s*["']([^"']+)["'];""").findAll(script).map { it.groupValues[1] }.toList()
+
+            if (varMatches.size >= 2 && !isSplice) {
+                qm0jd = varMatches[0]
+                ou6q = varMatches[1]
+            } else if (isSplice || workingParts.size > 2) {
+                val dk0fc = workingParts.size - 2
+                val fgzMatch = Regex("""%\s*(\d+)\s*,\s*[a-zA-Z0-9_]+\s*=\s*(\d+)\s*\+\s*\([a-zA-Z0-9_]+\s*%\s*(\d+)\)""").find(script)
+                val fgzMod = fgzMatch?.groupValues?.get(1)?.toIntOrNull() ?: 7
+                val ugBase = fgzMatch?.groupValues?.get(2)?.toIntOrNull() ?: 8
+                val ugMod = fgzMatch?.groupValues?.get(3)?.toIntOrNull() ?: 5
+
+                val fgz26 = dk0fc % fgzMod
+                val ug9 = ugBase + (dk0fc % ugMod)
+
+                if (ug9 < workingParts.size && fgz26 < workingParts.size - 1) {
+                    ou6q = workingParts.removeAt(ug9)
+                    qm0jd = workingParts.removeAt(fgz26)
+                }
+            }
+
+            if (qm0jd == null || ou6q == null) {
+                if (varMatches.size >= 2) {
+                    qm0jd = varMatches[0]
+                    ou6q = varMatches[1]
+                } else {
+                    return null
+                }
+            }
+
+            var jc13 = workingParts.joinToString("")
+
+            val multMatch = Regex("""\*\s*(\d+)\s*\+\s*[a-zA-Z0-9_]+\)\s*%\s*(\d+)""").find(script)
+            val hMult = multMatch?.groupValues?.get(1)?.toIntOrNull() ?: if (isSplice) 37 else 31
+            val hMod1 = multMatch?.groupValues?.get(2)?.toIntOrNull() ?: if (isSplice) 241 else 251
+
+            var rea2 = 0
+            var ec27 = 0
+            for (uuv14 in qm0jd.indices) {
+                val qq4 = qm0jd[uuv14].code
+                rea2 = (rea2 * hMult + qq4) % hMod1
+                if (isSplice) {
+                    ec27 = (ec27 + ((qq4 shl 1) xor uuv14)) and 255
+                } else {
+                    ec27 = (ec27 xor (qq4 + uuv14)) and 255
+                }
+            }
+
+            val pv7 = if (isSplice) ((rea2 * 3 + ec27) % 256) else ((rea2 + ec27) % 256)
+            val pa2 = if (isSplice) ((ec27 % 11) + 5) else ((rea2 % 13) + 3)
+            var u4y3 = if (isSplice) (((ec27 * 251 + rea2) % 65519) + 1).toLong() else (((rea2 * 256 + ec27) % 65521) + 1).toLong()
+
+            val rotBaseMatch = Regex("""charCodeAt\(0\)\s*-\s*(\d+)""").find(script)
+            val rotBase = rotBaseMatch?.groupValues?.get(1)?.toIntOrNull() ?: if (isSplice) 96 else 64
+
+            for (uuv14 in ou6q.length - 1 downTo 0) {
+                val a6v = ou6q[uuv14]
+                if (a6v == 'b' || a6v == '7') {
+                    var padded = jc13
+                    while (padded.length % 4 != 0) padded += "="
+                    jc13 = String(android.util.Base64.decode(padded, android.util.Base64.NO_WRAP), Charsets.ISO_8859_1)
+                } else if (a6v == 'v' || a6v == '3') {
+                    jc13 = jc13.reversed()
+                } else {
+                    val z4o18 = (26 - ((a6v.code - rotBase) % 26)) % 26
+                    val sb = StringBuilder()
+                    for (c in jc13) {
+                        if (c in 'a'..'z') {
+                            val shifted = (c.code - 97 + z4o18) % 26 + 97
+                            sb.append(shifted.toChar())
+                        } else if (c in 'A'..'Z') {
+                            val shifted = (c.code - 65 + z4o18) % 26 + 65
+                            sb.append(shifted.toChar())
+                        } else {
+                            sb.append(c)
+                        }
+                    }
+                    jc13 = sb.toString()
+                }
+            }
+
+            val prngMatch = Regex("""\*\s*(\d+)\s*\+\s*(\d+)\)\s*%\s*(\d+)""").findAll(script).lastOrNull()
+            val pMult = prngMatch?.groupValues?.get(1)?.toLongOrNull() ?: if (isSplice) 97L else 75L
+            val pAdd = prngMatch?.groupValues?.get(2)?.toLongOrNull() ?: if (isSplice) 41L else 74L
+            val pMod = prngMatch?.groupValues?.get(3)?.toLongOrNull() ?: if (isSplice) 65519L else 65537L
+
+            val j4l88 = jc13.length
+            val sd0f6 = IntArray(j4l88)
+            for (uuv14 in j4l88 - 1 downTo 1) {
+                u4y3 = (u4y3 * pMult + pAdd) % pMod
+                sd0f6[uuv14] = (u4y3 % (uuv14 + 1)).toInt()
+            }
+
+            val h43 = jc13.toCharArray()
+            for (uuv14 in 1 until j4l88) {
+                val gka3 = sd0f6[uuv14]
+                val rv62 = h43[uuv14]
+                h43[uuv14] = h43[gka3]
+                h43[gka3] = rv62
+            }
+            jc13 = String(h43)
+
+            var m3l = pv7
+            val multXor = if (isSplice) 5 else 1
+            val kmqj1 = StringBuilder()
+            for (uuv14 in jc13.indices) {
+                val qq4 = jc13[uuv14].code
+                m3l = (m3l * multXor + pa2) % 256
+                kmqj1.append((qq4 xor m3l).toChar())
+                m3l = (m3l + qq4) % 256
+            }
+
+            return kmqj1.toString()
+        } catch (e: Exception) {
+            Log.e("HDCH", "decryptVf9q Error: ${e.message}")
+            return null
+        }
+    }
+
+    private fun decryptLegacyLocalUrl(unpackedScript: String): String? {
+        try {
             val partsMatch = """\(\[\s*((?:['"][^'"]+['"]\s*,?\s*)+)\]\)""".toRegex().find(unpackedScript)
             val parts = partsMatch?.groupValues?.get(1)?.split(",")?.map { 
                 it.trim().trim('\'', '"').replace("\\/", "/") 
             } ?: return null
 
-            // 2. Extract magicNum and magicOffset
             val moduloMatch = """(\d+)\s*%\s*\(i\s*\+\s*(\d+)\)""".toRegex().find(unpackedScript)
             val magicNum = moduloMatch?.groupValues?.get(1)?.toLongOrNull() ?: 399756995L
             val magicOffset = moduloMatch?.groupValues?.get(2)?.toIntOrNull() ?: 5
 
-            // 3. Isolate function body
             val funcBody = unpackedScript.substringAfter("function dc_").substringBefore("function d1x")
 
-            // 4. Extract operations and their shift values in execution order
             val operations = mutableListOf<Pair<Int, DecOp>>()
 
             var index = funcBody.indexOf("atob(")
@@ -260,7 +390,6 @@ class HDFilmCehennemi : MainAPI() {
 
             var result = parts.joinToString("")
 
-            // Execute operations in order
             for (op in operations) {
                 val action = op.second
                 when (action.name) {
@@ -293,7 +422,6 @@ class HDFilmCehennemi : MainAPI() {
                 }
             }
 
-            // 5. Modulo Unmix
             val unmix = StringBuilder()
             for (i in result.indices) {
                 val charCode = result[i].code.toLong()
@@ -302,15 +430,24 @@ class HDFilmCehennemi : MainAPI() {
             }
 
             return unmix.toString()
-
         } catch (e: Exception) {
-            Log.e("HDCH", "decryptLocalUrl Error: ${e.message}")
+            Log.e("HDCH", "decryptLegacyLocalUrl Error: ${e.message}")
             return null
         }
     }
 
+    private fun decryptLocalUrl(unpackedScript: String): String? {
+        val vf9qResult = decryptVf9q(unpackedScript)
+        if (vf9qResult != null && (vf9qResult.contains("http") || vf9qResult.contains(".m3u8") || vf9qResult.contains(".mp4") || vf9qResult.contains("master.txt"))) {
+            return vf9qResult
+        }
+        return decryptLegacyLocalUrl(unpackedScript)
+    }
+
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
-        val script    = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
+        val script = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find {
+            it.data().contains("sources:") || it.data().contains("vf9q") || it.data().contains("eval(") || it.data().contains("function") || it.data().contains("master.txt")
+        }?.data() ?: return
         Log.d("HDCH", "script » $script")
         val unpackedScript = getAndUnpack(script)
         val decryptedUrl = decryptLocalUrl(unpackedScript) ?: return
