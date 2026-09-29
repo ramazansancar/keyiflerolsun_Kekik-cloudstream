@@ -273,7 +273,13 @@ class DiziPalOriginal : MainAPI() {
             return false
         }
 
-        val cookies = getResponse.cookies.entries.joinToString("; ") { "${it.key}=${it.value}" }
+        val cookies = getResponse.headers.values("Set-Cookie")
+            .mapNotNull { it.split(";").firstOrNull()?.trim()?.takeIf { p -> p.contains("=") } }
+            .distinct()
+            .joinToString("; ")
+            .ifEmpty {
+                getResponse.cookies.entries.joinToString("; ") { "${it.key}=${it.value}" }
+            }
 
         Log.d("DZP", "Bulunan Token » $configToken")
         Log.d("DZP", "Yakalanan Çerezler » $cookies")
@@ -296,7 +302,8 @@ class DiziPalOriginal : MainAPI() {
                 headers = mapOf(
                     "User-Agent"       to userAgent,
                     "X-Requested-With" to "XMLHttpRequest",
-                    "Accept"           to "application/json, text/javascript, */*; q=0.01"
+                    "Accept"           to "application/json, text/javascript, */*; q=0.01",
+                    "Cookie"           to cookies
                 )
             )
             Log.d("DZP", "ajax-player-config yanıtı » ${cfgResponse.text}")
