@@ -278,17 +278,39 @@ class DiziPalOriginal : MainAPI() {
         Log.d("DZP", "Bulunan Token » $configToken")
         Log.d("DZP", "Yakalanan Çerezler » $cookies")
 
-        // 2. AŞAMA: data-cfg JSON'unu parse et ve enc'i AES ile decrypt et
-        val configJson = try {
-            JSONObject(configToken)
-        } catch (e: Exception) {
-            Log.e("DZP", "data-cfg JSON parse edilemedi: ${e.message}")
-            return false
+        // 2. AŞAMA: data-cfg'yi çöz
+        val configJson: JSONObject = if (configToken.trimStart().startsWith("{")) {
+            // Nadir durum: direkt JSON gömülü
+            try {
+                JSONObject(configToken)
+            } catch (e: Exception) {
+                Log.e("DZP", "data-cfg JSON parse edilemedi: ${e.message}")
+                return false
+            }
+        } else {
+            // Normal durum: POST /ajax-player-config { cfg: token }
+            val cfgResponse = app.post(
+                url = "$mainUrl/ajax-player-config",
+                data = mapOf("cfg" to configToken),
+                referer = data,
+                headers = mapOf(
+                    "User-Agent"       to userAgent,
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "Accept"           to "application/json, text/javascript, */*; q=0.01"
+                )
+            )
+            Log.d("DZP", "ajax-player-config yanıtı » ${cfgResponse.text}")
+            try {
+                JSONObject(cfgResponse.text)
+            } catch (e: Exception) {
+                Log.e("DZP", "ajax-player-config yanıtı JSON değil: ${e.message}")
+                return false
+            }
         }
 
         val encObj = configJson.optJSONObject("enc")
         if (encObj == null) {
-            Log.e("DZP", "enc nesnesi bulunamadı! config: $configToken")
+            Log.e("DZP", "enc nesnesi bulunamadı! config: $configJson")
             return false
         }
 
