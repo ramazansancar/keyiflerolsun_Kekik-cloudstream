@@ -48,10 +48,20 @@ class SetFilmIzle : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get(request.data).document
-        val home     = document.select("div.items article").mapNotNull { it.toMainPageResult() }
+        val url = if (page <= 1) {
+            request.data
+        } else {
+            request.data.trimEnd('/') + "/page/$page/"
+        }
 
-        return newHomePageResponse(request.name, home)
+        val document = app.get(url).document
+        val home = document.select("div.items article").mapNotNull { it.toMainPageResult() }
+
+        val maxPage = document.select("div.pagination a, nav.pagination a, .page-numbers")
+            .mapNotNull { it.text().trim().toIntOrNull() }
+            .maxOrNull() ?: page
+
+        return newHomePageResponse(request.name, home, hasNext = maxPage > page)
     }
 
     private fun Element.toMainPageResult(): SearchResponse? {
