@@ -832,15 +832,31 @@ class HDFilmCehennemi : MainAPI() {
             }
         }
 
+        val finalUrl = if (lastUrl.endsWith(".txt")) {
+            lastUrl.replace(".txt", ".m3u8")
+        } else {
+            lastUrl
+        }
+
+        val uri = try { java.net.URI(url) } catch (e: Exception) { null }
+        val origin = if (uri?.host != null) "${uri.scheme}://${uri.host}" else mainUrl
+        val refererUrl = if (url.startsWith("http")) url else "$mainUrl/"
+
         callback.invoke(
             newExtractorLink(
                 source  = source,
                 name    = source,
-                url     = lastUrl,
+                url     = finalUrl,
                 type    = ExtractorLinkType.M3U8
             ) {
-                headers = mapOf("Referer" to "${mainUrl}/", "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0")
-                quality = Qualities.Unknown.value
+                this.referer = refererUrl
+                this.headers = mapOf(
+                    "Referer" to refererUrl,
+                    "Origin" to origin,
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0",
+                    "Accept" to "*/*"
+                )
+                this.quality = Qualities.Unknown.value
             }
         )
     }
