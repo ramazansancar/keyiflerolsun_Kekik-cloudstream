@@ -33,6 +33,7 @@ import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getAndUnpack
@@ -851,33 +852,18 @@ class HDFilmCehennemi : MainAPI() {
             "Accept" to "*/*"
         )
 
-        val m3u8Links = try {
-            M3u8Helper.generateM3u8(
-                source = source,
-                streamUrl = finalUrl,
-                referer = refererUrl,
-                headers = streamHeaders
-            )
-        } catch (e: Exception) {
-            emptyList()
-        }
-
-        if (m3u8Links.isNotEmpty()) {
-            m3u8Links.forEach(callback)
-        } else {
-            callback.invoke(
-                newExtractorLink(
-                    source  = source,
-                    name    = source,
-                    url     = finalUrl,
-                    type    = ExtractorLinkType.M3U8
-                ) {
-                    this.referer = refererUrl
-                    this.headers = streamHeaders
-                    this.quality = Qualities.Unknown.value
-                }
-            )
-        }
+        callback.invoke(
+            newExtractorLink(
+                source  = source,
+                name    = source,
+                url     = finalUrl,
+                type    = INFER_TYPE
+            ) {
+                this.referer = refererUrl
+                this.headers = streamHeaders
+                this.quality = Qualities.Unknown.value
+            }
+        )
     }
 
 override suspend fun loadLinks(
