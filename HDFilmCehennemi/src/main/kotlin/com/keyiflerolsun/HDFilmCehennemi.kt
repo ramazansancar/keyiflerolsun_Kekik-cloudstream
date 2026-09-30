@@ -694,20 +694,6 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private fun decryptLocalUrl(unpackedScript: String, rawHtml: String = ""): String? {
-        val directMatch = Regex("""["'](https?:[\\/]+[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(unpackedScript)
-            ?: Regex("""["'](https?:[\\/]+[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(rawHtml)
-        if (directMatch != null) {
-            val raw = directMatch.groupValues[1].replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
-            return fixUrl(raw)
-        }
-
-        val jsonLdMatch = Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(unpackedScript)
-            ?: Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(rawHtml)
-        val jsonLdUrl = jsonLdMatch?.groupValues?.get(1)?.replace("\\/", "/")?.replace("\\", "")?.replace(".txt", ".m3u8")?.trim()?.trim('"', '\'')
-        if (!jsonLdUrl.isNullOrBlank() && jsonLdUrl.contains("http")) {
-            return fixUrl(jsonLdUrl)
-        }
-
         val varPattern = Regex(
             """(?:var|let|const)?\s*(?:\w+\s*=\s*)?(\w+)\s*\(\s*\[(.*?)\]\s*\)""",
             RegexOption.DOT_MATCHES_ALL
@@ -730,13 +716,13 @@ class HDFilmCehennemi : MainAPI() {
                 val funcBody = extractFuncBody(unpackedScript, funcName)
                 if (funcBody != null) {
                     val dynamicUrl = parseAndExecuteJs(funcBody, parts)
-                    if (!dynamicUrl.isNullOrBlank()) {
+                    if (!dynamicUrl.isNullOrBlank() && !dynamicUrl.contains("playmix.uno")) {
                         val cleaned = dynamicUrl.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
                         return fixUrl(cleaned)
                     }
                 }
                 val fallbackRes = tryAllDecryptors(parts)
-                if (!fallbackRes.isNullOrBlank()) {
+                if (!fallbackRes.isNullOrBlank() && !fallbackRes.contains("playmix.uno")) {
                     val cleaned = fallbackRes.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
                     return fixUrl(cleaned)
                 }
@@ -744,15 +730,31 @@ class HDFilmCehennemi : MainAPI() {
         }
 
         val vf9qResult = decryptVf9q(unpackedScript)
-        if (vf9qResult != null && (vf9qResult.contains("http") || vf9qResult.contains(".m3u8") || vf9qResult.contains(".mp4") || vf9qResult.contains("master.txt"))) {
+        if (vf9qResult != null && (vf9qResult.contains("http") || vf9qResult.contains(".m3u8") || vf9qResult.contains(".mp4") || vf9qResult.contains("master.txt")) && !vf9qResult.contains("playmix.uno")) {
             val cleaned = vf9qResult.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
             return fixUrl(cleaned)
         }
 
         val legacyResult = decryptLegacyLocalUrl(unpackedScript)
-        if (legacyResult != null && (legacyResult.contains("http") || legacyResult.contains(".m3u8") || legacyResult.contains(".mp4") || legacyResult.contains("master.txt"))) {
+        if (legacyResult != null && (legacyResult.contains("http") || legacyResult.contains(".m3u8") || legacyResult.contains(".mp4") || legacyResult.contains("master.txt")) && !legacyResult.contains("playmix.uno")) {
             val cleaned = legacyResult.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
             return fixUrl(cleaned)
+        }
+
+        val directMatch = Regex("""["'](https?:[\\/]+[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(unpackedScript)
+            ?: Regex("""["'](https?:[\\/]+[^"']+(?:\.m3u8|/master\.txt|/playlist\.m3u8)[^"']*)["']""").find(rawHtml)
+        if (directMatch != null) {
+            val raw = directMatch.groupValues[1].replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+            if (!raw.contains("playmix.uno")) {
+                return fixUrl(raw)
+            }
+        }
+
+        val jsonLdMatch = Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(unpackedScript)
+            ?: Regex(""""contentUrl"\s*:\s*"([^"]+)"""").find(rawHtml)
+        val jsonLdUrl = jsonLdMatch?.groupValues?.get(1)?.replace("\\/", "/")?.replace("\\", "")?.replace(".txt", ".m3u8")?.trim()?.trim('"', '\'')
+        if (!jsonLdUrl.isNullOrBlank() && jsonLdUrl.contains("http") && !jsonLdUrl.contains("playmix.uno")) {
+            return fixUrl(jsonLdUrl)
         }
 
         return null
@@ -853,7 +855,6 @@ class HDFilmCehennemi : MainAPI() {
                 this.headers = mapOf(
                     "Referer" to refererUrl,
                     "Origin" to origin,
-                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0",
                     "Accept" to "*/*"
                 )
                 this.quality = Qualities.Unknown.value
