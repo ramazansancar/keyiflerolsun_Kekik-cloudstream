@@ -314,7 +314,21 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private fun extractFuncBody(jsCode: String, funcName: String): String? {
-        val startIdx = jsCode.indexOf("function $funcName")
+        val patterns = listOf(
+            "function $funcName",
+            "$funcName = function",
+            "$funcName=function",
+            "$funcName : function",
+            "$funcName:function"
+        )
+        var startIdx = -1
+        for (pattern in patterns) {
+            val idx = jsCode.indexOf(pattern)
+            if (idx != -1) {
+                startIdx = idx
+                break
+            }
+        }
         if (startIdx == -1) return null
         val braceIdx = jsCode.indexOf('{', startIdx)
         if (braceIdx == -1) return null
@@ -466,12 +480,16 @@ class HDFilmCehennemi : MainAPI() {
         return null
     }
 
-    private fun decryptVf9q(script: String): String? {
+    private fun decryptVf9q(script: String, customParts: List<String>? = null): String? {
         try {
-            val partsMatch = Regex("""\[\s*((?:['"][^'"]+['"]\s*,?\s*)+)\]""").find(script) ?: return null
-            val parts = partsMatch.groupValues[1].split(",").map {
-                it.trim().trim('\'', '"').replace("\\/", "/")
-            }.filter { it.isNotEmpty() }
+            val parts = if (customParts != null && customParts.isNotEmpty()) {
+                customParts
+            } else {
+                val partsMatch = Regex("""\[\s*((?:['"][^'"]+['"]\s*,?\s*)+)\]""").find(script) ?: return null
+                partsMatch.groupValues[1].split(",").map {
+                    it.trim().trim('\'', '"').replace("\\/", "/")
+                }.filter { it.isNotEmpty() }
+            }
 
             if (parts.isEmpty()) return null
 
@@ -696,6 +714,72 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     private fun decryptLocalUrl(unpackedScript: String, rawHtml: String = ""): String? {
+        val contextText = if (rawHtml.isNotBlank()) rawHtml else unpackedScript
+
+        // 1. Primary priority: Extract the real stream variable referenced by sources: [{file: <var>}]
+        val targetVar = contextText.lineSequence()
+            .map { it.trim() }
+            .filter { !it.startsWith("//") && !it.startsWith("/*") }
+            .mapNotNull { line ->
+                Regex("""sources\s*:\s*\[\s*\{\s*file\s*:\s*([a-zA-Z0-9_$]+)""").find(line)?.groupValues?.get(1)
+            }
+            .firstOrNull()
+
+        if (!targetVar.isNullOrBlank()) {
+            val assignRegexes = listOf(
+                Regex("""(?:var|let|const)?\s*$targetVar\s*=\s*([a-zA-Z0-9_$]+)\s*\((.*?)\);""", RegexOption.DOT_MATCHES_ALL),
+                Regex("""(?:var|let|const)?\s*$targetVar\s*=\s*([a-zA-Z0-9_$]+)\s*\((.*?)\)""", RegexOption.DOT_MATCHES_ALL)
+            )
+            val assignMatch = assignRegexes.firstNotNullOfOrNull { it.find(unpackedScript) ?: it.find(contextText) }
+
+            if (assignMatch != null) {
+                val funcName = assignMatch.groupValues[1]
+                val argsRaw = assignMatch.groupValues[2].trim()
+
+                val splitMatch = Regex("""^["']([^"']+)["']\s*\.\s*split\s*\(\s*["']([^"']+)["']\s*\)$""").find(argsRaw)
+                val parts = if (splitMatch != null) {
+                    val str = splitMatch.groupValues[1]
+                    val delim = splitMatch.groupValues[2]
+                    str.split(delim).map {
+                        it.trim().trim('\'', '"').replace("\\/", "/").replace("\\\"", "\"").replace("\\", "")
+                    }.filter { it.isNotEmpty() }
+                } else if (argsRaw.startsWith("[") && argsRaw.endsWith("]")) {
+                    var list = Regex(""""([^"]*)"""").findAll(argsRaw).map {
+                        it.groupValues[1].replace("\\/", "/").replace("\\\"", "\"").replace("\\", "")
+                    }.filter { it.isNotEmpty() }.toList()
+                    if (list.isEmpty()) {
+                        list = argsRaw.removeSurrounding("[", "]").split(",").map {
+                            it.trim().trim('\'', '"').replace("\\/", "/").replace("\\\"", "\"").replace("\\", "")
+                        }.filter { it.isNotEmpty() }
+                    }
+                    list
+                } else {
+                    emptyList()
+                }
+
+                if (parts.isNotEmpty()) {
+                    val funcBody = extractFuncBody(unpackedScript, funcName) ?: extractFuncBody(contextText, funcName)
+                    val scriptToAnalyze = funcBody ?: unpackedScript
+
+                    val decryptedTarget = if (scriptToAnalyze.contains("splice")) {
+                        decryptVf9q(scriptToAnalyze, parts) ?: decryptVf9q(unpackedScript, parts)
+                    } else {
+                        if (funcBody != null) {
+                            parseAndExecuteJs(funcBody, parts) ?: decryptVf9q(scriptToAnalyze, parts)
+                        } else {
+                            decryptVf9q(scriptToAnalyze, parts)
+                        }
+                    } ?: tryAllDecryptors(parts)
+
+                    if (!decryptedTarget.isNullOrBlank() && !decryptedTarget.contains("playmix.uno")) {
+                        val cleaned = decryptedTarget.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+                        return fixUrl(cleaned)
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback: Search array invocations
         val varPattern = Regex(
             """(?:var|let|const)?\s*(?:\w+\s*=\s*)?(\w+)\s*\(\s*\[(.*?)\]\s*\)""",
             RegexOption.DOT_MATCHES_ALL
@@ -717,7 +801,11 @@ class HDFilmCehennemi : MainAPI() {
             if (parts.isNotEmpty()) {
                 val funcBody = extractFuncBody(unpackedScript, funcName)
                 if (funcBody != null) {
-                    val dynamicUrl = parseAndExecuteJs(funcBody, parts)
+                    val dynamicUrl = if (funcBody.contains("splice")) {
+                        decryptVf9q(funcBody, parts)
+                    } else {
+                        parseAndExecuteJs(funcBody, parts)
+                    }
                     if (!dynamicUrl.isNullOrBlank() && !dynamicUrl.contains("playmix.uno")) {
                         val cleaned = dynamicUrl.replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
                         return fixUrl(cleaned)
@@ -810,28 +898,30 @@ class HDFilmCehennemi : MainAPI() {
         val lastUrl = fixUrl(cleanedUrl)
         Log.d("HDCH", "Final decrypted URL » $lastUrl")
 
-        val subData = (foundUnpacked ?: foundScript ?: rawHtml).substringAfter("tracks: [", "").substringBefore("]")
-        if (subData.isNotBlank()) {
-            AppUtils.tryParseJson<List<SubSource>>("[${subData.replace("\\/", "/")}]")?.filter { it.kind == "captions" || it.kind == "subtitles" || it.kind == null }?.forEach {
-                val file = it.file?.replace("\\/", "/")?.replace("\\", "")?.trim()?.trim('"', '\'') ?: return@forEach
-                val subtitleUrl = fixUrl(file)
-
-                val headers = mapOf(
-                    "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-                    "Referer" to url
-                )
-                try {
-                    val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true, interceptor = interceptor)
-                    if (subtitleResponse.isSuccessful) {
+        val candidates = listOfNotNull(rawHtml, foundScript, foundUnpacked)
+        for (candidate in candidates) {
+            val tracksMatch = Regex("""tracks\s*:\s*(\[\s*\{.*?\}\s*\])""", RegexOption.DOT_MATCHES_ALL).find(candidate)
+            if (tracksMatch != null) {
+                val jsonStr = tracksMatch.groupValues[1]
+                val subList = AppUtils.tryParseJson<List<SubSource>>(jsonStr)
+                if (!subList.isNullOrEmpty()) {
+                    subList.filter { it.kind == "captions" || it.kind == "subtitles" || it.kind == null }.forEach {
+                        val file = it.file?.replace("\\/", "/")?.replace("\\", "")?.trim()?.trim('"', '\'') ?: return@forEach
+                        val subtitleUrl = fixUrl(file)
                         val lang = it.label ?: it.language ?: "Türkçe"
-                        subtitleCallback(newSubtitleFile(lang, subtitleUrl))
-                        Log.d("HDCH", "Subtitle added: $subtitleUrl")
-                    } else {
-                        Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
+                        try {
+                            subtitleCallback(newSubtitleFile(lang, subtitleUrl) {
+                                this.headers = mapOf(
+                                    "Referer" to url,
+                                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                                )
+                            })
+                            Log.d("HDCH", "Subtitle added: $lang -> $subtitleUrl")
+                        } catch (e: Exception) {
+                            Log.d("HDCH", "Subtitle error: ${e.message}")
+                        }
                     }
-                } catch (e: Exception) {
-                    Log.d("HDCH", "Subtitle fetch error: ${e.message}")
+                    break
                 }
             }
         }
@@ -849,7 +939,8 @@ class HDFilmCehennemi : MainAPI() {
         val streamHeaders = mapOf(
             "Referer" to refererUrl,
             "Origin" to origin,
-            "Accept" to "*/*"
+            "Accept" to "*/*",
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         )
 
         callback.invoke(
