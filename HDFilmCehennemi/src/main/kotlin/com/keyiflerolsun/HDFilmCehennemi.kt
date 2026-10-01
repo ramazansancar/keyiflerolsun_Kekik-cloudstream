@@ -3,6 +3,7 @@
 package com.keyiflerolsun
 
 import android.util.Log
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -899,32 +900,7 @@ class HDFilmCehennemi : MainAPI() {
         Log.d("HDCH", "Final decrypted URL » $lastUrl")
 
         val candidates = listOfNotNull(rawHtml, foundScript, foundUnpacked)
-        for (candidate in candidates) {
-            val tracksMatch = Regex("""tracks\s*:\s*(\[\s*\{.*?\}\s*\])""", RegexOption.DOT_MATCHES_ALL).find(candidate)
-            if (tracksMatch != null) {
-                val jsonStr = tracksMatch.groupValues[1]
-                val subList = AppUtils.tryParseJson<List<SubSource>>(jsonStr)
-                if (!subList.isNullOrEmpty()) {
-                    subList.filter { it.kind == "captions" || it.kind == "subtitles" || it.kind == null }.forEach {
-                        val file = it.file?.replace("\\/", "/")?.replace("\\", "")?.trim()?.trim('"', '\'') ?: return@forEach
-                        val subtitleUrl = fixUrl(file)
-                        val lang = it.label ?: it.language ?: "Türkçe"
-                        try {
-                            subtitleCallback(newSubtitleFile(lang, subtitleUrl) {
-                                this.headers = mapOf(
-                                    "Referer" to url,
-                                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-                                )
-                            })
-                            Log.d("HDCH", "Subtitle added: $lang -> $subtitleUrl")
-                        } catch (e: Exception) {
-                            Log.d("HDCH", "Subtitle error: ${e.message}")
-                        }
-                    }
-                    break
-                }
-            }
-        }
+        extractSubtitles(candidates, subtitleCallback)
 
         val finalUrl = if (lastUrl.endsWith(".txt")) {
             lastUrl.replace(".txt", ".m3u8")
@@ -1013,11 +989,69 @@ override suspend fun loadLinks(
     }
     return true
 }
-    private data class SubSource(
-        @JsonProperty("file")    val file: String?  = null,
-        @JsonProperty("label")   val label: String? = null,
+
+    private fun unescapeUnicode(str: String): String {
+        val regex = Regex("""\\u([0-9a-fA-F]{4})""")
+        return regex.replace(str) { matchResult ->
+            matchResult.groupValues[1].toInt(16).toChar().toString()
+        }
+    }
+
+    private suspend fun extractSubtitles(
+        candidates: List<String>,
+        subtitleCallback: (SubtitleFile) -> Unit
+    ) {
+        val seenFiles = mutableSetOf<String>()
+        for (candidate in candidates) {
+            val tracksBlockMatch = Regex("""tracks\s*:\s*\[(.*?)\]""", RegexOption.DOT_MATCHES_ALL).find(candidate)
+            val block = tracksBlockMatch?.groupValues?.get(1) ?: continue
+
+            val trackObjRegex = Regex("""\{[^{}]*"file"\s*:\s*"([^"]+)"[^{}]*\}""")
+            trackObjRegex.findAll(block).forEach { match ->
+                val objStr = match.value
+                val fileRaw = match.groupValues[1].replace("\\/", "/").replace("\\", "").trim().trim('"', '\'')
+                if (fileRaw.isBlank() || seenFiles.contains(fileRaw)) return@forEach
+                seenFiles.add(fileRaw)
+
+                val labelRaw = Regex(""""label"\s*:\s*"([^"]+)"""").find(objStr)?.groupValues?.get(1)
+                val langRaw = Regex(""""language"\s*:\s*"([^"]+)"""").find(objStr)?.groupValues?.get(1)
+                val kindRaw = Regex(""""kind"\s*:\s*"([^"]+)"""").find(objStr)?.groupValues?.get(1)
+
+                if (kindRaw != null && kindRaw != "captions" && kindRaw != "subtitles") {
+                    return@forEach
+                }
+
+                val finalUrl = fixUrl(fileRaw)
+                val label = unescapeUnicode(labelRaw ?: langRaw ?: "Türkçe")
+
+                val uri = try { java.net.URI(finalUrl) } catch (e: Exception) { null }
+                val referer = if (uri?.host != null) "${uri.scheme}://${uri.host}/" else "${mainUrl}/"
+
+                val subHeaders = mapOf(
+                    "Referer" to referer,
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                )
+
+                try {
+                    subtitleCallback(newSubtitleFile(label, finalUrl) {
+                        this.headers = subHeaders
+                    })
+                    Log.d("HDCH", "Subtitle added: $label -> $finalUrl")
+                } catch (e: Exception) {
+                    Log.e("HDCH", "Failed to add subtitle: ${e.message}")
+                }
+            }
+            if (seenFiles.isNotEmpty()) break
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class SubSource(
+        @JsonProperty("file")     val file: String?     = null,
+        @JsonProperty("label")    val label: String?    = null,
         @JsonProperty("language") val language: String? = null,
-        @JsonProperty("kind")    val kind: String?  = null
+        @JsonProperty("kind")     val kind: String?     = null,
+        @JsonProperty("default")  val default: Boolean? = null
     )
 
     data class Results(
