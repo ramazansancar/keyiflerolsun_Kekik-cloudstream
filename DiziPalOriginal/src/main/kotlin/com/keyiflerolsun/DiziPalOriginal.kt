@@ -434,7 +434,7 @@ class DiziPalOriginal : MainAPI() {
 
             if (idMatch != null) {
                 // İstenen formata göre string interpolation ile yeni URL'yi inşa ediyoruz
-                "https://s2.superadjacentsoddenly.xyz/hls2/01/00007/${idMatch}_,n,h,.urlset/master.m3u8"
+                "https://s7.superadjacentsoddenly.xyz/hls2/01/00016/${idMatch}_,n,h,.urlset/master.m3u8"
             } else {
                 Log.e("DZP", "HTML linkinden ID ayıklanamadı: $extractedUrl")
                 null
