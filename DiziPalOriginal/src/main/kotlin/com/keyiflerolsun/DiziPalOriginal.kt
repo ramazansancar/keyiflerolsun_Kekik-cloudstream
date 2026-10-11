@@ -315,7 +315,7 @@ class DiziPalOriginal : MainAPI() {
             }
         }
 
-        val encObj = configJson.optJSONObject("enc")
+        val encObj = configJson.optJSONObject("v")
         if (encObj == null) {
             Log.e("DZP", "enc nesnesi bulunamadı! config: $configJson")
             return false
