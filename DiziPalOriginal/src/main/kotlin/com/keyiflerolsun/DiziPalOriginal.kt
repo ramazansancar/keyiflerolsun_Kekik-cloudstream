@@ -315,18 +315,33 @@ class DiziPalOriginal : MainAPI() {
             }
         }
 
-        val encObj = configJson.optJSONObject("v")
-            ?: configJson.optString("v", "").takeIf { it.isNotBlank() }?.let {
-                try { JSONObject(it) } catch (e: Exception) { null }
+        val innerConfig = configJson.optJSONObject("config") ?: configJson
+
+        val embedUrlRaw: String? = when {
+            innerConfig.has("v") -> {
+                val vObj = innerConfig.optJSONObject("v")
+                if (vObj != null) {
+                    decryptEnc(vObj)
+                } else {
+                    val vStr = innerConfig.optString("v", "").trim()
+                    when {
+                        vStr.startsWith("{") -> {
+                            try {
+                                decryptEnc(JSONObject(vStr))
+                            } catch (e: Exception) {
+                                vStr
+                            }
+                        }
+                        vStr.isNotBlank() -> vStr
+                        else -> null
+                    }
+                }
             }
-        if (encObj == null) {
-            Log.e("DZP", "enc nesnesi bulunamadı! config: $configJson")
-            return false
+            else -> null
         }
 
-        val embedUrlRaw = decryptEnc(encObj)
         if (embedUrlRaw.isNullOrEmpty()) {
-            Log.e("DZP", "Embed URL decrypt edilemedi!")
+            Log.e("DZP", "Embed URL (v) bulunamadı veya decrypt edilemedi! config: $configJson")
             return false
         }
 
@@ -422,6 +437,7 @@ class DiziPalOriginal : MainAPI() {
             ?: Regex("""v\s*:\s*["']([^"']+\.html.*?)["']""").find(embedSource)
 
         val extractedUrl = m3u8Match?.groupValues?.getOrNull(1)
+            ?: embedUrl.takeIf { it.contains("embed-") && it.contains(".html") }
 
         if (extractedUrl == null) {
             Log.e("DZP", "Embed kaynağında geçerli bir link bulunamadı!")
