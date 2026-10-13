@@ -8,5 +8,9 @@ import android.content.Context
 class TRasyalogPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(TRasyalog())
+        registerExtractorAPI(Odnoklassniki())
+        registerExtractorAPI(OdnoklassnikiHTTP())
+        registerExtractorAPI(OkRuSSL())
+        registerExtractorAPI(OkRuHTTP())
     }
 }

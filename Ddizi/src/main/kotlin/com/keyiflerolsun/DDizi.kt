@@ -15,7 +15,7 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 
 class DDizi : MainAPI() {
-    override var mainUrl              = "https://www.ddizi.im"
+    override var mainUrl              = "https://www.ddizi.tel"
     override var name                 = "DDizi"
     override val hasMainPage          = true
     override var lang                 = "tr"

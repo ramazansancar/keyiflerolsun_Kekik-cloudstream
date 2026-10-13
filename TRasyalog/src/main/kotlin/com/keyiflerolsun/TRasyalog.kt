@@ -178,14 +178,24 @@ class TRasyalog : MainAPI() {
             document
         }
 
-        targetElement.select("iframe").forEach { element ->
+        val iframes = targetElement.select("iframe").ifEmpty { document.select("iframe") }
+
+        iframes.forEach { element ->
             val src = element.attr("src").ifBlank {
                 element.attr("data-url").ifBlank { element.attr("data-src") }
             }.trim()
 
             if (src.isNotEmpty() && !src.startsWith("javascript")) {
                 val fixedUrl = if (src.startsWith("//")) "https:$src" else src
-                loadExtractor(fixedUrl, pageUrl, subtitleCallback, callback)
+                val loaded = loadExtractor(fixedUrl, pageUrl, subtitleCallback, callback)
+
+                if (!loaded && (fixedUrl.contains("odnoklassniki") || fixedUrl.contains("ok.ru"))) {
+                    try {
+                        Odnoklassniki().getUrl(fixedUrl, pageUrl, subtitleCallback, callback)
+                    } catch (e: Exception) {
+                        Log.e("TRasyalog", "Odnoklassniki extraction error: ${e.message}")
+                    }
+                }
             }
         }
 
