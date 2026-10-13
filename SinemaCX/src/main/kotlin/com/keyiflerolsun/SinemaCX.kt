@@ -26,19 +26,19 @@ class SinemaCX : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/page/"			                     to		"Son Eklenen Filmler",
-        "${mainUrl}/izle/aile-filmleri/page/"			 to		"Aile Filmleri",
-        "${mainUrl}/izle/aksiyon-filmleri/page/"		 to		"Aksiyon Filmleri",
-        "${mainUrl}/izle/animasyon-filmleri/page/"		 to		"Animasyon Filmleri",
-        "${mainUrl}/izle/belgesel/page/"				 to		"Belgesel Filmleri",
-        "${mainUrl}/izle/bilim-kurgu-filmleri/page/"	 to		"Bilim Kurgu Filmler",
-        "${mainUrl}/izle/biyografi/page/"				 to		"Biyografi Filmleri",
-        "${mainUrl}/izle/fantastik-filmler/page/"		 to		"Fantastik Filmler",
-        "${mainUrl}/izle/gizem-filmleri/page/"			 to		"Gizem Filmleri",
-        "${mainUrl}/izle/komedi-filmleri/page/"			 to		"Komedi Filmleri",
-        "${mainUrl}/izle/korku-filmleri/page/"			 to		"Korku Filmleri",
-        "${mainUrl}/izle/macera-filmleri/page/"			 to		"Macera Filmleri",
-        "${mainUrl}/izle/romantik-filmler/page/"		 to		"Romantik Filmler",
-        "${mainUrl}/izle/erotik-filmler/page/"			 to		"Erotik Film izle",
+        "${mainUrl}/tur/aile-filmleri/page/"			 to		"Aile Filmleri",
+        "${mainUrl}/tur/aksiyon-filmleri/page/"		 to		"Aksiyon Filmleri",
+        "${mainUrl}/tur/animasyon-filmleri/page/"		 to		"Animasyon Filmleri",
+        "${mainUrl}/tur/belgesel/page/"				 to		"Belgesel Filmleri",
+        "${mainUrl}/tur/bilim-kurgu-filmleri/page/"	 to		"Bilim Kurgu Filmler",
+        "${mainUrl}/tur/biyografi/page/"				 to		"Biyografi Filmleri",
+        "${mainUrl}/tur/fantastik-filmler/page/"		 to		"Fantastik Filmler",
+        "${mainUrl}/tur/gizem-filmleri/page/"			 to		"Gizem Filmleri",
+        "${mainUrl}/tur/komedi-filmleri/page/"			 to		"Komedi Filmleri",
+        "${mainUrl}/tur/korku-filmleri/page/"			 to		"Korku Filmleri",
+        "${mainUrl}/tur/macera-filmleri/page/"			 to		"Macera Filmleri",
+        "${mainUrl}/tur/romantik-filmler/page/"		 to		"Romantik Filmler",
+        "${mainUrl}/tur/erotik-filmler/page/"			 to		"Erotik Film izle",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
