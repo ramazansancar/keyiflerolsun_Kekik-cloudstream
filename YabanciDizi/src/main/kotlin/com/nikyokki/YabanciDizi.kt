@@ -38,7 +38,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 class YabanciDizi : MainAPI() {
-    override var mainUrl = "https://yabancidizi.so"
+    override var mainUrl = "https://yabancidizi.news"
     override var name = "YabanciDizi"
     override val hasMainPage = true
     override var lang = "tr"
