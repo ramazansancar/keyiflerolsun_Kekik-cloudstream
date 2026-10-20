@@ -23,8 +23,10 @@ class DiziBox : MainAPI() {
     override val supportedTypes       = setOf(TvType.TvSeries)
 
     override var sequentialMainPage            = true
-    override var sequentialMainPageDelay       = 200L
+    override var sequentialMainPageDelay       = 50L
     override var sequentialMainPageScrollDelay = 50L
+
+    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
     private val baseCookies = mapOf(
         "LockUser"      to "true",
@@ -33,13 +35,18 @@ class DiziBox : MainAPI() {
     )
 
     private val cloudflareKiller by lazy { CloudflareKiller() }
-    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller) }
+    private val interceptor      by lazy { CloudflareInterceptor(cloudflareKiller, userAgent) }
 
-    class CloudflareInterceptor(private val cloudflareKiller: CloudflareKiller) : Interceptor {
+    class CloudflareInterceptor(
+        private val cloudflareKiller: CloudflareKiller,
+        private val userAgent: String
+    ) : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
-            val request    = chain.request()
+            val request = chain.request().newBuilder()
+                .header("User-Agent", userAgent)
+                .build()
             val response   = chain.proceed(request)
-            val bodySample = response.peekBody(1024 * 1024).string()
+            val bodySample = response.peekBody(10 * 1024).string()
             if (
                 bodySample.contains("Güvenlik taramasından geçiriliyorsunuz")
                 || bodySample.contains("cf-browser-verification")
@@ -239,17 +246,14 @@ class DiziBox : MainAPI() {
         val iframeUrl = document.selectFirst("div#video-area iframe")?.attr("src")
             ?: return false
 
-        val sources = mutableListOf(data)
-        document.select("div.video-toolbar option[value]").forEach { opt ->
-            val valUrl = opt.attr("value")
-            if (!valUrl.startsWith("http") && !sources.contains(valUrl)) {
-                sources.add(valUrl)
-            }
-        }
+        processIframe(iframeUrl, data, data, subtitleCallback, callback)
 
-        sources.forEach { sourceUrl ->
+        document.select("div.video-toolbar option[value]").forEach { opt ->
+            val altUrl = fixUrlNull(opt.attr("value")) ?: return@forEach
+            if (altUrl == data) return@forEach
+
             val sourceDoc = app.get(
-                sourceUrl,
+                altUrl,
                 cookies     = baseCookies,
                 interceptor = interceptor
             ).document
@@ -257,7 +261,7 @@ class DiziBox : MainAPI() {
             val srcIframe = sourceDoc.selectFirst("div#video-area iframe")?.attr("src")
                 ?: return@forEach
 
-            processIframe(srcIframe, sourceUrl, data, subtitleCallback, callback)
+            processIframe(srcIframe, altUrl, data, subtitleCallback, callback)
         }
 
         return true
@@ -271,80 +275,6 @@ class DiziBox : MainAPI() {
         callback         : (ExtractorLink) -> Unit
     ) {
         when {
-            iframeUrl.contains("moly.php") -> {
-                loadExtractor(iframeUrl, sourceUrl, subtitleCallback, callback)
-            }
-
-            iframeUrl.contains("php?v=") -> {
-                val playerUrl = iframeUrl.replace("php?v=", "php?wmode=opaque&v=")
-                val playerDoc = app.get(
-                    playerUrl,
-                    referer     = sourceUrl,
-                    cookies     = baseCookies,
-                    interceptor = interceptor
-                ).document
-
-                val finalEmbed = playerDoc.selectFirst("div#Player iframe")?.attr("src")
-                    ?: return
-
-                val sheila = finalEmbed
-                    .replace("/embed/", "/embed/sheila/")
-                    .replace("vidmoly.me", "vidmoly.net")
-
-                if (sheila.contains("dbx.molystream")) {
-                    val m3u8Data = app.get(
-                        sheila,
-                        referer     = finalEmbed,
-                        interceptor = interceptor
-                    ).text
-                    val m3u8Url = m3u8Data.lineSequence().firstOrNull { it.startsWith("http") }
-                    if (m3u8Url != null) {
-                        callback.invoke(
-                            newExtractorLink(
-                                source = name,
-                                name   = name,
-                                url    = m3u8Url,
-                                type   = ExtractorLinkType.M3U8
-                            ) {
-                                this.headers = mapOf("Referer" to finalEmbed)
-                                this.quality = Qualities.P1080.value
-                            }
-                        )
-                    }
-                } else {
-                    loadExtractor(sheila, sourceUrl, subtitleCallback, callback)
-                }
-            }
-
-            iframeUrl.contains("/player/king/king.php") -> {
-                val kingUrl = iframeUrl.replace("king.php?v=", "king.php?wmode=opaque&v=")
-                val subDoc  = app.get(
-                    kingUrl,
-                    referer     = referer,
-                    cookies     = baseCookies,
-                    interceptor = interceptor
-                ).document
-                val subFrame = subDoc.selectFirst("div#Player iframe")?.attr("src") ?: return
-
-                val iDoc      = app.get(subFrame, referer = "$mainUrl/").text
-                val cryptData = Regex("""CryptoJS\.AES\.decrypt\("(.*)","""""").find(iDoc)?.groupValues?.get(1) ?: return
-                val cryptPass = Regex(""""","(.*)"\);""").find(iDoc)?.groupValues?.get(1) ?: return
-                val decrypted = CryptoJS.decrypt(cryptPass, cryptData)
-                val vidUrl    = Regex("""file: '(.*)',""").find(Jsoup.parse(decrypted).html())?.groupValues?.get(1) ?: return
-
-                callback.invoke(
-                    newExtractorLink(
-                        source = name,
-                        name   = name,
-                        url    = vidUrl,
-                        type   = ExtractorLinkType.M3U8
-                    ) {
-                        this.headers = mapOf("Referer" to vidUrl)
-                        this.quality = Qualities.P1080.value
-                    }
-                )
-            }
-
             iframeUrl.contains("/player/moly/moly.php") || iframeUrl.contains("/player/haydi.php") -> {
                 val molyUrl = when {
                     iframeUrl.contains("moly.php") -> iframeUrl.replace("moly.php?h=", "moly.php?wmode=opaque&h=")
@@ -365,6 +295,64 @@ class DiziBox : MainAPI() {
 
                 val subFrame = subDoc.selectFirst("div#Player iframe")?.attr("src") ?: return
                 loadExtractor(subFrame, "$mainUrl/", subtitleCallback, callback)
+            }
+
+            iframeUrl.contains("/player/king/king.php") || iframeUrl.contains("php?v=") -> {
+                val playerUrl = iframeUrl.replace("php?v=", "php?wmode=opaque&v=")
+                val playerDoc = app.get(
+                    playerUrl,
+                    referer     = sourceUrl,
+                    cookies     = baseCookies,
+                    interceptor = interceptor
+                ).document
+
+                val finalEmbed = playerDoc.selectFirst("div#Player iframe")?.attr("src")
+                    ?: return
+
+                if (finalEmbed.contains("dbx.molystream")) {
+                    val sheila   = finalEmbed.replace("/embed/", "/embed/sheila/")
+                    val m3u8Data = app.get(
+                        sheila,
+                        referer     = finalEmbed,
+                        interceptor = interceptor
+                    ).text
+                    val m3u8Url = m3u8Data.lineSequence().firstOrNull { it.startsWith("http") }
+                    if (m3u8Url != null) {
+                        callback.invoke(
+                            newExtractorLink(
+                                source = name,
+                                name   = name,
+                                url    = m3u8Url,
+                                type   = ExtractorLinkType.M3U8
+                            ) {
+                                this.headers = mapOf("Referer" to finalEmbed)
+                                this.quality = Qualities.P1080.value
+                            }
+                        )
+                        return
+                    }
+
+                    val iDoc      = app.get(finalEmbed, referer = "$mainUrl/", interceptor = interceptor).text
+                    val cryptData = Regex("""CryptoJS\.AES\.decrypt\("(.*)",""").find(iDoc)?.groupValues?.get(1) ?: return
+                    val cryptPass = Regex("""","(.*)"\);""").find(iDoc)?.groupValues?.get(1) ?: return
+                    val decrypted = CryptoJS.decrypt(cryptPass, cryptData)
+                    val vidUrl    = Regex("""file: '(.*)',""").find(Jsoup.parse(decrypted).html())?.groupValues?.get(1) ?: return
+
+                    callback.invoke(
+                        newExtractorLink(
+                            source = name,
+                            name   = name,
+                            url    = vidUrl,
+                            type   = ExtractorLinkType.M3U8
+                        ) {
+                            this.headers = mapOf("Referer" to vidUrl)
+                            this.quality = Qualities.P1080.value
+                        }
+                    )
+                } else {
+                    val cleanEmbed = finalEmbed.replace("vidmoly.me", "vidmoly.net")
+                    loadExtractor(cleanEmbed, sourceUrl, subtitleCallback, callback)
+                }
             }
 
             else -> {
