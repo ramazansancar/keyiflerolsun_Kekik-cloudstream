@@ -107,7 +107,7 @@ class DiziBox : MainAPI() {
         val titleEl = this.selectFirst("h3 a")
         val title   = titleEl?.text() ?: this.selectFirst("img")?.attr("alt") ?: return null
         val imgEl   = this.selectFirst("img")
-        val imgUrl  = fixUrlNull(imgEl?.attr("data-src")?.takeIf { it.isNotBlank() } ?: imgEl?.attr("src"))
+        val imgUrl  = fixUrlNull(imgEl?.attr("src")?.takeIf { it.isNotBlank() } ?: imgEl?.attr("data-src"))
         val href    = fixUrlNull(titleEl?.attr("href") ?: this.attr("href")) ?: return null
         val rating  = this.selectFirst("span.label-imdb b")?.text()?.trim()
 
