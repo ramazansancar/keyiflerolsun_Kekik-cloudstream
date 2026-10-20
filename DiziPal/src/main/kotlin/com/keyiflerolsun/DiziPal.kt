@@ -5,6 +5,7 @@ package com.keyiflerolsun
 import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.cloudstream3.Episode
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -24,7 +25,11 @@ import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.json.JSONArray
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -37,10 +42,9 @@ class DiziPal : MainAPI() {
     override val supportedTypes       = setOf(TvType.TvSeries, TvType.Movie)
 
     // ! CloudFlare bypass
-// ! CloudFlare bypass
-    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 150L  // ? 0.15 saniye
-    override var sequentialMainPageScrollDelay = 150L  // ? 0.15 saniye
+    override var sequentialMainPage            = true
+    override var sequentialMainPageDelay       = 150L
+    override var sequentialMainPageScrollDelay = 150L
 
     // ! CloudFlare v2
     private val cloudflareKiller by lazy { CloudflareKiller() }
@@ -61,50 +65,24 @@ class DiziPal : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/yabanci-dizi-izle"                 to "Yeni Diziler",
-        "${mainUrl}/hd-film-izle"                                  to "Yeni Filmler",
-        "${mainUrl}/kanal/netflix"                                 to "Netflix",
-        "${mainUrl}/kanal/exxen"                                   to "Exxen",
-        "${mainUrl}/kanal/max"                                     to "Max",
-        "${mainUrl}/kanal/disney"                                  to "Disney+",
-        "${mainUrl}/kanal/amazon"                                  to "Amazon Prime",
-        "${mainUrl}/kanal/tod"                                     to "TOD (beIN)",
-        "${mainUrl}/kanal/tabii"                                   to "Tabii",
-        "${mainUrl}/kanal/hulu"                                    to "Hulu",
-        //"${mainUrl}/diziler?kelime=&durum=&tur=26&type=&siralama=" to "Anime",
-        //"${mainUrl}/diziler?kelime=&durum=&tur=5&type=&siralama="  to "Bilimkurgu Dizileri",
-        //"${mainUrl}/tur/bilimkurgu"                                to "Bilimkurgu Filmleri",
-        //"${mainUrl}/diziler?kelime=&durum=&tur=11&type=&siralama=" to "Komedi Dizileri",
-        //"${mainUrl}/tur/komedi"                                    to "Komedi Filmleri",
-        //"${mainUrl}/diziler?kelime=&durum=&tur=4&type=&siralama="  to "Belgesel Dizileri",
-        //"${mainUrl}/tur/belgesel"                                  to "Belgesel Filmleri",
-        //"${mainUrl}/diziler?kelime=&durum=&tur=25&type=&siralama=" to "Erotik Diziler",
-        //"${mainUrl}/tur/erotik"                                    to "Erotik Filmler",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=1&type=&siralama="  to "Aile",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=2&type=&siralama="  to "Aksiyon",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=3&type=&siralama="  to "Animasyon",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=4&type=&siralama="  to "Belgesel",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=6&type=&siralama="  to "Biyografi",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=7&type=&siralama="  to "Dram",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=8&type=&siralama="  to "Fantastik",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=9&type=&siralama="  to "Gerilim",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=10&type=&siralama=" to "Gizem",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=12&type=&siralama=" to "Korku",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=13&type=&siralama=" to "Macera",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=14&type=&siralama=" to "Müzik",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=16&type=&siralama=" to "Romantik",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=17&type=&siralama=" to "Savaş",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=24&type=&siralama=" to "Yerli",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=18&type=&siralama=" to "Spor",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=19&type=&siralama=" to "Suç",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=20&type=&siralama=" to "Tarih",
-        // "${mainUrl}/diziler?kelime=&durum=&tur=21&type=&siralama=" to "Western",
+        "${mainUrl}/yabanci-dizi-izle"        to "Yeni Diziler",
+        "${mainUrl}/film-izle"                 to "Yeni Filmler",
+        "${mainUrl}/trendler"                  to "Trendler",
+        "${mainUrl}/kesfet"                    to "Keşfet",
+        "${mainUrl}/platform-bolumler/netflix" to "Netflix",
+        "${mainUrl}/platform-bolumler/prime"   to "Amazon Prime",
+        "${mainUrl}/platform-bolumler/max"     to "Max",
+        "${mainUrl}/platform-bolumler/disneyplus" to "Disney+",
+        "${mainUrl}/platform-bolumler/exxen"   to "Exxen",
+        "${mainUrl}/platform-bolumler/apple-tv" to "Apple TV+",
+        "${mainUrl}/platform-bolumler/tabii"   to "Tabii",
+        "${mainUrl}/platform-bolumler/gain"    to "GAİN",
+        "${mainUrl}/platform-bolumler/tod"     to "TOD (beIN)"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        // Normal sayfalar için sayfa URL'sini ayarla (yabancı-dizi-izle?sayfa=2 gibi)
-        val url = if (page > 1 && !request.data.contains("/kanal/")) {
-            if (request.data.contains("?")) "${request.data}&sayfa=$page" else "${request.data}?sayfa=$page"
+        val url = if (page > 1) {
+            if (request.data.contains("?")) "${request.data}&page=$page" else "${request.data}?page=$page"
         } else {
             request.data
         }
@@ -115,93 +93,64 @@ class DiziPal : MainAPI() {
 
         val home = mutableListOf<SearchResponse>()
 
-        // 1. HTML içindeki mevcut dizileri al
-        if (!request.data.contains("/kanal/") || page == 1) {
-            if (request.data.contains("/yabanci-dizi-izle") || request.data.contains("/hd-film-izle")) {
-                home.addAll(document.select("div.new-added-list div.bg-\\[\\#22232a\\]").mapNotNull { it.sonBolumler() })
-            } else {
-                home.addAll(document.select("div.bg-\\[\\#22232a\\]").mapNotNull { it.diziler() })
+        // 1. Yeni Next.js arayüzündeki kartlar (a.tc)
+        val cards = document.select("a.tc")
+        cards.forEach { element ->
+            element.toCardSearchResult()?.let { res ->
+                if (home.none { it.url == res.url }) {
+                    home.add(res)
+                }
             }
         }
 
-        // 2. Eğer bir kanal sayfasındaysak, senin verdiğin parametrelerle API'den verileri çek
-        if (request.data.contains("/kanal/")) {
-            // HTML içinden channelId'yi dinamik olarak çekmeye çalışalım (bulamazsak boş göndeririz)
-            val channelIdFromDoc = document.selectFirst("input[name=channelId]")?.attr("value")
-                ?: Regex("""channelId\s*[:=]\s*(\d+)""").find(document.html())?.groupValues?.get(1)
-            val channelSlug = request.data.substringAfterLast("/")
-
-            try {
-                val apiResponse = app.post(
-                    "${mainUrl}/bg/getserielistbychannel",
-                    headers = mapOf(
-                        "Accept" to "application/json, text/javascript, */*; q=0.01",
-                        "X-Requested-With" to "XMLHttpRequest"
-                    ),
-                    referer = request.data,
-                    data = mapOf(
-                        "cKey"       to "c61f91c5141d178450934fe81c0a2029",
-                        "cValue"     to "MTc4NDQwNzIwMDhkMzJhNTc1YzUwOGU1ZjQwMjdjMjIyOWVjOGVhMTcwNGQyM2FjODM2YTI4YTU0NjUyMjI2ZmVjMzFkYzBkMWQyMWY4YzdiNA==",
-                        "curPage"    to page.toString(),
-                        "channelId"  to (channelIdFromDoc ?: "1"), // capture ettiğin veri 1 olduğu için default 1
-                        "languageId" to "2,3,4",
-                        "slug"       to channelSlug // Bazı durumlarda slug da gerekebilir
-                    )
-                )
-
-                val mapper = jacksonObjectMapper()
-                val rootNode = mapper.readTree(apiResponse.text)
-                
-                val htmlNode = rootNode.at("/data/html")
-                if (!htmlNode.isMissingNode) {
-                    val htmlContent = htmlNode.asText()
-                    val parsedDoc = Jsoup.parse(htmlContent)
-                    val apiResults = parsedDoc.select("div.bg-\\[\\#22232a\\]").mapNotNull { it.diziler() }
-
-                    // HTML'de zaten olanları ekleme (tekilleştirme)
-                    apiResults.forEach { res ->
-                        if (home.none { it.url == res.url }) {
-                            home.add(res)
-                        }
+        // 2. Fallback: Diğer kart ve liste elemanları
+        if (home.isEmpty()) {
+            document.select("a[href*='/series/'], a[href*='/movies/']").forEach { element ->
+                element.toCardSearchResult()?.let { res ->
+                    if (home.none { it.url == res.url }) {
+                        home.add(res)
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("DiziPal", "API Hatası: ${e.message}")
             }
         }
 
-        // Eğer sonuç geldiyse bir sonraki sayfa vardır diyelim
         return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
     }
 
-    private fun Element.sonBolumler(): SearchResponse? {
-        val name      = this.selectFirst("img")?.attr("alt") ?: return null
-        val episode   = this.selectFirst("div.episode")?.text()?.trim()
-            ?.replace(". Sezon ", "x")?.replace(". Bölüm", "") ?: ""
-        val title     = if (episode.isNotEmpty()) "$name $episode" else name
+    private fun Element.toCardSearchResult(): SearchResponse? {
+        val href = fixUrlNull(this.attr("href")) ?: return null
+        if (!href.contains("/series/") && !href.contains("/movies/") && !href.contains("/bolum/")) return null
 
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val title = this.selectFirst("span.tt")?.text()?.trim()
+            ?: this.selectFirst("span.ft1")?.text()?.trim()
+            ?: this.selectFirst("span.tn")?.text()?.trim()
+            ?: this.attr("aria-label").substringBefore(",").trim().takeIf { it.isNotEmpty() }
+            ?: return null
 
-        return newTvSeriesSearchResponse(title, href.substringBefore("/sezon"), TvType.TvSeries) {
-            this.posterUrl = posterUrl
+        val imgEl = this.selectFirst("img")
+        val posterUrl = fixUrlNull(imgEl?.attr("src")?.ifEmpty { null } ?: imgEl?.attr("data-src"))
+
+        return when {
+            href.contains("/series/") -> {
+                newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
+            }
+            href.contains("/movies/") -> {
+                newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+            }
+            href.contains("/bolum/") -> {
+                val seriesUrl = href.substringBeforeLast("-").replace("/bolum/", "/series/")
+                newTvSeriesSearchResponse(title, seriesUrl, TvType.TvSeries) { this.posterUrl = posterUrl }
+            }
+            else -> null
         }
-    }
-
-    private fun Element.diziler(): SearchResponse? {
-        val title     = this.selectFirst("img")?.attr("alt") ?: return null
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
-
-        return newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
     }
 
     private fun SearchItem.toPostSearchResult(): SearchResponse {
         val title     = this.title
-        val href      = "${mainUrl}/${this.slug}"
+        val href      = if (this.slug.startsWith("http")) this.slug else "${mainUrl}/${this.slug}"
         val posterUrl = this.poster
 
-        return if (this.type == "series") {
+        return if (this.type.equals("series", ignoreCase = true) || href.contains("/series/")) {
             newTvSeriesSearchResponse(title, href, TvType.TvSeries) { this.posterUrl = posterUrl }
         } else {
             newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
@@ -209,95 +158,183 @@ class DiziPal : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-    val responseRaw = app.post(
-        "${mainUrl}/bg/searchcontent",
-        headers = mapOf(
-            "Accept" to "application/json, text/javascript, */*; q=0.01",
-            "X-Requested-With" to "XMLHttpRequest"
-        ),
-        referer = "${mainUrl}/",
-        data = mapOf(
-            "cKey" to "c61f91c5141d178450934fe81c0a2029",
-            "cValue" to "MTc4NDQwNzIwMDhkMzJhNTc1YzUwOGU1ZjQwMjdjMjIyOWVjOGVhMTcwNGQyM2FjODM2YTI4YTU0NjUyMjI2ZmVjMzFkYzBkMWQyMWY4YzdiNA==",
-            "type" to "hepsi", 
-            "searchterm" to query
-        )
-    )
+        return try {
+            val jsonPayload = jacksonObjectMapper().writeValueAsString(
+                mapOf("action" to "searchContent", "params" to listOf(query))
+            )
+            val responseRaw = app.post(
+                "${mainUrl}/api/mj",
+                headers = mapOf(
+                    "Content-Type" to "application/json",
+                    "Accept" to "application/json, text/plain, */*",
+                    "Referer" to "${mainUrl}/",
+                    "Origin" to mainUrl
+                ),
+                requestBody = jsonPayload.toRequestBody("application/json; charset=utf-8".toMediaType())
+            )
 
-    val mapper = jacksonObjectMapper()
-    val rootNode = mapper.readTree(responseRaw.text)
-    
-    // JSON Pointer ile doğrudan "data" içindeki "result" array'ine iniyoruz
-    val resultArrayNode = rootNode.at("/data/result")
+            val mapper = jacksonObjectMapper()
+            val rootNode = mapper.readTree(responseRaw.text)
+            val resultArrayNode = rootNode.get("result")
 
-    // Fail-safe: Eğer API değişirse, state false gelirse veya boş dönerse provider'ın crash olmasını engelliyoruz
-    if (resultArrayNode.isMissingNode || !resultArrayNode.isArray) {
-        return emptyList()
+            if (resultArrayNode == null || !resultArrayNode.isArray) {
+                return emptyList()
+            }
+
+            val searchItems: List<SearchItem> = mapper.readValue(resultArrayNode.traverse())
+            searchItems.map { it.toPostSearchResult() }
+        } catch (e: Exception) {
+            Log.e("DiziPal", "Arama Hatası: ${e.message}")
+            emptyList()
+        }
     }
 
-    // Sadece hedefteki result array'ini SearchItem listesine dönüştürüyoruz
-    val searchItems: List<SearchItem> = mapper.readValue(resultArrayNode.traverse())
-
-    // Idiomatic Kotlin: for döngüsü ve mutable liste yerine "map" ile fonksiyonel ve temiz dönüşüm
-    return searchItems.map { it.toPostSearchResult() }
-}
-    
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url, interceptor = interceptor, headers = getHeaders(mainUrl)).document
+        val html = document.html()
 
-        val poster      = document.selectFirst("div.page-top img[alt]")?.attr("src")
-        val year        = document.selectXpath("//div[text()='Yıl']//following-sibling::div").text().trim().toIntOrNull()
-        val description = document.selectFirst("div.summary p")?.text()?.trim()
-        val tags        = document.selectXpath("//div[text()='Kategoriler']//following-sibling::div").text().trim().split(" ").map { it.trim() }
-        val duration    = Regex("(\\d+)").find(document.selectXpath("//div[text()='Süre']//following-sibling::div").text())?.value?.toIntOrNull()
+        val isSeries = url.contains("/series/")
+        val schemaType = if (isSeries) "TVSeries" else "Movie"
+        val jsonLd = extractJsonLd(html, schemaType)
 
-        if (url.contains("/series/")) {
-            val title       = document.selectFirst("div.flex h2")?.text() ?: return null
-            val episodeElements = document.select("div.relative.w-full.flex.items-start.gap-4")
-            val episodes = episodeElements.mapNotNull { element ->
-                // 1. Link ve İsim Bilgisi
-                val linkElement = element.selectFirst("a[data-dizipal-pageloader]") ?: return@mapNotNull null
-                val epHref = fixUrlNull(linkElement.attr("href")) ?: return@mapNotNull null
-                val epName = linkElement.selectFirst("h2")?.text()?.trim() ?: "Bölüm"
+        val title = jsonLd?.optString("name")?.takeIf { it.isNotBlank() }
+            ?: document.selectFirst("h1")?.text()?.trim()
+            ?: document.selectFirst("div.flex h2")?.text()?.trim()
+            ?: document.selectFirst("span.tt")?.text()?.trim()
+            ?: return null
 
-                // 2. Sezon ve Bölüm Metni (Örn: "1. Sezon 1. Bölüm")
-                val infoText = linkElement.selectFirst("div.text-white.text-sm.opacity-80")?.text()?.trim() ?: ""
+        val poster = jsonLd?.optString("image")?.takeIf { it.isNotBlank() }
+            ?: document.selectFirst("div.hero img")?.attr("src")
+            ?: document.selectFirst("div.fr img")?.attr("src")
+            ?: document.selectFirst("div.page-top img[alt]")?.attr("src")
 
-                // 3. Regex ile Sayıları Ayıklama (Daha güvenli yöntem)
-                // Bu pattern "1. Sezon 5. Bölüm" gibi bir metinden sayıları çeker.
-                val epSeason = Regex("""(\d+)\.\s*Sezon""").find(infoText)?.groupValues?.get(1)?.toIntOrNull()
-                val epEpisode = Regex("""(\d+)\.\s*Bölüm""").find(infoText)?.groupValues?.get(1)?.toIntOrNull()
+        val plot = jsonLd?.optString("description")?.takeIf { it.isNotBlank() }
+            ?: document.selectFirst("div.summary p")?.text()?.trim()
+            ?: document.selectFirst("p.plot")?.text()?.trim()
 
-                newEpisode(epHref) {
-                    this.name    = epName
-                    this.episode = epEpisode
-                    this.season  = epSeason
+        val year = jsonLd?.optString("datePublished")?.take(4)?.toIntOrNull()
+            ?: document.selectXpath("//div[text()='Yıl']//following-sibling::div").text().trim().toIntOrNull()
+            ?: Regex("""\b(19\d\d|20\d\d)\b""").find(html)?.groupValues?.get(1)?.toIntOrNull()
+
+        if (isSeries) {
+            val episodes = mutableListOf<Episode>()
+
+            val containsSeason = jsonLd?.opt("containsSeason")
+            if (containsSeason is JSONArray) {
+                for (sIdx in 0 until containsSeason.length()) {
+                    val seasonObj = containsSeason.optJSONObject(sIdx) ?: continue
+                    val sNum = seasonObj.optInt("seasonNumber", sIdx + 1)
+                    val epArr = seasonObj.optJSONArray("episode") ?: continue
+                    for (eIdx in 0 until epArr.length()) {
+                        val epObj = epArr.optJSONObject(eIdx) ?: continue
+                        val epUrl = epObj.optString("url")
+                        val epName = epObj.optString("name", "${eIdx + 1}. Bölüm")
+                        val epNum = epObj.optInt("episodeNumber", eIdx + 1)
+                        if (epUrl.isNotBlank()) {
+                            episodes.add(
+                                newEpisode(epUrl) {
+                                    this.name = epName
+                                    this.season = sNum
+                                    this.episode = epNum
+                                    this.description = epObj.optString("description").takeIf { it.isNotBlank() }
+                                }
+                            )
+                        }
+                    }
+                }
+            } else if (containsSeason is JSONObject) {
+                val sNum = containsSeason.optInt("seasonNumber", 1)
+                val epArr = containsSeason.optJSONArray("episode")
+                if (epArr != null) {
+                    for (eIdx in 0 until epArr.length()) {
+                        val epObj = epArr.optJSONObject(eIdx) ?: continue
+                        val epUrl = epObj.optString("url")
+                        val epName = epObj.optString("name", "${eIdx + 1}. Bölüm")
+                        val epNum = epObj.optInt("episodeNumber", eIdx + 1)
+                        if (epUrl.isNotBlank()) {
+                            episodes.add(
+                                newEpisode(epUrl) {
+                                    this.name = epName
+                                    this.season = sNum
+                                    this.episode = epNum
+                                    this.description = epObj.optString("description").takeIf { it.isNotBlank() }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Fallback: DOM üzerindeki bölüm linkleri
+            if (episodes.isEmpty()) {
+                document.select("a[href*='/bolum/']").forEach { link ->
+                    val epHref = fixUrlNull(link.attr("href")) ?: return@forEach
+                    val text = link.text().trim()
+                    val sNum = Regex("""(\d+)\.\s*Sezon""").find(text)?.groupValues?.get(1)?.toIntOrNull()
+                        ?: Regex("""(\d+)x\d+""").find(epHref)?.groupValues?.get(1)?.toIntOrNull()
+                    val eNum = Regex("""(\d+)\.\s*Bölüm""").find(text)?.groupValues?.get(1)?.toIntOrNull()
+                        ?: Regex("""\d+x(\d+)""").find(epHref)?.groupValues?.get(1)?.toIntOrNull()
+                    val epName = link.selectFirst("h2, span.tn, span.tt")?.text()?.trim() ?: text.ifEmpty { "Bölüm" }
+
+                    if (episodes.none { it.data == epHref }) {
+                        episodes.add(
+                            newEpisode(epHref) {
+                                this.name = epName
+                                this.season = sNum
+                                this.episode = eNum
+                            }
+                        )
+                    }
                 }
             }
 
             return newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
                 this.year      = year
-                this.plot      = description
-                this.tags      = tags
-                this.duration  = duration
+                this.plot      = plot
             }
-        } else { 
-            val title = document.selectXpath("//div[@class='g-title'][2]/div").text().trim()
-
+        } else {
             return newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.year      = year
-                this.plot      = description
-                this.tags      = tags
-                this.duration  = duration
+                this.plot      = plot
             }
         }
     }
 
-    // 2. LOAD LINKS: Asıl şifre çözme ve Iframe yakalama işleminin yapıldığı yer
+    private fun extractJsonLd(html: String, targetType: String): JSONObject? {
+        val typePattern = "\"@type\":\"$targetType\""
+        val pos = html.indexOf(typePattern)
+        if (pos == -1) return null
+
+        var start = pos
+        while (start > 0 && html[start] != '{') {
+            start--
+        }
+
+        var braceCount = 0
+        var end = start
+        for (i in start until html.length) {
+            if (html[i] == '{') braceCount++
+            else if (html[i] == '}') {
+                braceCount--
+                if (braceCount == 0) {
+                    end = i + 1
+                    break
+                }
+            }
+        }
+
+        return try {
+            JSONObject(html.substring(start, end))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    // 2. LOAD LINKS: Şifre çözme ve Iframe yakalama işlemi
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -305,18 +342,30 @@ class DiziPal : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         Log.d("DiziPal", "--> loadLinks ÇAĞRILDI. Gelen URL: $data")
-        val doc = app.get(data).document
-        
-        // Şifreli div'i bul
-        val encryptedText = doc.selectFirst("div[data-rm-k=true]")?.text() ?: ""
-        Log.d("DiziPal", "--> Şifreli metin uzunluğu: ${encryptedText.length}")
-        
-        var iframeUrl = if (encryptedText.isNotEmpty()) {
+        val response = app.get(data, interceptor = interceptor, headers = getHeaders(mainUrl))
+        val html = response.text
+
+        // 1. Yeni Next.js / React RSC içinden şifreli verileri çek
+        val ctMatch   = Regex("""\\*"ciphertext\\*"\s*:\s*\\*"([^\\"]+)\\*"""").find(html)?.groupValues?.get(1)
+        val ivMatch   = Regex("""\\*"iv\\*"\s*:\s*\\*"([^\\"]+)\\*"""").find(html)?.groupValues?.get(1)
+        val saltMatch = Regex("""\\*"salt\\*"\s*:\s*\\*"([^\\"]+)\\*"""").find(html)?.groupValues?.get(1)
+        val keyMatch  = Regex("""\\*"k\\*"\s*:\s*\\*"([^\\"]+)\\*"""").find(html)?.groupValues?.get(1)
+
+        val defaultPassphrase = "3hPn4uCjTVtfYWcjIcoJQ4cL1WWk1qxXI39egLYOmNv6IblA7eKJz68uU3eLzux1biZLCms0quEjTYniGv5z1JcKbNIsDQFSeIZOBZJz4is6pD7UyWDggWWzTLBQbHcQFpBQdClnuQaMNUHtLHTpzCvZy33p6I7wFBvL4fnXBYH84aUIyWGTRvM2G5cfoNf4705tO2kv"
+        val passphrase = keyMatch ?: defaultPassphrase
+
+        var iframeUrl = if (ctMatch != null && ivMatch != null && saltMatch != null) {
             Log.d("DiziPal", "--> Şifreli veri bulundu, decrypt işlemine geçiliyor...")
-            decryptDizipalData(encryptedText)
+            decryptDizipalParams(ctMatch, ivMatch, saltMatch, passphrase)
         } else {
-            Log.w("DiziPal", "--> DİKKAT: Şifreli veri DOM'da YOK! Fallback iframe aranıyor...")
-            doc.selectFirst("iframe")?.attr("src") ?: ""
+            // Fallback: Eski DOM veya doğrudan iframe ara
+            val encryptedText = response.document.selectFirst("div[data-rm-k=true]")?.text() ?: ""
+            if (encryptedText.isNotEmpty()) {
+                decryptDizipalData(encryptedText)
+            } else {
+                Log.w("DiziPal", "--> DİKKAT: Şifreli veri DOM'da YOK! Fallback iframe aranıyor...")
+                response.document.selectFirst("iframe")?.attr("src") ?: ""
+            }
         }
 
         Log.d("DiziPal", "--> Elde edilen Ham Iframe URL: $iframeUrl")
@@ -324,13 +373,16 @@ class DiziPal : MainAPI() {
         if (iframeUrl.isNotEmpty()) {
             if (iframeUrl.startsWith("//")) {
                 iframeUrl = "https:$iframeUrl"
+            } else if (iframeUrl.startsWith("://")) {
+                iframeUrl = "https$iframeUrl"
+            } else if (!iframeUrl.startsWith("http")) {
+                iframeUrl = "https://$iframeUrl"
             }
             Log.d("DiziPal", "--> Extractor'a gönderilen Final URL: $iframeUrl")
-            
-            // Extractor'ı tetikle
+
             DizipalPlayer().getUrl(
                 url = iframeUrl,
-                referer = data, // Videonun bulunduğu sayfa
+                referer = data,
                 subtitleCallback = subtitleCallback,
                 callback = callback
             )
@@ -340,10 +392,40 @@ class DiziPal : MainAPI() {
         return true
     }
 
-    // 3. DECRYPT VE YARDIMCI FONKSİYON: Şifreyi çözen business logic
     private fun String.decodeHex(): ByteArray {
         check(length % 2 == 0) { "Hex string çift uzunlukta olmalıdır" }
         return chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+    }
+
+    private fun decryptDizipalParams(ctHexOrB64: String, ivHex: String, saltHex: String, passphrase: String): String {
+        return try {
+            val salt = saltHex.decodeHex()
+            val iv = ivHex.decodeHex()
+            val ciphertext = android.util.Base64.decode(ctHexOrB64, android.util.Base64.DEFAULT)
+
+            val factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512")
+            val spec = javax.crypto.spec.PBEKeySpec(passphrase.toCharArray(), salt, 999, 256)
+            val secretKey = factory.generateSecret(spec)
+            val secret = javax.crypto.spec.SecretKeySpec(secretKey.encoded, "AES")
+
+            val cipher = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(javax.crypto.Cipher.DECRYPT_MODE, secret, javax.crypto.spec.IvParameterSpec(iv))
+
+            val decryptedBytes = cipher.doFinal(ciphertext)
+            var finalUrl = String(decryptedBytes, Charsets.UTF_8).replace("\\/", "/")
+
+            if (finalUrl.startsWith("//")) {
+                finalUrl = "https:$finalUrl"
+            } else if (finalUrl.startsWith("://")) {
+                finalUrl = "https$finalUrl"
+            } else if (!finalUrl.startsWith("http")) {
+                finalUrl = "https://$finalUrl"
+            }
+            finalUrl
+        } catch (e: Exception) {
+            Log.e("DiziPal", "--> Decryption Hatası: ${e.message}")
+            ""
+        }
     }
 
     private fun decryptDizipalData(rawJsonText: String): String {
@@ -352,14 +434,12 @@ class DiziPal : MainAPI() {
 
             val ctMatch = """"ciphertext"\s*:\s*"([^"]+)"""".toRegex().find(rawJsonText)?.groupValues?.get(1) 
                 ?: return "".also { Log.e("DiziPal", "--> HATA: Regex 'ciphertext' değerini bulamadı!") }
-                
+
             val ivMatch = """"iv"\s*:\s*"([^"]+)"""".toRegex().find(rawJsonText)?.groupValues?.get(1) 
                 ?: return "".also { Log.e("DiziPal", "--> HATA: Regex 'iv' değerini bulamadı!") }
-                
+
             val saltMatch = """"salt"\s*:\s*"([^"]+)"""".toRegex().find(rawJsonText)?.groupValues?.get(1) 
                 ?: return "".also { Log.e("DiziPal", "--> HATA: Regex 'salt' değerini bulamadı!") }
-
-            Log.d("DiziPal", "--> Regex başarılı. Key türetiliyor...")
 
             val salt = saltMatch.decodeHex()
             val iv = ivMatch.decodeHex()
@@ -376,8 +456,6 @@ class DiziPal : MainAPI() {
             val decryptedBytes = cipher.doFinal(ciphertext)
             var finalUrl = String(decryptedBytes, Charsets.UTF_8).replace("\\/", "/")
 
-            Log.d("DiziPal", "--> AES Çözümleme Başarılı. İlk Çıktı: $finalUrl")
-
             if (finalUrl.startsWith("://")) {
                 finalUrl = "https$finalUrl"
             } else if (finalUrl.startsWith("//")) {
@@ -389,7 +467,6 @@ class DiziPal : MainAPI() {
             finalUrl
         } catch (e: Exception) {
             Log.e("DiziPal", "--> HATA: Decryption sırasında Exception fırlatıldı! Mesaj: ${e.message}")
-            e.printStackTrace()
             ""
         }
     }
@@ -403,4 +480,3 @@ class DiziPal : MainAPI() {
         )
     }
 }
-
